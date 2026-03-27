@@ -49,9 +49,18 @@ need_bootstrap_cmake() {
 
 if need_bootstrap_cmake; then
   CMAKE_VER="3.28.6"
-  CMAKE_DIR="/opt/cmake-${CMAKE_VER}-linux-x86_64"
-  echo "Installing CMake ${CMAKE_VER} to ${CMAKE_DIR}"
-  curl -fsSL "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VER}/cmake-${CMAKE_VER}-linux-x86_64.tar.gz" \
+  case "$(uname -m)" in
+    x86_64) CMAKE_SUFFIX="linux-x86_64" ;;
+    aarch64) CMAKE_SUFFIX="linux-aarch64" ;;
+    armv7l | armv6l) CMAKE_SUFFIX="linux-armv7l" ;;
+    *)
+      echo "unsupported machine $(uname -m) for Kitware CMake bootstrap"
+      exit 1
+      ;;
+  esac
+  CMAKE_DIR="/opt/cmake-${CMAKE_VER}-${CMAKE_SUFFIX}"
+  echo "Installing CMake ${CMAKE_VER} (${CMAKE_SUFFIX}) to ${CMAKE_DIR}"
+  curl -fsSL "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VER}/cmake-${CMAKE_VER}-${CMAKE_SUFFIX}.tar.gz" \
     | tar xz -C /opt
   mkdir -p /usr/local/bin
   for _tool in cmake ctest cpack; do

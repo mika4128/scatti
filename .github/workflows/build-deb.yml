@@ -1,11 +1,11 @@
-# Build CPack DEB packages in official Debian/Ubuntu Docker images and attach them
-# to GitHub Releases when a version tag (v*) is pushed.
+# Build CPack DEB packages (amd64 + arm64) in Docker and upload to GitHub Releases.
 #
-# Uses `docker run` (not `jobs.<id>.container`) so actions/checkout runs on the
-# GitHub runner; very old Ubuntu images lack a usable Node runtime for JS actions.
+# 何时会上传 Release：
+# - 推送版本标签（如 v0.1.0），或
+# - 在 Actions 里手动运行本 workflow（workflow_dispatch），填写版本号。
+# 仅推送到 main 分支时只构建并保留 Artifact，不会创建 Release。
 #
-# CMake >= 3.15: ci-deb-setup.sh installs a Kitware CMake tarball when the distro
-# package is too old (e.g. Debian 10, Ubuntu 18.04).
+# CMake >= 3.15：若发行版自带 cmake 过旧，ci-deb-setup.sh 会按架构拉取 Kitware 二进制。
 
 name: Build DEB packages
 
@@ -16,6 +16,11 @@ on:
       - 'v*'
   pull_request:
   workflow_dispatch:
+    inputs:
+      version:
+        description: '发布版本号（不含 v），例如 0.1.2；将创建标签 v0.1.2 并把 deb 上传到 Release'
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -26,35 +31,52 @@ concurrency:
 
 jobs:
   deb:
-    name: ${{ matrix.label }}
+    name: ${{ matrix.id }}
     runs-on: ubuntu-latest
+    # 避免：workflow_dispatch 创建 Release/标签后，再次由 push tags 触发整套构建
+    if: |
+      github.event_name != 'push' ||
+      !startsWith(github.ref, 'refs/tags/') ||
+      github.actor != 'github-actions[bot]'
     strategy:
       fail-fast: false
       matrix:
         include:
-          - { image: debian:10, label: debian-10 }
-          - { image: debian:11, label: debian-11 }
-          - { image: debian:12, label: debian-12 }
-          # Debian 13 — use trixie until debian:13 is published on Docker Hub
-          - { image: debian:trixie, label: debian-13 }
-          - { image: ubuntu:bionic, label: ubuntu-18.04 }
-          - { image: ubuntu:focal, label: ubuntu-20.04 }
-          - { image: ubuntu:jammy, label: ubuntu-22.04 }
-          - { image: ubuntu:noble, label: ubuntu-24.04 }
-          - { image: ubuntu:rolling, label: ubuntu-rolling }
+          - { image: debian:10, platform: linux/amd64, id: debian-10-amd64 }
+          - { image: debian:10, platform: linux/arm64, id: debian-10-arm64 }
+          - { image: debian:11, platform: linux/amd64, id: debian-11-amd64 }
+          - { image: debian:11, platform: linux/arm64, id: debian-11-arm64 }
+          - { image: debian:12, platform: linux/amd64, id: debian-12-amd64 }
+          - { image: debian:12, platform: linux/arm64, id: debian-12-arm64 }
+          - { image: debian:trixie, platform: linux/amd64, id: debian-13-amd64 }
+          - { image: debian:trixie, platform: linux/arm64, id: debian-13-arm64 }
+          - { image: ubuntu:bionic, platform: linux/amd64, id: ubuntu-18.04-amd64 }
+          - { image: ubuntu:bionic, platform: linux/arm64, id: ubuntu-18.04-arm64 }
+          - { image: ubuntu:focal, platform: linux/amd64, id: ubuntu-20.04-amd64 }
+          - { image: ubuntu:focal, platform: linux/arm64, id: ubuntu-20.04-arm64 }
+          - { image: ubuntu:jammy, platform: linux/amd64, id: ubuntu-22.04-amd64 }
+          - { image: ubuntu:jammy, platform: linux/arm64, id: ubuntu-22.04-arm64 }
+          - { image: ubuntu:noble, platform: linux/amd64, id: ubuntu-24.04-amd64 }
+          - { image: ubuntu:noble, platform: linux/arm64, id: ubuntu-24.04-arm64 }
+          - { image: ubuntu:rolling, platform: linux/amd64, id: ubuntu-rolling-amd64 }
+          - { image: ubuntu:rolling, platform: linux/arm64, id: ubuntu-rolling-arm64 }
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up QEMU (for arm64 on x86 runner)
+        uses: docker/setup-qemu-action@v3
+
       - name: Build and package in container
         env:
           OLD_RELEASE: '0'
-          DISTRO_LABEL: ${{ matrix.label }}
+          DISTRO_LABEL: ${{ matrix.id }}
         run: |
           set -euo pipefail
-          docker pull "${{ matrix.image }}"
+          docker pull --platform "${{ matrix.platform }}" "${{ matrix.image }}"
           docker run --rm \
+            --platform "${{ matrix.platform }}" \
             -v "${GITHUB_WORKSPACE}:/workspace" \
             -e OLD_RELEASE \
             -e DISTRO_LABEL \
@@ -64,7 +86,7 @@ jobs:
       - name: Upload DEB artifact
         uses: actions/upload-artifact@v4
         with:
-          name: deb-${{ matrix.label }}
+          name: deb-${{ matrix.id }}
           path: build/*.deb
           if-no-files-found: error
 
@@ -72,7 +94,9 @@ jobs:
     name: Publish release assets
     needs: deb
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    if: |
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+      github.event_name == 'workflow_dispatch'
     permissions:
       contents: write
 
@@ -85,11 +109,14 @@ jobs:
           merge-multiple: true
 
       - name: List packages
-        run: find release-debs -type f -name '*.deb' -print
+        run: find release-debs -type f -name '*.deb' | sort
 
       - name: Upload DEBs to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || format('v{0}', github.event.inputs.version) }}
+          target_commitish: ${{ github.sha }}
+          generate_release_notes: true
           files: release-debs/*.deb
           fail_on_unmatched_files: true
         env:
