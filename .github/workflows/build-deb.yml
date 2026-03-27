@@ -5,7 +5,7 @@
 # GitHub runner; very old Ubuntu images lack a usable Node runtime for JS actions.
 #
 # CMake >= 3.15: ci-deb-setup.sh installs a Kitware CMake tarball when the distro
-# package is too old (e.g. Debian 10, Ubuntu 14.04–18.04 depending on archive).
+# package is too old (e.g. Debian 10, Ubuntu 18.04).
 
 name: Build DEB packages
 
@@ -32,18 +32,16 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { image: debian:10, label: debian-10, old_release: '0' }
-          - { image: debian:11, label: debian-11, old_release: '0' }
-          - { image: debian:12, label: debian-12, old_release: '0' }
+          - { image: debian:10, label: debian-10 }
+          - { image: debian:11, label: debian-11 }
+          - { image: debian:12, label: debian-12 }
           # Debian 13 — use trixie until debian:13 is published on Docker Hub
-          - { image: debian:trixie, label: debian-13, old_release: '0' }
-          - { image: ubuntu:trusty, label: ubuntu-14.04, old_release: '1' }
-          - { image: ubuntu:xenial, label: ubuntu-16.04, old_release: '1' }
-          - { image: ubuntu:bionic, label: ubuntu-18.04, old_release: '0' }
-          - { image: ubuntu:focal, label: ubuntu-20.04, old_release: '0' }
-          - { image: ubuntu:jammy, label: ubuntu-22.04, old_release: '0' }
-          - { image: ubuntu:noble, label: ubuntu-24.04, old_release: '0' }
-          - { image: ubuntu:rolling, label: ubuntu-rolling, old_release: '0' }
+          - { image: debian:trixie, label: debian-13 }
+          - { image: ubuntu:bionic, label: ubuntu-18.04 }
+          - { image: ubuntu:focal, label: ubuntu-20.04 }
+          - { image: ubuntu:jammy, label: ubuntu-22.04 }
+          - { image: ubuntu:noble, label: ubuntu-24.04 }
+          - { image: ubuntu:rolling, label: ubuntu-rolling }
 
     steps:
       - name: Checkout
@@ -51,7 +49,7 @@ jobs:
 
       - name: Build and package in container
         env:
-          OLD_RELEASE: ${{ matrix.old_release }}
+          OLD_RELEASE: '0'
           DISTRO_LABEL: ${{ matrix.label }}
         run: |
           set -euo pipefail

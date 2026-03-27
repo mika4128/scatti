@@ -1,8 +1,8 @@
 # cruckig
 
 <p align="center">
-  <a href="https://github.com/mika4128/cruckig/actions">
-    <img src="https://github.com/mika4128/cruckig/workflows/CI/badge.svg" alt="CI">
+  <a href="https://github.com/mika4128/cruckig/actions/workflows/build-deb.yml">
+    <img src="https://github.com/mika4128/cruckig/actions/workflows/build-deb.yml/badge.svg" alt="Build DEB workflow">
   </a>
   <a href="https://github.com/mika4128/cruckig/issues">
     <img src="https://img.shields.io/github/issues/mika4128/cruckig.svg" alt="Issues">
