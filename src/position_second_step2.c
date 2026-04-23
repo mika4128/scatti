@@ -1,13 +1,13 @@
-#include <cruckig/cruckig_config.h>
+#include <scatti/scatti_config.h>
 #include <math.h>
 #include <float.h>
 
-#include <cruckig/position.h>
-#include <cruckig/block.h>
-#include <cruckig/profile.h>
-#include <cruckig/roots.h>
+#include <scatti/position.h>
+#include <scatti/block.h>
+#include <scatti/profile.h>
+#include <scatti/roots.h>
 
-void cruckig_pos2_step2_init(CRuckigPositionSecondOrderStep2 *s,
+void scatti_pos2_step2_init(CRuckigPositionSecondOrderStep2 *s,
                      double tf, double p0, double v0, double pf, double vf,
                      double vMax, double vMin, double aMax, double aMin)
 {
@@ -37,7 +37,7 @@ static bool time_acc0(CRuckigPositionSecondOrderStep2 *s, CRuckigProfile *profil
         profile->t[5] = 0;
         profile->t[6] = 0;
 
-        if (cruckig_profile_check_for_second_order_with_timing(profile, ControlSignsUDDU, ReachedLimitsACC0, s->tf, aMax, aMin, vMax, vMin)) {
+        if (scatti_profile_check_for_second_order_with_timing(profile, ControlSignsUDDU, ReachedLimitsACC0, s->tf, aMax, aMin, vMax, vMin)) {
             profile->pf = profile->p[7];
             return true;
         }
@@ -55,7 +55,7 @@ static bool time_acc0(CRuckigPositionSecondOrderStep2 *s, CRuckigProfile *profil
         profile->t[5] = 0;
         profile->t[6] = s->tf - (profile->t[0] + profile->t[1]);
 
-        if (cruckig_profile_check_for_second_order_with_timing(profile, ControlSignsUDDU, ReachedLimitsACC0, s->tf, aMax, aMin, vMax, vMin)) {
+        if (scatti_profile_check_for_second_order_with_timing(profile, ControlSignsUDDU, ReachedLimitsACC0, s->tf, aMax, aMin, vMax, vMin)) {
             profile->pf = profile->p[7];
             return true;
         }
@@ -71,7 +71,7 @@ static bool time_acc0(CRuckigPositionSecondOrderStep2 *s, CRuckigProfile *profil
         profile->t[5] = 0;
         profile->t[6] = s->vd / aMax;
 
-        if (cruckig_profile_check_for_second_order_with_timing(profile, ControlSignsUDDU, ReachedLimitsACC0, s->tf, aMax, aMin, vMax, vMin)) {
+        if (scatti_profile_check_for_second_order_with_timing(profile, ControlSignsUDDU, ReachedLimitsACC0, s->tf, aMax, aMin, vMax, vMin)) {
             profile->pf = profile->p[7];
             return true;
         }
@@ -92,7 +92,7 @@ static bool time_none(CRuckigPositionSecondOrderStep2 *s, CRuckigProfile *profil
         profile->t[5] = 0;
         profile->t[6] = 0;
 
-        if (cruckig_profile_check_for_second_order_with_timing(profile, ControlSignsUDDU, ReachedLimitsNONE, s->tf, aMax, aMin, vMax, vMin)) {
+        if (scatti_profile_check_for_second_order_with_timing(profile, ControlSignsUDDU, ReachedLimitsNONE, s->tf, aMax, aMin, vMax, vMin)) {
             profile->pf = profile->p[7];
             return true;
         }
@@ -113,7 +113,7 @@ static bool time_none(CRuckigPositionSecondOrderStep2 *s, CRuckigProfile *profil
         const double af = s->vd * s->vd / h1;
 
         if ((aMin - 1e-12 < af) && (af < aMax + 1e-12) &&
-            cruckig_profile_check_for_second_order_with_timing(profile, ControlSignsUDDU, ReachedLimitsNONE, s->tf, af, -af, vMax, vMin)) {
+            scatti_profile_check_for_second_order_with_timing(profile, ControlSignsUDDU, ReachedLimitsNONE, s->tf, af, -af, vMax, vMin)) {
             profile->pf = profile->p[7];
             return true;
         }
@@ -129,7 +129,7 @@ static bool check_all(CRuckigPositionSecondOrderStep2 *s, CRuckigProfile *profil
            time_none(s, profile, vMax, vMin, aMax, aMin);
 }
 
-bool cruckig_pos2_step2_get_profile(CRuckigPositionSecondOrderStep2 *s, CRuckigProfile *profile)
+bool scatti_pos2_step2_get_profile(CRuckigPositionSecondOrderStep2 *s, CRuckigProfile *profile)
 {
     /* Test all cases to get ones that match */
     if (s->pd > 0) {

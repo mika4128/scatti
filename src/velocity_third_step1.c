@@ -1,11 +1,11 @@
-#include <cruckig/cruckig_config.h>
+#include <scatti/scatti_config.h>
 #include <math.h>
 #include <float.h>
 #include <stdbool.h>
 
-#include <cruckig/velocity.h>
-#include <cruckig/block.h>
-#include <cruckig/profile.h>
+#include <scatti/velocity.h>
+#include <scatti/block.h>
+#include <scatti/profile.h>
 
 /* ---- Internal helper functions ---- */
 
@@ -25,10 +25,10 @@ static void time_acc0(const CRuckigVelocityThirdOrderStep1 *s,
     profile->t[5] = 0;
     profile->t[6] = 0;
 
-    if (cruckig_profile_check_for_velocity(profile, ControlSignsUDDU, ReachedLimitsACC0, jMax, aMax, aMin)) {
+    if (scatti_profile_check_for_velocity(profile, ControlSignsUDDU, ReachedLimitsACC0, jMax, aMax, aMin)) {
         (*counter)++;
         if (*counter < 3) {
-            cruckig_profile_set_boundary_from_profile(&valid_profiles[*counter], profile);
+            scatti_profile_set_boundary_from_profile(&valid_profiles[*counter], profile);
         }
     }
 }
@@ -53,10 +53,10 @@ static void time_none(const CRuckigVelocityThirdOrderStep1 *s,
             profile->t[5] = 0;
             profile->t[6] = 0;
 
-            if (cruckig_profile_check_for_velocity(profile, ControlSignsUDDU, ReachedLimitsNONE, jMax, aMax, aMin)) {
+            if (scatti_profile_check_for_velocity(profile, ControlSignsUDDU, ReachedLimitsNONE, jMax, aMax, aMin)) {
                 (*counter)++;
                 if (*counter < 3) {
-                    cruckig_profile_set_boundary_from_profile(&valid_profiles[*counter], profile);
+                    scatti_profile_set_boundary_from_profile(&valid_profiles[*counter], profile);
                 }
                 if (return_after_found) {
                     return;
@@ -76,10 +76,10 @@ static void time_none(const CRuckigVelocityThirdOrderStep1 *s,
             profile->t[5] = 0;
             profile->t[6] = 0;
 
-            if (cruckig_profile_check_for_velocity(profile, ControlSignsUDDU, ReachedLimitsNONE, jMax, aMax, aMin)) {
+            if (scatti_profile_check_for_velocity(profile, ControlSignsUDDU, ReachedLimitsNONE, jMax, aMax, aMin)) {
                 (*counter)++;
                 if (*counter < 3) {
-                    cruckig_profile_set_boundary_from_profile(&valid_profiles[*counter], profile);
+                    scatti_profile_set_boundary_from_profile(&valid_profiles[*counter], profile);
                 }
             }
         }
@@ -106,12 +106,12 @@ static bool time_all_single_step(const CRuckigVelocityThirdOrderStep1 *s,
 
     if (fabs(s->a0) > DBL_EPSILON) {
         profile->t[3] = s->vd / s->a0;
-        if (cruckig_profile_check_for_velocity(profile, ControlSignsUDDU, ReachedLimitsNONE, 0.0, aMax, aMin)) {
+        if (scatti_profile_check_for_velocity(profile, ControlSignsUDDU, ReachedLimitsNONE, 0.0, aMax, aMin)) {
             return true;
         }
 
     } else if (fabs(s->vd) < DBL_EPSILON) {
-        if (cruckig_profile_check_for_velocity(profile, ControlSignsUDDU, ReachedLimitsNONE, 0.0, aMax, aMin)) {
+        if (scatti_profile_check_for_velocity(profile, ControlSignsUDDU, ReachedLimitsNONE, 0.0, aMax, aMin)) {
             return true;
         }
     }
@@ -122,7 +122,7 @@ static bool time_all_single_step(const CRuckigVelocityThirdOrderStep1 *s,
 
 /* ---- Public interface ---- */
 
-void cruckig_vel3_step1_init(CRuckigVelocityThirdOrderStep1 *s,
+void scatti_vel3_step1_init(CRuckigVelocityThirdOrderStep1 *s,
                      double v0, double a0, double vf, double af,
                      double aMax, double aMin, double jMax)
 {
@@ -134,13 +134,13 @@ void cruckig_vel3_step1_init(CRuckigVelocityThirdOrderStep1 *s,
     s->vd = vf - v0;
 }
 
-bool cruckig_vel3_step1_get_profile(CRuckigVelocityThirdOrderStep1 *s,
+bool scatti_vel3_step1_get_profile(CRuckigVelocityThirdOrderStep1 *s,
                             const CRuckigProfile *input, CRuckigBlock *block)
 {
     /* Zero-limits special case */
     if (s->_jMax == 0.0) {
         CRuckigProfile *p = &block->p_min;
-        cruckig_profile_set_boundary_from_profile(p, input);
+        scatti_profile_set_boundary_from_profile(p, input);
 
         if (time_all_single_step(s, p, s->_aMax, s->_aMin, s->_jMax)) {
             block->t_min = p->t_sum[6] + p->brake.duration + p->accel.duration;
@@ -155,7 +155,7 @@ bool cruckig_vel3_step1_get_profile(CRuckigVelocityThirdOrderStep1 *s,
     }
 
     size_t valid_profile_counter = 0;
-    cruckig_profile_set_boundary_from_profile(&s->valid_profiles[0], input);
+    scatti_profile_set_boundary_from_profile(&s->valid_profiles[0], input);
 
     if (fabs(s->af) < DBL_EPSILON) {
         /* There is no blocked interval when af==0, so return after first found profile */
@@ -180,5 +180,5 @@ bool cruckig_vel3_step1_get_profile(CRuckigVelocityThirdOrderStep1 *s,
     }
 
 return_block:
-    return cruckig_block_calculate(block, s->valid_profiles, valid_profile_counter, 3);
+    return scatti_block_calculate(block, s->valid_profiles, valid_profile_counter, 3);
 }

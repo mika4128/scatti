@@ -1,9 +1,9 @@
-#ifndef CRUCKIG_POSITION_H
-#define CRUCKIG_POSITION_H
+#ifndef SCATTI_POSITION_H
+#define SCATTI_POSITION_H
 
 #include <stdbool.h>
-#include <cruckig/profile.h>
-#include <cruckig/block.h>
+#include <scatti/profile.h>
+#include <scatti/block.h>
 
 /* ---- Third Order Step 1 ---- */
 typedef struct {
@@ -17,11 +17,11 @@ typedef struct {
     CRuckigProfile valid_profiles[6];
 } CRuckigPositionThirdOrderStep1;
 
-void cruckig_pos3_step1_init(CRuckigPositionThirdOrderStep1 *s,
+void scatti_pos3_step1_init(CRuckigPositionThirdOrderStep1 *s,
                      double p0, double v0, double a0,
                      double pf, double vf, double af,
                      double vMax, double vMin, double aMax, double aMin, double jMax);
-bool cruckig_pos3_step1_get_profile(CRuckigPositionThirdOrderStep1 *s,
+bool scatti_pos3_step1_get_profile(CRuckigPositionThirdOrderStep1 *s,
                             const CRuckigProfile *input, CRuckigBlock *block);
 
 /* ---- Third Order Step 2 ---- */
@@ -39,11 +39,11 @@ typedef struct {
     double g1, g2;
 } CRuckigPositionThirdOrderStep2;
 
-void cruckig_pos3_step2_init(CRuckigPositionThirdOrderStep2 *s,
+void scatti_pos3_step2_init(CRuckigPositionThirdOrderStep2 *s,
                      double tf, double p0, double v0, double a0,
                      double pf, double vf, double af,
                      double vMax, double vMin, double aMax, double aMin, double jMax);
-bool cruckig_pos3_step2_get_profile(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile);
+bool scatti_pos3_step2_get_profile(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile);
 
 /* ---- Second Order Step 1 ---- */
 typedef struct {
@@ -53,10 +53,10 @@ typedef struct {
     CRuckigProfile valid_profiles[4];
 } CRuckigPositionSecondOrderStep1;
 
-void cruckig_pos2_step1_init(CRuckigPositionSecondOrderStep1 *s,
+void scatti_pos2_step1_init(CRuckigPositionSecondOrderStep1 *s,
                      double p0, double v0, double pf, double vf,
                      double vMax, double vMin, double aMax, double aMin);
-bool cruckig_pos2_step1_get_profile(CRuckigPositionSecondOrderStep1 *s,
+bool scatti_pos2_step1_get_profile(CRuckigPositionSecondOrderStep1 *s,
                             const CRuckigProfile *input, CRuckigBlock *block);
 
 /* ---- Second Order Step 2 ---- */
@@ -66,10 +66,10 @@ typedef struct {
     double pd, vd;
 } CRuckigPositionSecondOrderStep2;
 
-void cruckig_pos2_step2_init(CRuckigPositionSecondOrderStep2 *s,
+void scatti_pos2_step2_init(CRuckigPositionSecondOrderStep2 *s,
                      double tf, double p0, double v0, double pf, double vf,
                      double vMax, double vMin, double aMax, double aMin);
-bool cruckig_pos2_step2_get_profile(CRuckigPositionSecondOrderStep2 *s, CRuckigProfile *profile);
+bool scatti_pos2_step2_get_profile(CRuckigPositionSecondOrderStep2 *s, CRuckigProfile *profile);
 
 /* ---- First Order Step 1 ---- */
 typedef struct {
@@ -77,9 +77,9 @@ typedef struct {
     double pd;
 } CRuckigPositionFirstOrderStep1;
 
-void cruckig_pos1_step1_init(CRuckigPositionFirstOrderStep1 *s,
+void scatti_pos1_step1_init(CRuckigPositionFirstOrderStep1 *s,
                      double p0, double pf, double vMax, double vMin);
-bool cruckig_pos1_step1_get_profile(CRuckigPositionFirstOrderStep1 *s,
+bool scatti_pos1_step1_get_profile(CRuckigPositionFirstOrderStep1 *s,
                             const CRuckigProfile *input, CRuckigBlock *block);
 
 /* ---- First Order Step 2 ---- */
@@ -89,8 +89,8 @@ typedef struct {
     double pd;
 } CRuckigPositionFirstOrderStep2;
 
-void cruckig_pos1_step2_init(CRuckigPositionFirstOrderStep2 *s,
+void scatti_pos1_step2_init(CRuckigPositionFirstOrderStep2 *s,
                      double tf, double p0, double pf, double vMax, double vMin);
-bool cruckig_pos1_step2_get_profile(CRuckigPositionFirstOrderStep2 *s, CRuckigProfile *profile);
+bool scatti_pos1_step2_get_profile(CRuckigPositionFirstOrderStep2 *s, CRuckigProfile *profile);
 
-#endif /* CRUCKIG_POSITION_H */
+#endif /* SCATTI_POSITION_H */

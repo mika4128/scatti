@@ -1,11 +1,11 @@
-#include <cruckig/cruckig_config.h>
+#include <scatti/scatti_config.h>
 #include <math.h>
 #include <float.h>
 #include <stdbool.h>
 
-#include <cruckig/velocity.h>
-#include <cruckig/block.h>
-#include <cruckig/profile.h>
+#include <scatti/velocity.h>
+#include <scatti/block.h>
+#include <scatti/profile.h>
 
 /* ---- Internal helper functions ---- */
 
@@ -24,7 +24,7 @@ static bool time_acc0(CRuckigVelocityThirdOrderStep2 *s, CRuckigProfile *profile
         profile->t[5] = 0;
         profile->t[6] = 0;
 
-        if (cruckig_profile_check_for_velocity_with_timing(profile, ControlSignsUDDU, ReachedLimitsACC0, s->tf, jMax, aMax, aMin)) {
+        if (scatti_profile_check_for_velocity_with_timing(profile, ControlSignsUDDU, ReachedLimitsACC0, s->tf, jMax, aMax, aMin)) {
             profile->pf = profile->p[7];
             return true;
         }
@@ -42,7 +42,7 @@ static bool time_acc0(CRuckigVelocityThirdOrderStep2 *s, CRuckigProfile *profile
         profile->t[5] = 0;
         profile->t[6] = s->tf - (profile->t[0] + profile->t[1]);
 
-        if (cruckig_profile_check_for_velocity_with_timing(profile, ControlSignsUDDU, ReachedLimitsACC0, s->tf, jMax, aMax, aMin)) {
+        if (scatti_profile_check_for_velocity_with_timing(profile, ControlSignsUDDU, ReachedLimitsACC0, s->tf, jMax, aMax, aMin)) {
             profile->pf = profile->p[7];
             return true;
         }
@@ -58,7 +58,7 @@ static bool time_acc0(CRuckigVelocityThirdOrderStep2 *s, CRuckigProfile *profile
         profile->t[5] = 0;
         profile->t[6] = s->ad / jMax;
 
-        if (cruckig_profile_check_for_velocity_with_timing(profile, ControlSignsUDDU, ReachedLimitsACC0, s->tf, jMax, aMax, aMin)) {
+        if (scatti_profile_check_for_velocity_with_timing(profile, ControlSignsUDDU, ReachedLimitsACC0, s->tf, jMax, aMax, aMin)) {
             profile->pf = profile->p[7];
             return true;
         }
@@ -79,7 +79,7 @@ static bool time_none(CRuckigVelocityThirdOrderStep2 *s, CRuckigProfile *profile
         profile->t[5] = 0;
         profile->t[6] = 0;
 
-        if (cruckig_profile_check_for_velocity_with_timing(profile, ControlSignsUDDU, ReachedLimitsNONE, s->tf, jMax, aMax, aMin)) {
+        if (scatti_profile_check_for_velocity_with_timing(profile, ControlSignsUDDU, ReachedLimitsNONE, s->tf, jMax, aMax, aMin)) {
             profile->pf = profile->p[7];
             return true;
         }
@@ -99,7 +99,7 @@ static bool time_none(CRuckigVelocityThirdOrderStep2 *s, CRuckigProfile *profile
 
         const double jf = s->ad * s->ad / h1;
 
-        if (fabs(jf) < fabs(jMax) + 1e-12 && cruckig_profile_check_for_velocity_with_timing(profile, ControlSignsUDDU, ReachedLimitsNONE, s->tf, jf, aMax, aMin)) {
+        if (fabs(jf) < fabs(jMax) + 1e-12 && scatti_profile_check_for_velocity_with_timing(profile, ControlSignsUDDU, ReachedLimitsNONE, s->tf, jf, aMax, aMin)) {
             profile->pf = profile->p[7];
             return true;
         }
@@ -117,7 +117,7 @@ static bool check_all(CRuckigVelocityThirdOrderStep2 *s, CRuckigProfile *profile
 
 /* ---- Public interface ---- */
 
-void cruckig_vel3_step2_init(CRuckigVelocityThirdOrderStep2 *s,
+void scatti_vel3_step2_init(CRuckigVelocityThirdOrderStep2 *s,
                      double tf, double v0, double a0, double vf, double af,
                      double aMax, double aMin, double jMax)
 {
@@ -131,7 +131,7 @@ void cruckig_vel3_step2_init(CRuckigVelocityThirdOrderStep2 *s,
     s->ad = af - a0;
 }
 
-bool cruckig_vel3_step2_get_profile(CRuckigVelocityThirdOrderStep2 *s, CRuckigProfile *profile)
+bool scatti_vel3_step2_get_profile(CRuckigVelocityThirdOrderStep2 *s, CRuckigProfile *profile)
 {
     /* Test all cases to get ones that match */
     /* However we should guess which one is correct and try them first... */

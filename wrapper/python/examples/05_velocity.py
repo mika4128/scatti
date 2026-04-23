@@ -1,6 +1,6 @@
 """Velocity control example."""
 
-from cruckig import (
+from scatti import (
     ControlInterface,
     InputParameter,
     OutputParameter,

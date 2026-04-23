@@ -3,15 +3,15 @@
 #include <float.h>
 #include <string.h>
 
-#include <cruckig/cruckig_config.h>
-#include <cruckig/roots.h>
+#include <scatti/scatti_config.h>
+#include <scatti/roots.h>
 
 /* ISO C99 不提供 M_PI；strict -std=c99 下需自备常量 */
 #ifndef M_PI
 #define M_PI 3.14159265358979323846264338327950288
 #endif
 
-void cruckig_root_set_sort(CRuckigRootSet *s) {
+void scatti_root_set_sort(CRuckigRootSet *s) {
     /* Insertion sort for small arrays (max 4 elements) */
     for (size_t i = 1; i < s->size; ++i) {
         double key = s->data[i];
@@ -24,14 +24,14 @@ void cruckig_root_set_sort(CRuckigRootSet *s) {
     }
 }
 
-CRUCKIG_HOT
-CRuckigRootSet cruckig_roots_solve_cubic(double a, double b, double c, double d) {
+SCATTI_HOT
+CRuckigRootSet scatti_roots_solve_cubic(double a, double b, double c, double d) {
     CRuckigRootSet roots;
-    cruckig_root_set_init(&roots);
+    scatti_root_set_init(&roots);
 
     if (fabs(d) < DBL_EPSILON) {
         /* First solution is x = 0 */
-        cruckig_root_set_insert(&roots, 0.0);
+        scatti_root_set_insert(&roots, 0.0);
 
         /* Converting to a quadratic equation */
         d = c;
@@ -44,7 +44,7 @@ CRuckigRootSet cruckig_roots_solve_cubic(double a, double b, double c, double d)
         if (fabs(b) < DBL_EPSILON) {
             /* Linear equation */
             if (fabs(c) > DBL_EPSILON) {
-                cruckig_root_set_insert(&roots, -d / c);
+                scatti_root_set_insert(&roots, -d / c);
             }
         } else {
             /* Quadratic equation */
@@ -52,8 +52,8 @@ CRuckigRootSet cruckig_roots_solve_cubic(double a, double b, double c, double d)
             if (discriminant >= 0) {
                 const double inv2b = 1.0 / (2 * b);
                 const double y = sqrt(discriminant);
-                cruckig_root_set_insert(&roots, (-c + y) * inv2b);
-                cruckig_root_set_insert(&roots, (-c - y) * inv2b);
+                scatti_root_set_insert(&roots, (-c + y) * inv2b);
+                scatti_root_set_insert(&roots, (-c - y) * inv2b);
             }
         }
     } else {
@@ -75,8 +75,8 @@ CRuckigRootSet cruckig_roots_solve_cubic(double a, double b, double c, double d)
             const double uuu = -halfq + y;
             const double vvv = -halfq - y;
             const double www = fabs(uuu) > fabs(vvv) ? uuu : vvv;
-            const double w = cbrt(www);
-            cruckig_root_set_insert(&roots, w - p / (3 * w) - bover3a);
+            const double w = SCATTI_CBRT(www);
+            scatti_root_set_insert(&roots, w - p / (3 * w) - bover3a);
         } else if (yy < -DBL_EPSILON) {
             /* Sqrt is negative: three real solutions */
             const double x = -halfq;
@@ -95,27 +95,27 @@ CRuckigRootSet cruckig_roots_solve_cubic(double a, double b, double c, double d)
             }
             /* Calculate cube root */
             theta /= 3;
-            r = 2 * cbrt(r);
+            r = 2 * SCATTI_CBRT(r);
             /* Convert to complex coordinate */
             const double ux = cos(theta) * r;
             const double uyi = sin(theta) * r;
 
-            cruckig_root_set_insert(&roots, ux - bover3a);
-            cruckig_root_set_insert(&roots, ux * cos120 - uyi * sin120 - bover3a);
-            cruckig_root_set_insert(&roots, ux * cos120 + uyi * sin120 - bover3a);
+            scatti_root_set_insert(&roots, ux - bover3a);
+            scatti_root_set_insert(&roots, ux * cos120 - uyi * sin120 - bover3a);
+            scatti_root_set_insert(&roots, ux * cos120 + uyi * sin120 - bover3a);
         } else {
             /* Sqrt is zero: two real solutions */
             const double www = -halfq;
-            const double w = 2 * cbrt(www);
+            const double w = 2 * SCATTI_CBRT(www);
 
-            cruckig_root_set_insert(&roots, w - bover3a);
-            cruckig_root_set_insert(&roots, w * cos120 - bover3a);
+            scatti_root_set_insert(&roots, w - bover3a);
+            scatti_root_set_insert(&roots, w * cos120 - bover3a);
         }
     }
     return roots;
 }
 
-int cruckig_roots_solve_resolvent(double x[3], double a, double b, double c) {
+int scatti_roots_solve_resolvent(double x[3], double a, double b, double c) {
     const double cos120 = -0.50;
     const double sin120 = 0.866025403784438646764;
 
@@ -141,7 +141,7 @@ int cruckig_roots_solve_resolvent(double x[3], double a, double b, double c) {
         x[2] = ux * cos120 + uyi * sin120 - a;
         return 3;
     } else {
-        double A = -cbrt(fabs(r) + sqrt(r2 - q3));
+        double A = -SCATTI_CBRT(fabs(r) + sqrt(r2 - q3));
         if (r < 0.0) {
             A = -A;
         }
@@ -159,29 +159,29 @@ int cruckig_roots_solve_resolvent(double x[3], double a, double b, double c) {
     }
 }
 
-CRUCKIG_HOT
-CRuckigRootSet cruckig_roots_solve_quart_monic(double a, double b, double c, double d) {
+SCATTI_HOT
+CRuckigRootSet scatti_roots_solve_quart_monic(double a, double b, double c, double d) {
     CRuckigRootSet roots;
-    cruckig_root_set_init(&roots);
+    scatti_root_set_init(&roots);
 
     if (fabs(d) < DBL_EPSILON) {
         if (fabs(c) < DBL_EPSILON) {
-            cruckig_root_set_insert(&roots, 0.0);
+            scatti_root_set_insert(&roots, 0.0);
 
             const double D = a * a - 4 * b;
             if (fabs(D) < DBL_EPSILON) {
-                cruckig_root_set_insert(&roots, -a / 2);
+                scatti_root_set_insert(&roots, -a / 2);
             } else if (D > 0.0) {
                 const double sqrtD = sqrt(D);
-                cruckig_root_set_insert(&roots, (-a - sqrtD) / 2);
-                cruckig_root_set_insert(&roots, (-a + sqrtD) / 2);
+                scatti_root_set_insert(&roots, (-a - sqrtD) / 2);
+                scatti_root_set_insert(&roots, (-a + sqrtD) / 2);
             }
             return roots;
         }
 
         if (fabs(a) < DBL_EPSILON && fabs(b) < DBL_EPSILON) {
-            cruckig_root_set_insert(&roots, 0.0);
-            cruckig_root_set_insert(&roots, -cbrt(c));
+            scatti_root_set_insert(&roots, 0.0);
+            scatti_root_set_insert(&roots, -SCATTI_CBRT(c));
             return roots;
         }
     }
@@ -191,7 +191,7 @@ CRuckigRootSet cruckig_roots_solve_quart_monic(double a, double b, double c, dou
     const double c3 = -a * a * d - c * c + 4 * b * d;
 
     double x3[3];
-    const int number_zeroes = cruckig_roots_solve_resolvent(x3, a3, b3, c3);
+    const int number_zeroes = scatti_roots_solve_resolvent(x3, a3, b3, c3);
 
     double y = x3[0];
     /* Choosing Y with maximal absolute value */
@@ -231,27 +231,27 @@ CRuckigRootSet cruckig_roots_solve_quart_monic(double a, double b, double c, dou
 
         D = p1 * p1 - 4 * q1;
         if (fabs(D) < eps) {
-            cruckig_root_set_insert(&roots, -p1 / 2);
+            scatti_root_set_insert(&roots, -p1 / 2);
         } else if (D > 0.0) {
             const double sqrtD = sqrt(D);
-            cruckig_root_set_insert(&roots, (-p1 - sqrtD) / 2);
-            cruckig_root_set_insert(&roots, (-p1 + sqrtD) / 2);
+            scatti_root_set_insert(&roots, (-p1 - sqrtD) / 2);
+            scatti_root_set_insert(&roots, (-p1 + sqrtD) / 2);
         }
 
         D = p2 * p2 - 4 * q2;
         if (fabs(D) < eps) {
-            cruckig_root_set_insert(&roots, -p2 / 2);
+            scatti_root_set_insert(&roots, -p2 / 2);
         } else if (D > 0.0) {
             const double sqrtD = sqrt(D);
-            cruckig_root_set_insert(&roots, (-p2 - sqrtD) / 2);
-            cruckig_root_set_insert(&roots, (-p2 + sqrtD) / 2);
+            scatti_root_set_insert(&roots, (-p2 - sqrtD) / 2);
+            scatti_root_set_insert(&roots, (-p2 + sqrtD) / 2);
         }
     }
 
     return roots;
 }
 
-double cruckig_roots_poly_eval(const double *p, size_t n, double x) {
+double scatti_roots_poly_eval(const double *p, size_t n, double x) {
     if (n == 0) {
         return 0.0;
     }
@@ -275,18 +275,18 @@ double cruckig_roots_poly_eval(const double *p, size_t n, double x) {
     return retVal;
 }
 
-void cruckig_roots_poly_derivative(const double *coeffs, size_t n, double *deriv) {
+void scatti_roots_poly_derivative(const double *coeffs, size_t n, double *deriv) {
     for (size_t i = 0; i < n - 1; ++i) {
         deriv[i] = (double)(n - 1 - i) * coeffs[i];
     }
 }
 
-double cruckig_roots_shrink_interval(const double *p, size_t n, double l, double h) {
+double scatti_roots_shrink_interval(const double *p, size_t n, double l, double h) {
     const size_t maxIts = 128;
     const double tolerance = 1e-14;
 
-    const double fl = cruckig_roots_poly_eval(p, n, l);
-    const double fh = cruckig_roots_poly_eval(p, n, h);
+    const double fl = scatti_roots_poly_eval(p, n, l);
+    const double fh = scatti_roots_poly_eval(p, n, h);
     if (fl == 0.0) {
         return l;
     }
@@ -306,11 +306,11 @@ double cruckig_roots_shrink_interval(const double *p, size_t n, double l, double
 
     /* Compute derivative coefficients (n-1 elements) */
     double deriv[16]; /* max polynomial degree supported */
-    cruckig_roots_poly_derivative(p, n, deriv);
+    scatti_roots_poly_derivative(p, n, deriv);
     size_t dn = n - 1;
 
-    double f = cruckig_roots_poly_eval(p, n, rts);
-    double df = cruckig_roots_poly_eval(deriv, dn, rts);
+    double f = scatti_roots_poly_eval(p, n, rts);
+    double df = scatti_roots_poly_eval(deriv, dn, rts);
     double temp;
 
     for (size_t j = 0; j < maxIts; j++) {
@@ -335,8 +335,8 @@ double cruckig_roots_shrink_interval(const double *p, size_t n, double l, double
             break;
         }
 
-        f = cruckig_roots_poly_eval(p, n, rts);
-        df = cruckig_roots_poly_eval(deriv, dn, rts);
+        f = scatti_roots_poly_eval(p, n, rts);
+        df = scatti_roots_poly_eval(deriv, dn, rts);
         if (f < 0.0) {
             l = rts;
         } else {

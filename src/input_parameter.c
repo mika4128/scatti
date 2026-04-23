@@ -1,4 +1,5 @@
-#include <cruckig/input_parameter.h>
+#include <scatti/scatti_config.h>
+#include <scatti/input_parameter.h>
 
 #include <math.h>
 #include <stdlib.h>
@@ -10,8 +11,8 @@ static double v_at_a_zero(double v0, double a0, double j) {
     return v0 + (a0 * a0) / (2.0 * j);
 }
 
-CRuckigInputParameter* cruckig_input_create(size_t dofs) {
-    CRuckigInputParameter *inp = (CRuckigInputParameter*)calloc(1, sizeof(CRuckigInputParameter));
+CRuckigInputParameter* scatti_input_create(size_t dofs) {
+    CRuckigInputParameter *inp = (CRuckigInputParameter*)SCATTI_CALLOC(1, sizeof(CRuckigInputParameter));
     if (!inp) return NULL;
 
     inp->degrees_of_freedom = dofs;
@@ -19,21 +20,21 @@ CRuckigInputParameter* cruckig_input_create(size_t dofs) {
     inp->synchronization = CRuckigSyncTime;
     inp->duration_discretization = CRuckigContinuous;
 
-    inp->current_position    = (double*)calloc(dofs, sizeof(double));
-    inp->current_velocity    = (double*)calloc(dofs, sizeof(double));
-    inp->current_acceleration = (double*)calloc(dofs, sizeof(double));
-    inp->target_position     = (double*)calloc(dofs, sizeof(double));
-    inp->target_velocity     = (double*)calloc(dofs, sizeof(double));
-    inp->target_acceleration = (double*)calloc(dofs, sizeof(double));
-    inp->max_velocity        = (double*)calloc(dofs, sizeof(double));
-    inp->max_acceleration    = (double*)malloc(dofs * sizeof(double));
-    inp->max_jerk            = (double*)malloc(dofs * sizeof(double));
-    inp->enabled             = (bool*)malloc(dofs * sizeof(bool));
+    inp->current_position    = (double*)SCATTI_CALLOC(dofs, sizeof(double));
+    inp->current_velocity    = (double*)SCATTI_CALLOC(dofs, sizeof(double));
+    inp->current_acceleration = (double*)SCATTI_CALLOC(dofs, sizeof(double));
+    inp->target_position     = (double*)SCATTI_CALLOC(dofs, sizeof(double));
+    inp->target_velocity     = (double*)SCATTI_CALLOC(dofs, sizeof(double));
+    inp->target_acceleration = (double*)SCATTI_CALLOC(dofs, sizeof(double));
+    inp->max_velocity        = (double*)SCATTI_CALLOC(dofs, sizeof(double));
+    inp->max_acceleration    = (double*)SCATTI_MALLOC(dofs * sizeof(double));
+    inp->max_jerk            = (double*)SCATTI_MALLOC(dofs * sizeof(double));
+    inp->enabled             = (bool*)SCATTI_MALLOC(dofs * sizeof(bool));
 
     if (!inp->current_position || !inp->current_velocity || !inp->current_acceleration ||
         !inp->target_position || !inp->target_velocity || !inp->target_acceleration ||
         !inp->max_velocity || !inp->max_acceleration || !inp->max_jerk || !inp->enabled) {
-        cruckig_input_destroy(inp);
+        scatti_input_destroy(inp);
         return NULL;
     }
 
@@ -69,45 +70,45 @@ CRuckigInputParameter* cruckig_input_create(size_t dofs) {
     return inp;
 }
 
-void cruckig_input_destroy(CRuckigInputParameter *inp) {
+void scatti_input_destroy(CRuckigInputParameter *inp) {
     if (!inp) return;
-    free(inp->current_position);
-    free(inp->current_velocity);
-    free(inp->current_acceleration);
-    free(inp->target_position);
-    free(inp->target_velocity);
-    free(inp->target_acceleration);
-    free(inp->max_velocity);
-    free(inp->max_acceleration);
-    free(inp->max_jerk);
-    free(inp->enabled);
-    free(inp->min_velocity);
-    free(inp->min_acceleration);
-    free(inp->per_dof_control_interface);
-    free(inp->per_dof_synchronization);
+    SCATTI_FREE(inp->current_position);
+    SCATTI_FREE(inp->current_velocity);
+    SCATTI_FREE(inp->current_acceleration);
+    SCATTI_FREE(inp->target_position);
+    SCATTI_FREE(inp->target_velocity);
+    SCATTI_FREE(inp->target_acceleration);
+    SCATTI_FREE(inp->max_velocity);
+    SCATTI_FREE(inp->max_acceleration);
+    SCATTI_FREE(inp->max_jerk);
+    SCATTI_FREE(inp->enabled);
+    SCATTI_FREE(inp->min_velocity);
+    SCATTI_FREE(inp->min_acceleration);
+    SCATTI_FREE(inp->per_dof_control_interface);
+    SCATTI_FREE(inp->per_dof_synchronization);
     /* Pro fields */
-    free(inp->intermediate_positions);
-    free(inp->per_section_max_velocity);
-    free(inp->per_section_max_acceleration);
-    free(inp->per_section_max_jerk);
-    free(inp->per_section_min_velocity);
-    free(inp->per_section_min_acceleration);
-    free(inp->per_section_max_position);
-    free(inp->per_section_min_position);
-    free(inp->max_position);
-    free(inp->min_position);
-    free(inp->per_section_minimum_duration);
-    free(inp);
+    SCATTI_FREE(inp->intermediate_positions);
+    SCATTI_FREE(inp->per_section_max_velocity);
+    SCATTI_FREE(inp->per_section_max_acceleration);
+    SCATTI_FREE(inp->per_section_max_jerk);
+    SCATTI_FREE(inp->per_section_min_velocity);
+    SCATTI_FREE(inp->per_section_min_acceleration);
+    SCATTI_FREE(inp->per_section_max_position);
+    SCATTI_FREE(inp->per_section_min_position);
+    SCATTI_FREE(inp->max_position);
+    SCATTI_FREE(inp->min_position);
+    SCATTI_FREE(inp->per_section_minimum_duration);
+    SCATTI_FREE(inp);
 }
 
-void cruckig_input_set_intermediate_positions(CRuckigInputParameter *inp,
+void scatti_input_set_intermediate_positions(CRuckigInputParameter *inp,
                                                const double *positions,
                                                size_t num_waypoints)
 {
     if (!inp) return;
     const size_t dofs = inp->degrees_of_freedom;
 
-    free(inp->intermediate_positions);
+    SCATTI_FREE(inp->intermediate_positions);
     if (num_waypoints == 0 || !positions) {
         inp->intermediate_positions = NULL;
         inp->num_intermediate_waypoints = 0;
@@ -115,12 +116,12 @@ void cruckig_input_set_intermediate_positions(CRuckigInputParameter *inp,
     }
 
     size_t total = num_waypoints * dofs;
-    inp->intermediate_positions = (double*)malloc(total * sizeof(double));
+    inp->intermediate_positions = (double*)SCATTI_MALLOC(total * sizeof(double));
     memcpy(inp->intermediate_positions, positions, total * sizeof(double));
     inp->num_intermediate_waypoints = num_waypoints;
 }
 
-bool cruckig_input_validate(const CRuckigInputParameter *inp,
+bool scatti_input_validate(const CRuckigInputParameter *inp,
                             bool check_current_within_limits,
                             bool check_target_within_limits)
 {
@@ -215,7 +216,7 @@ bool cruckig_input_validate(const CRuckigInputParameter *inp,
     return true;
 }
 
-bool cruckig_input_is_equal(const CRuckigInputParameter *a, const CRuckigInputParameter *b) {
+bool scatti_input_is_equal(const CRuckigInputParameter *a, const CRuckigInputParameter *b) {
     if (!a || !b) return (a == b);
     if (a->degrees_of_freedom != b->degrees_of_freedom) return false;
 
@@ -306,16 +307,16 @@ static void copy_opt_array(double **dst, const double *src, size_t count) {
     if (src) {
         size_t sz = count * sizeof(double);
         if (!*dst) {
-            *dst = (double*)malloc(sz);
+            *dst = (double*)SCATTI_MALLOC(sz);
         }
         memcpy(*dst, src, sz);
     } else {
-        free(*dst);
+        SCATTI_FREE(*dst);
         *dst = NULL;
     }
 }
 
-void cruckig_input_copy(CRuckigInputParameter *dst, const CRuckigInputParameter *src) {
+void scatti_input_copy(CRuckigInputParameter *dst, const CRuckigInputParameter *src) {
     if (!dst || !src) return;
     if (dst == src) return;
 
@@ -345,24 +346,24 @@ void cruckig_input_copy(CRuckigInputParameter *dst, const CRuckigInputParameter 
     /* Handle optional per_dof_control_interface */
     if (src->per_dof_control_interface) {
         if (!dst->per_dof_control_interface) {
-            dst->per_dof_control_interface = (CRuckigControlInterface*)malloc(dofs * sizeof(CRuckigControlInterface));
+            dst->per_dof_control_interface = (CRuckigControlInterface*)SCATTI_MALLOC(dofs * sizeof(CRuckigControlInterface));
         }
         memcpy(dst->per_dof_control_interface, src->per_dof_control_interface,
                dofs * sizeof(CRuckigControlInterface));
     } else {
-        free(dst->per_dof_control_interface);
+        SCATTI_FREE(dst->per_dof_control_interface);
         dst->per_dof_control_interface = NULL;
     }
 
     /* Handle optional per_dof_synchronization */
     if (src->per_dof_synchronization) {
         if (!dst->per_dof_synchronization) {
-            dst->per_dof_synchronization = (CRuckigSynchronization*)malloc(dofs * sizeof(CRuckigSynchronization));
+            dst->per_dof_synchronization = (CRuckigSynchronization*)SCATTI_MALLOC(dofs * sizeof(CRuckigSynchronization));
         }
         memcpy(dst->per_dof_synchronization, src->per_dof_synchronization,
                dofs * sizeof(CRuckigSynchronization));
     } else {
-        free(dst->per_dof_synchronization);
+        SCATTI_FREE(dst->per_dof_synchronization);
         dst->per_dof_synchronization = NULL;
     }
 
@@ -375,7 +376,7 @@ void cruckig_input_copy(CRuckigInputParameter *dst, const CRuckigInputParameter 
         copy_opt_array(&dst->intermediate_positions, src->intermediate_positions, wp_sz);
         dst->num_intermediate_waypoints = src->num_intermediate_waypoints;
     } else {
-        free(dst->intermediate_positions);
+        SCATTI_FREE(dst->intermediate_positions);
         dst->intermediate_positions = NULL;
         dst->num_intermediate_waypoints = 0;
     }
@@ -398,7 +399,7 @@ void cruckig_input_copy(CRuckigInputParameter *dst, const CRuckigInputParameter 
     if (src->per_section_minimum_duration) {
         copy_opt_array(&dst->per_section_minimum_duration, src->per_section_minimum_duration, nsec);
     } else {
-        free(dst->per_section_minimum_duration);
+        SCATTI_FREE(dst->per_section_minimum_duration);
         dst->per_section_minimum_duration = NULL;
     }
 

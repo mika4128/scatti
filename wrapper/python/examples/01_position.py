@@ -2,7 +2,7 @@
 
 from copy import copy
 
-from cruckig import InputParameter, OutputParameter, Result, Ruckig
+from scatti import InputParameter, OutputParameter, Result, Ruckig
 
 
 if __name__ == "__main__":

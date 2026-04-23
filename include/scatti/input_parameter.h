@@ -1,9 +1,9 @@
-#ifndef CRUCKIG_INPUT_PARAMETER_H
-#define CRUCKIG_INPUT_PARAMETER_H
+#ifndef SCATTI_INPUT_PARAMETER_H
+#define SCATTI_INPUT_PARAMETER_H
 
 #include <stdbool.h>
 #include <stddef.h>
-#include <cruckig/result.h>
+#include <scatti/result.h>
 
 typedef struct {
     size_t degrees_of_freedom;
@@ -72,17 +72,17 @@ typedef struct {
     double interrupt_calculation_duration;
 } CRuckigInputParameter;
 
-CRuckigInputParameter* cruckig_input_create(size_t dofs);
-void cruckig_input_destroy(CRuckigInputParameter *inp);
-bool cruckig_input_validate(const CRuckigInputParameter *inp,
+CRuckigInputParameter* scatti_input_create(size_t dofs);
+void scatti_input_destroy(CRuckigInputParameter *inp);
+bool scatti_input_validate(const CRuckigInputParameter *inp,
                             bool check_current_within_limits,
                             bool check_target_within_limits);
-bool cruckig_input_is_equal(const CRuckigInputParameter *a, const CRuckigInputParameter *b);
-void cruckig_input_copy(CRuckigInputParameter *dst, const CRuckigInputParameter *src);
+bool scatti_input_is_equal(const CRuckigInputParameter *a, const CRuckigInputParameter *b);
+void scatti_input_copy(CRuckigInputParameter *dst, const CRuckigInputParameter *src);
 
 /* Set intermediate waypoints. Copies the data. positions is num_waypoints * dofs doubles. */
-void cruckig_input_set_intermediate_positions(CRuckigInputParameter *inp,
+void scatti_input_set_intermediate_positions(CRuckigInputParameter *inp,
                                                const double *positions,
                                                size_t num_waypoints);
 
-#endif /* CRUCKIG_INPUT_PARAMETER_H */
+#endif /* SCATTI_INPUT_PARAMETER_H */

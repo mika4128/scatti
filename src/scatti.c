@@ -1,30 +1,30 @@
 #define _POSIX_C_SOURCE 199309L
 
-#include <cruckig/cruckig_config.h>
-#include <cruckig/cruckig.h>
+#include <scatti/scatti_config.h>
+#include <scatti/scatti.h>
 
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
-static CRuckig* cruckig_create_internal(size_t dofs, double delta_time, size_t max_waypoints) {
-    CRuckig *r = (CRuckig*)calloc(1, sizeof(CRuckig));
+static CRuckig* scatti_create_internal(size_t dofs, double delta_time, size_t max_waypoints) {
+    CRuckig *r = (CRuckig*)SCATTI_CALLOC(1, sizeof(CRuckig));
     if (!r) return NULL;
 
     r->degrees_of_freedom = dofs;
     r->delta_time = delta_time;
     r->max_number_of_waypoints = max_waypoints;
 
-    r->calculator = cruckig_calculator_create(dofs);
+    r->calculator = scatti_calculator_create(dofs);
     if (!r->calculator) {
-        free(r);
+        SCATTI_FREE(r);
         return NULL;
     }
 
-    r->current_input = cruckig_input_create(dofs);
+    r->current_input = scatti_input_create(dofs);
     if (!r->current_input) {
-        cruckig_calculator_destroy(r->calculator);
-        free(r);
+        scatti_calculator_destroy(r->calculator);
+        SCATTI_FREE(r);
         return NULL;
     }
 
@@ -33,22 +33,22 @@ static CRuckig* cruckig_create_internal(size_t dofs, double delta_time, size_t m
     return r;
 }
 
-CRuckig* cruckig_create(size_t dofs, double delta_time) {
-    return cruckig_create_internal(dofs, delta_time, 0);
+CRuckig* scatti_create(size_t dofs, double delta_time) {
+    return scatti_create_internal(dofs, delta_time, 0);
 }
 
-CRuckig* cruckig_create_waypoints(size_t dofs, double delta_time, size_t max_waypoints) {
-    return cruckig_create_internal(dofs, delta_time, max_waypoints);
+CRuckig* scatti_create_waypoints(size_t dofs, double delta_time, size_t max_waypoints) {
+    return scatti_create_internal(dofs, delta_time, max_waypoints);
 }
 
-void cruckig_destroy(CRuckig *r) {
+void scatti_destroy(CRuckig *r) {
     if (!r) return;
-    cruckig_calculator_destroy(r->calculator);
-    cruckig_input_destroy(r->current_input);
-    free(r);
+    scatti_calculator_destroy(r->calculator);
+    scatti_input_destroy(r->current_input);
+    SCATTI_FREE(r);
 }
 
-void cruckig_reset(CRuckig *r) {
+void scatti_reset(CRuckig *r) {
     if (!r) return;
     r->current_input_initialized = false;
 }
@@ -58,13 +58,13 @@ static inline bool use_waypoints(const CRuckigInputParameter *input) {
            input->control_interface == CRuckigPosition;
 }
 
-bool cruckig_validate_input(const CRuckig *r, const CRuckigInputParameter *input,
+bool scatti_validate_input(const CRuckig *r, const CRuckigInputParameter *input,
                             bool check_current_within_limits,
                             bool check_target_within_limits)
 {
     if (!r || !input) return false;
 
-    if (!cruckig_input_validate(input, check_current_within_limits, check_target_within_limits)) {
+    if (!scatti_input_validate(input, check_current_within_limits, check_target_within_limits)) {
         return false;
     }
 
@@ -87,27 +87,27 @@ static CRuckigResult dispatch_calculate(CRuckig *r, const CRuckigInputParameter 
     if (use_waypoints(input)) {
         /* Ensure trajectory has enough capacity */
         size_t nsec = input->num_intermediate_waypoints + 1;
-        if (!cruckig_trajectory_resize(trajectory, nsec)) {
+        if (!scatti_trajectory_resize(trajectory, nsec)) {
             return CRuckigError;
         }
-        return cruckig_calculator_calculate_waypoints(r->calculator, input, trajectory,
+        return scatti_calculator_calculate_waypoints(r->calculator, input, trajectory,
                                                        r->delta_time, was_interrupted);
     } else {
         /* Single-segment: ensure single section */
         if (trajectory->num_sections != 1) {
-            cruckig_trajectory_resize(trajectory, 1);
+            scatti_trajectory_resize(trajectory, 1);
         }
-        return cruckig_calculator_calculate(r->calculator, input, trajectory,
+        return scatti_calculator_calculate(r->calculator, input, trajectory,
                                             r->delta_time, was_interrupted);
     }
 }
 
-CRuckigResult cruckig_calculate(CRuckig *r, const CRuckigInputParameter *input,
+CRuckigResult scatti_calculate(CRuckig *r, const CRuckigInputParameter *input,
                                 CRuckigTrajectory *trajectory)
 {
     if (!r || !input || !trajectory) return CRuckigError;
 
-    if (!cruckig_validate_input(r, input, false, true)) {
+    if (!scatti_validate_input(r, input, false, true)) {
         return CRuckigErrorInvalidInput;
     }
 
@@ -121,19 +121,19 @@ static double get_time_us(void) {
     return (double)ts.tv_sec * 1e6 + (double)ts.tv_nsec / 1e3;
 }
 
-CRUCKIG_HOT
-CRuckigResult cruckig_update(CRuckig *r, const CRuckigInputParameter *input,
+SCATTI_HOT
+CRuckigResult scatti_update(CRuckig *r, const CRuckigInputParameter *input,
                              CRuckigOutputParameter *output)
 {
-    if (CRUCKIG_UNLIKELY(!r || !input || !output)) return CRuckigError;
+    if (SCATTI_UNLIKELY(!r || !input || !output)) return CRuckigError;
 
     double start_us = get_time_us();
 
     output->new_calculation = false;
 
     CRuckigResult result = CRuckigWorking;
-    if (!r->current_input_initialized || !cruckig_input_is_equal(input, r->current_input)) {
-        if (!cruckig_validate_input(r, input, false, true)) {
+    if (!r->current_input_initialized || !scatti_input_is_equal(input, r->current_input)) {
+        if (!scatti_validate_input(r, input, false, true)) {
             return CRuckigErrorInvalidInput;
         }
 
@@ -143,7 +143,7 @@ CRuckigResult cruckig_update(CRuckig *r, const CRuckigInputParameter *input,
             return result;
         }
 
-        cruckig_input_copy(r->current_input, input);
+        scatti_input_copy(r->current_input, input);
         r->current_input_initialized = true;
         output->time = 0.0;
         output->new_section = 0;
@@ -152,7 +152,7 @@ CRuckigResult cruckig_update(CRuckig *r, const CRuckigInputParameter *input,
 
     size_t old_section = output->new_section;
     output->time += r->delta_time;
-    cruckig_trajectory_at_time(output->trajectory, output->time,
+    scatti_trajectory_at_time(output->trajectory, output->time,
                                output->new_position, output->new_velocity,
                                output->new_acceleration, output->new_jerk,
                                &output->new_section);
@@ -161,9 +161,9 @@ CRuckigResult cruckig_update(CRuckig *r, const CRuckigInputParameter *input,
     double stop_us = get_time_us();
     output->calculation_duration = stop_us - start_us;
 
-    cruckig_output_pass_to_input(output, r->current_input);
+    scatti_output_pass_to_input(output, r->current_input);
 
-    if (output->time > cruckig_trajectory_get_duration(output->trajectory)) {
+    if (output->time > scatti_trajectory_get_duration(output->trajectory)) {
         return CRuckigFinished;
     }
 

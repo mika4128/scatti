@@ -1,5 +1,5 @@
-#ifndef CRUCKIG_RESULT_H
-#define CRUCKIG_RESULT_H
+#ifndef SCATTI_RESULT_H
+#define SCATTI_RESULT_H
 
 typedef enum {
     CRuckigWorking = 0,
@@ -30,4 +30,4 @@ typedef enum {
     CRuckigDiscrete = 1
 } CRuckigDurationDiscretization;
 
-#endif /* CRUCKIG_RESULT_H */
+#endif /* SCATTI_RESULT_H */

@@ -1,15 +1,15 @@
-#include <cruckig/cruckig_config.h>
+#include <scatti/scatti_config.h>
 #include <math.h>
 #include <float.h>
 #include <stdbool.h>
 #include <stddef.h>
 
-#include <cruckig/position.h>
-#include <cruckig/block.h>
-#include <cruckig/profile.h>
-#include <cruckig/roots.h>
+#include <scatti/position.h>
+#include <scatti/block.h>
+#include <scatti/profile.h>
+#include <scatti/roots.h>
 
-void cruckig_pos3_step1_init(CRuckigPositionThirdOrderStep1 *s,
+void scatti_pos3_step1_init(CRuckigPositionThirdOrderStep1 *s,
                      double p0, double v0, double a0,
                      double pf, double vf, double af,
                      double vMax, double vMin, double aMax, double aMin, double jMax)
@@ -46,7 +46,7 @@ static inline void add_profile(CRuckigProfile *valid_profiles, size_t *counter, 
     const size_t prev = *counter;
     ++(*counter);
     if (*counter < max_profiles) {
-        cruckig_profile_set_boundary_from_profile(&valid_profiles[*counter], &valid_profiles[prev]);
+        scatti_profile_set_boundary_from_profile(&valid_profiles[*counter], &valid_profiles[prev]);
     }
 }
 
@@ -75,7 +75,7 @@ static void time_all_vel(CRuckigPositionThirdOrderStep1 *s,
     profile->t[5] = -(af_af / 2 - aMin * aMin - jMax * (vf - vMax)) / (aMin * jMax);
     profile->t[6] = profile->t[4] + af / jMax;
 
-    if (cruckig_profile_check(profile, ControlSignsUDDU, ReachedLimitsACC0_ACC1_VEL, false, jMax, vMax, vMin, aMax, aMin)) {
+    if (scatti_profile_check(profile, ControlSignsUDDU, ReachedLimitsACC0_ACC1_VEL, false, jMax, vMax, vMin, aMax, aMin)) {
         add_profile(valid_profiles, counter, 6);
         return;
     }
@@ -89,7 +89,7 @@ static void time_all_vel(CRuckigPositionThirdOrderStep1 *s,
         profile->t[2] = t_acc0;
         profile->t[3] = -(3 * af_p4 - 8 * aMin * (af_p3 - a0_p3) - 24 * aMin * jMax * (a0 * v0 - af * vf) + 6 * af_af * (aMin * aMin - 2 * jMax * vf) - 12 * jMax * (2 * aMin * jMax * pd + aMin * aMin * (vf + vMax) + jMax * (vMax * vMax - vf_vf) + aMin * t_acc0 * (a0_a0 - 2 * jMax * (v0 + vMax)))) / (24 * aMin * jMax_jMax * vMax);
 
-        if (cruckig_profile_check(profile, ControlSignsUDDU, ReachedLimitsACC1_VEL, false, jMax, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check(profile, ControlSignsUDDU, ReachedLimitsACC1_VEL, false, jMax, vMax, vMin, aMax, aMin)) {
             add_profile(valid_profiles, counter, 6);
             return;
         }
@@ -107,7 +107,7 @@ static void time_all_vel(CRuckigPositionThirdOrderStep1 *s,
         profile->t[5] = 0;
         profile->t[6] = t_acc1 + af / jMax;
 
-        if (cruckig_profile_check(profile, ControlSignsUDDU, ReachedLimitsACC0_VEL, false, jMax, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check(profile, ControlSignsUDDU, ReachedLimitsACC0_VEL, false, jMax, vMax, vMin, aMax, aMin)) {
             add_profile(valid_profiles, counter, 6);
             return;
         }
@@ -124,7 +124,7 @@ static void time_all_vel(CRuckigPositionThirdOrderStep1 *s,
         profile->t[2] = t_acc0;
         profile->t[3] = (af_p3 - a0_p3) / (3 * jMax_jMax * vMax) + (a0 * v0 - af * vf + (af_af * t_acc1 + a0_a0 * t_acc0) / 2) / (jMax * vMax) - (v0 / vMax + 1.0) * t_acc0 - (vf / vMax + 1.0) * t_acc1 + pd / vMax;
 
-        if (cruckig_profile_check(profile, ControlSignsUDDU, ReachedLimitsVEL, false, jMax, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check(profile, ControlSignsUDDU, ReachedLimitsVEL, false, jMax, vMax, vMin, aMax, aMin)) {
             add_profile(valid_profiles, counter, 6);
         }
     }
@@ -162,7 +162,7 @@ static void time_acc0_acc1(CRuckigPositionThirdOrderStep1 *s,
             profile->t[5] = h3 + h1 / aMin;
             profile->t[6] = profile->t[4] + af / jMax;
 
-            if (cruckig_profile_check(profile, ControlSignsUDDU, ReachedLimitsACC0_ACC1, true, jMax, vMax, vMin, aMax, aMin)) {
+            if (scatti_profile_check(profile, ControlSignsUDDU, ReachedLimitsACC0_ACC1, true, jMax, vMax, vMin, aMax, aMin)) {
                 add_profile(valid_profiles, counter, 6);
                 if (return_after_found) {
                     return;
@@ -181,7 +181,7 @@ static void time_acc0_acc1(CRuckigPositionThirdOrderStep1 *s,
             profile->t[5] = h3 - h1 / aMin;
             profile->t[6] = profile->t[4] + af / jMax;
 
-            if (cruckig_profile_check(profile, ControlSignsUDDU, ReachedLimitsACC0_ACC1, true, jMax, vMax, vMin, aMax, aMin)) {
+            if (scatti_profile_check(profile, ControlSignsUDDU, ReachedLimitsACC0_ACC1, true, jMax, vMax, vMin, aMax, aMin)) {
                 add_profile(valid_profiles, counter, 6);
             }
         }
@@ -242,13 +242,13 @@ static void time_all_none_acc0_acc1(CRuckigPositionThirdOrderStep1 *s,
     polynom_acc1[2] = 2 * (a0 - aMin) * h2_acc1 / (jMax_jMax * jMax);
     polynom_acc1[3] = h0_acc1 / (jMax_jMax * jMax_jMax);
 
-    CRuckigRootSet roots_none = cruckig_roots_solve_quart_monic(polynom_none[0], polynom_none[1], polynom_none[2], polynom_none[3]);
-    CRuckigRootSet roots_acc0 = cruckig_roots_solve_quart_monic(polynom_acc0[0], polynom_acc0[1], polynom_acc0[2], polynom_acc0[3]);
-    CRuckigRootSet roots_acc1 = cruckig_roots_solve_quart_monic(polynom_acc1[0], polynom_acc1[1], polynom_acc1[2], polynom_acc1[3]);
+    CRuckigRootSet roots_none = scatti_roots_solve_quart_monic(polynom_none[0], polynom_none[1], polynom_none[2], polynom_none[3]);
+    CRuckigRootSet roots_acc0 = scatti_roots_solve_quart_monic(polynom_acc0[0], polynom_acc0[1], polynom_acc0[2], polynom_acc0[3]);
+    CRuckigRootSet roots_acc1 = scatti_roots_solve_quart_monic(polynom_acc1[0], polynom_acc1[1], polynom_acc1[2], polynom_acc1[3]);
 
-    cruckig_root_set_sort(&roots_none);
-    cruckig_root_set_sort(&roots_acc0);
-    cruckig_root_set_sort(&roots_acc1);
+    scatti_root_set_sort(&roots_none);
+    scatti_root_set_sort(&roots_acc0);
+    scatti_root_set_sort(&roots_acc1);
 
     for (size_t i = 0; i < roots_none.size; ++i) {
         double t = roots_none.data[i];
@@ -275,7 +275,7 @@ static void time_all_none_acc0_acc1(CRuckigPositionThirdOrderStep1 *s,
         profile->t[5] = 0;
         profile->t[6] = -h0 + t / 2 + af / jMax;
 
-        if (cruckig_profile_check(profile, ControlSignsUDDU, ReachedLimitsNONE, false, jMax, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check(profile, ControlSignsUDDU, ReachedLimitsNONE, false, jMax, vMax, vMin, aMax, aMin)) {
             add_profile(valid_profiles, counter, 6);
             if (return_after_found) {
                 return;
@@ -307,7 +307,7 @@ static void time_all_none_acc0_acc1(CRuckigPositionThirdOrderStep1 *s,
         profile->t[5] = 0;
         profile->t[6] = (af - aMax) / jMax + t;
 
-        if (cruckig_profile_check(profile, ControlSignsUDDU, ReachedLimitsACC0, false, jMax, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check(profile, ControlSignsUDDU, ReachedLimitsACC0, false, jMax, vMax, vMin, aMax, aMin)) {
             add_profile(valid_profiles, counter, 6);
             if (return_after_found) {
                 return;
@@ -359,7 +359,7 @@ static void time_all_none_acc0_acc1(CRuckigPositionThirdOrderStep1 *s,
         profile->t[5] = h3_acc1 - (2 * a0 + jMax * t) * t / aMin;
         profile->t[6] = (af - aMin) / jMax;
 
-        if (cruckig_profile_check(profile, ControlSignsUDDU, ReachedLimitsACC1, true, jMax, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check(profile, ControlSignsUDDU, ReachedLimitsACC1, true, jMax, vMax, vMin, aMax, aMin)) {
             add_profile(valid_profiles, counter, 6);
             if (return_after_found) {
                 return;
@@ -388,7 +388,7 @@ static void time_acc1_vel_two_step(CRuckigPositionThirdOrderStep1 *s,
     profile->t[5] = -(af_af / 2 - aMin * aMin + jMax * (vMax - vf)) / (aMin * jMax);
     profile->t[6] = profile->t[4] + af / jMax;
 
-    if (cruckig_profile_check(profile, ControlSignsUDDU, ReachedLimitsACC1_VEL, false, jMax, vMax, vMin, aMax, aMin)) {
+    if (scatti_profile_check(profile, ControlSignsUDDU, ReachedLimitsACC1_VEL, false, jMax, vMax, vMin, aMax, aMin)) {
         add_profile(valid_profiles, counter, 6);
     }
 }
@@ -416,7 +416,7 @@ static void time_acc0_two_step(CRuckigPositionThirdOrderStep1 *s,
         profile->t[5] = 0;
         profile->t[6] = 0;
 
-        if (cruckig_profile_check(profile, ControlSignsUDDU, ReachedLimitsACC0, false, jMax, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check(profile, ControlSignsUDDU, ReachedLimitsACC0, false, jMax, vMax, vMin, aMax, aMin)) {
             add_profile(valid_profiles, counter, 6);
             return;
         }
@@ -433,7 +433,7 @@ static void time_acc0_two_step(CRuckigPositionThirdOrderStep1 *s,
         profile->t[5] = 0;
         profile->t[6] = 0;
 
-        if (cruckig_profile_check(profile, ControlSignsUDDU, ReachedLimitsACC0, false, jMax, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check(profile, ControlSignsUDDU, ReachedLimitsACC0, false, jMax, vMax, vMin, aMax, aMin)) {
             add_profile(valid_profiles, counter, 6);
             return;
         }
@@ -454,7 +454,7 @@ static void time_acc0_two_step(CRuckigPositionThirdOrderStep1 *s,
         profile->t[5] = 0;
         profile->t[6] = 0;
 
-        if (cruckig_profile_check(profile, ControlSignsUDDU, ReachedLimitsACC0, false, jMax, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check(profile, ControlSignsUDDU, ReachedLimitsACC0, false, jMax, vMax, vMin, aMax, aMin)) {
             add_profile(valid_profiles, counter, 6);
             return;
         }
@@ -473,7 +473,7 @@ static void time_acc0_two_step(CRuckigPositionThirdOrderStep1 *s,
         profile->t[5] = 0;
         profile->t[6] = (af - aMin) / jMax;
 
-        if (cruckig_profile_check(profile, ControlSignsUDDU, ReachedLimitsACC0, false, jMax, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check(profile, ControlSignsUDDU, ReachedLimitsACC0, false, jMax, vMax, vMin, aMax, aMin)) {
             add_profile(valid_profiles, counter, 6);
             return;
         }
@@ -504,7 +504,7 @@ static void time_vel_two_step(CRuckigPositionThirdOrderStep1 *s,
         profile->t[5] = 0;
         profile->t[6] = h1 + af / jMax;
 
-        if (cruckig_profile_check(profile, ControlSignsUDDU, ReachedLimitsVEL, false, jMax, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check(profile, ControlSignsUDDU, ReachedLimitsVEL, false, jMax, vMax, vMin, aMax, aMin)) {
             add_profile(valid_profiles, counter, 6);
             return;
         }
@@ -521,7 +521,7 @@ static void time_vel_two_step(CRuckigPositionThirdOrderStep1 *s,
         profile->t[5] = 0;
         profile->t[6] = h1 + af / jMax;
 
-        if (cruckig_profile_check(profile, ControlSignsUDDU, ReachedLimitsVEL, false, jMax, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check(profile, ControlSignsUDDU, ReachedLimitsVEL, false, jMax, vMax, vMin, aMax, aMin)) {
             add_profile(valid_profiles, counter, 6);
             return;
         }
@@ -548,7 +548,7 @@ static void time_none_two_step(CRuckigPositionThirdOrderStep1 *s,
         profile->t[5] = 0;
         profile->t[6] = 0;
 
-        if (cruckig_profile_check(profile, ControlSignsUDDU, ReachedLimitsNONE, false, jMax, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check(profile, ControlSignsUDDU, ReachedLimitsNONE, false, jMax, vMax, vMin, aMax, aMin)) {
             add_profile(valid_profiles, counter, 6);
             return;
         }
@@ -565,7 +565,7 @@ static void time_none_two_step(CRuckigPositionThirdOrderStep1 *s,
         profile->t[5] = 0;
         profile->t[6] = 0;
 
-        if (cruckig_profile_check(profile, ControlSignsUDDU, ReachedLimitsNONE, false, jMax, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check(profile, ControlSignsUDDU, ReachedLimitsNONE, false, jMax, vMax, vMin, aMax, aMin)) {
             add_profile(valid_profiles, counter, 6);
             return;
         }
@@ -596,24 +596,24 @@ static bool time_all_single_step(CRuckigPositionThirdOrderStep1 *s,
 
         /* Solution 1 */
         profile->t[3] = (-v0 + q) / a0;
-        if (profile->t[3] >= 0.0 && cruckig_profile_check(profile, ControlSignsUDDU, ReachedLimitsNONE, false, 0.0, vMax, vMin, aMax, aMin)) {
+        if (profile->t[3] >= 0.0 && scatti_profile_check(profile, ControlSignsUDDU, ReachedLimitsNONE, false, 0.0, vMax, vMin, aMax, aMin)) {
             return true;
         }
 
         /* Solution 2 */
         profile->t[3] = -(v0 + q) / a0;
-        if (profile->t[3] >= 0.0 && cruckig_profile_check(profile, ControlSignsUDDU, ReachedLimitsNONE, false, 0.0, vMax, vMin, aMax, aMin)) {
+        if (profile->t[3] >= 0.0 && scatti_profile_check(profile, ControlSignsUDDU, ReachedLimitsNONE, false, 0.0, vMax, vMin, aMax, aMin)) {
             return true;
         }
 
     } else if (fabs(v0) > DBL_EPSILON) {
         profile->t[3] = pd / v0;
-        if (cruckig_profile_check(profile, ControlSignsUDDU, ReachedLimitsNONE, false, 0.0, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check(profile, ControlSignsUDDU, ReachedLimitsNONE, false, 0.0, vMax, vMin, aMax, aMin)) {
             return true;
         }
 
     } else if (fabs(pd) < DBL_EPSILON) {
-        if (cruckig_profile_check(profile, ControlSignsUDDU, ReachedLimitsNONE, false, 0.0, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check(profile, ControlSignsUDDU, ReachedLimitsNONE, false, 0.0, vMax, vMin, aMax, aMin)) {
             return true;
         }
     }
@@ -621,14 +621,14 @@ static bool time_all_single_step(CRuckigPositionThirdOrderStep1 *s,
     return false;
 }
 
-CRUCKIG_HOT
-bool cruckig_pos3_step1_get_profile(CRuckigPositionThirdOrderStep1 *s,
+SCATTI_HOT
+bool scatti_pos3_step1_get_profile(CRuckigPositionThirdOrderStep1 *s,
                             const CRuckigProfile *input, CRuckigBlock *block)
 {
     /* Zero-limits special case */
     if (s->_jMax == 0.0 || s->_aMax == 0.0 || s->_aMin == 0.0) {
         CRuckigProfile *p = &block->p_min;
-        cruckig_profile_set_boundary_from_profile(p, input);
+        scatti_profile_set_boundary_from_profile(p, input);
 
         if (time_all_single_step(s, p, s->_vMax, s->_vMin, s->_aMax, s->_aMin)) {
             block->t_min = p->t_sum[6] + p->brake.duration + p->accel.duration;
@@ -643,7 +643,7 @@ bool cruckig_pos3_step1_get_profile(CRuckigPositionThirdOrderStep1 *s,
     }
 
     size_t valid_profile_counter = 0;
-    cruckig_profile_set_boundary_from_profile(&s->valid_profiles[0], input);
+    scatti_profile_set_boundary_from_profile(&s->valid_profiles[0], input);
 
     if (fabs(s->vf) < DBL_EPSILON && fabs(s->af) < DBL_EPSILON) {
         const double vMax = (s->pd >= 0) ? s->_vMax : s->_vMin;
@@ -699,5 +699,5 @@ bool cruckig_pos3_step1_get_profile(CRuckigPositionThirdOrderStep1 *s,
     }
 
 return_block:
-    return cruckig_block_calculate(block, s->valid_profiles, valid_profile_counter, 6);
+    return scatti_block_calculate(block, s->valid_profiles, valid_profile_counter, 6);
 }

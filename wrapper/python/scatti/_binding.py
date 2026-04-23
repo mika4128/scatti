@@ -1,4 +1,4 @@
-"""Low-level cffi binding for cruckig shared library."""
+"""Low-level cffi binding for scatti shared library."""
 
 import cffi
 import ctypes.util
@@ -108,84 +108,84 @@ typedef struct {
 } CRuckigOutputParameter;
 
 /* ---- main API ---- */
-CRuckig* cruckig_create(size_t dofs, double delta_time);
-CRuckig* cruckig_create_waypoints(size_t dofs, double delta_time, size_t max_waypoints);
-void     cruckig_destroy(CRuckig *r);
-void     cruckig_reset(CRuckig *r);
-bool     cruckig_validate_input(const CRuckig *r,
+CRuckig* scatti_create(size_t dofs, double delta_time);
+CRuckig* scatti_create_waypoints(size_t dofs, double delta_time, size_t max_waypoints);
+void     scatti_destroy(CRuckig *r);
+void     scatti_reset(CRuckig *r);
+bool     scatti_validate_input(const CRuckig *r,
                                 const CRuckigInputParameter *input,
                                 bool check_current_within_limits,
                                 bool check_target_within_limits);
-CRuckigResult cruckig_calculate(CRuckig *r,
+CRuckigResult scatti_calculate(CRuckig *r,
                                 const CRuckigInputParameter *input,
                                 CRuckigTrajectory *trajectory);
-CRuckigResult cruckig_update(CRuckig *r,
+CRuckigResult scatti_update(CRuckig *r,
                              const CRuckigInputParameter *input,
                              CRuckigOutputParameter *output);
 
 /* ---- input ---- */
-CRuckigInputParameter* cruckig_input_create(size_t dofs);
-void cruckig_input_destroy(CRuckigInputParameter *inp);
-bool cruckig_input_validate(const CRuckigInputParameter *inp,
+CRuckigInputParameter* scatti_input_create(size_t dofs);
+void scatti_input_destroy(CRuckigInputParameter *inp);
+bool scatti_input_validate(const CRuckigInputParameter *inp,
                             bool check_current_within_limits,
                             bool check_target_within_limits);
-void cruckig_input_copy(CRuckigInputParameter *dst,
+void scatti_input_copy(CRuckigInputParameter *dst,
                         const CRuckigInputParameter *src);
-void cruckig_input_set_intermediate_positions(CRuckigInputParameter *inp,
+void scatti_input_set_intermediate_positions(CRuckigInputParameter *inp,
                                                const double *positions,
                                                size_t num_waypoints);
 
 /* ---- output ---- */
-CRuckigOutputParameter* cruckig_output_create(size_t dofs);
-void cruckig_output_destroy(CRuckigOutputParameter *out);
-void cruckig_output_pass_to_input(const CRuckigOutputParameter *out,
+CRuckigOutputParameter* scatti_output_create(size_t dofs);
+void scatti_output_destroy(CRuckigOutputParameter *out);
+void scatti_output_pass_to_input(const CRuckigOutputParameter *out,
                                   CRuckigInputParameter *inp);
 
 /* ---- trajectory ---- */
-CRuckigTrajectory* cruckig_trajectory_create(size_t dofs);
-void cruckig_trajectory_destroy(CRuckigTrajectory *traj);
-bool cruckig_trajectory_resize(CRuckigTrajectory *traj, size_t num_sections);
-double cruckig_trajectory_get_duration(const CRuckigTrajectory *traj);
-size_t cruckig_trajectory_get_intermediate_durations(const CRuckigTrajectory *traj,
+CRuckigTrajectory* scatti_trajectory_create(size_t dofs);
+void scatti_trajectory_destroy(CRuckigTrajectory *traj);
+bool scatti_trajectory_resize(CRuckigTrajectory *traj, size_t num_sections);
+double scatti_trajectory_get_duration(const CRuckigTrajectory *traj);
+size_t scatti_trajectory_get_intermediate_durations(const CRuckigTrajectory *traj,
                                                       double *out_durations);
-void cruckig_trajectory_at_time(const CRuckigTrajectory *traj, double time,
+void scatti_trajectory_at_time(const CRuckigTrajectory *traj, double time,
                                 double *new_position, double *new_velocity,
                                 double *new_acceleration, double *new_jerk,
                                 size_t *new_section);
-void cruckig_trajectory_get_position_extrema(CRuckigTrajectory *traj);
-bool cruckig_trajectory_get_first_time_at_position(
+void scatti_trajectory_get_position_extrema(CRuckigTrajectory *traj);
+bool scatti_trajectory_get_first_time_at_position(
         const CRuckigTrajectory *traj, size_t dof,
         double position, double *time, double time_after);
-void cruckig_trajectory_get_independent_min_durations(
+void scatti_trajectory_get_independent_min_durations(
         const CRuckigTrajectory *traj, double *out_durations);
 """)
 
 
 def _find_library():
-    """Locate libcruckig.so using several strategies."""
+    """Locate libscatti.so using several strategies."""
     # 1. Explicit environment variable
-    path = os.environ.get("CRUCKIG_LIB")
+    path = os.environ.get("SCATTI_LIB")
     if path and os.path.isfile(path):
         return path
 
-    # 2. Relative to this file (../../build/libcruckig.so)
+    # 2. Relative to this file (../../build/libscatti.so)
     here = os.path.dirname(os.path.abspath(__file__))
     for relpath in [
-        os.path.join(here, "..", "..", "..", "build", "libcruckig.so"),
-        os.path.join(here, "..", "..", "..", "build", "libcruckig.dylib"),
+        os.path.join(here, "..", "..", "..", "build", "libscatti.so"),
+        os.path.join(here, "..", "..", "..", "build", "libscatti.dylib"),
     ]:
         candidate = os.path.normpath(relpath)
         if os.path.isfile(candidate):
             return candidate
 
     # 3. System library path
-    found = ctypes.util.find_library("cruckig")
+    found = ctypes.util.find_library("scatti")
     if found:
         return found
 
     raise OSError(
-        "Cannot find libcruckig shared library. "
-        "Set CRUCKIG_LIB=/path/to/libcruckig.so or install the library system-wide."
+        "Cannot find libscatti shared library. "
+        "Set SCATTI_LIB=/path/to/libscatti.so or install the library system-wide."
     )
 
 

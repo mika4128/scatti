@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <time.h>
-#include <cruckig/cruckig.h>
+#include <scatti/scatti.h>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846264338327950288
@@ -57,12 +57,12 @@ int main(int argc, char **argv) {
     if (argc > 2) n_traj = (size_t)atoi(argv[2]);
     if (argc > 3) n_iters = (size_t)atoi(argv[3]);
 
-    printf("=== cruckig Benchmark ===\n");
+    printf("=== scatti Benchmark ===\n");
     printf("DOFs: %zu, Trajectories per iteration: %zu, Iterations: %zu\n\n", dofs, n_traj, n_iters);
 
-    CRuckig *otg = cruckig_create(dofs, 0.005);
-    CRuckigInputParameter *inp = cruckig_input_create(dofs);
-    CRuckigTrajectory *traj = cruckig_trajectory_create(dofs);
+    CRuckig *otg = scatti_create(dofs, 0.005);
+    CRuckigInputParameter *inp = scatti_input_create(dofs);
+    CRuckigTrajectory *traj = scatti_trajectory_create(dofs);
 
     double *avg_arr = calloc(n_iters, sizeof(double));
     double *worst_arr = calloc(n_iters, sizeof(double));
@@ -91,10 +91,10 @@ int main(int argc, char **argv) {
             fill_limit_offset(inp->max_acceleration, dofs, inp->target_acceleration);
             fill_limit(inp->max_jerk, dofs);
 
-            if (!cruckig_input_validate(inp, false, true)) continue;
+            if (!scatti_input_validate(inp, false, true)) continue;
 
             double t0 = get_time_us();
-            cruckig_calculate(otg, inp, traj);
+            scatti_calculate(otg, inp, traj);
             double t1 = get_time_us();
 
             double elapsed = t1 - t0;
@@ -132,7 +132,7 @@ int main(int argc, char **argv) {
     worst_std = sqrt(worst_std / n_iters);
     global_std = sqrt(global_std / n_iters);
 
-    printf("--- cruckig (C) Results ---\n");
+    printf("--- scatti (C) Results ---\n");
     printf("Average Calculation Duration  %.3f +/- %.3f [us]\n", avg_mean, avg_std);
     printf("Worst Calculation Duration    %.3f +/- %.3f [us]\n", worst_mean, worst_std);
     printf("End-to-end Duration           %.3f +/- %.3f [us]\n", global_mean, global_std);
@@ -140,9 +140,9 @@ int main(int argc, char **argv) {
     free(avg_arr);
     free(worst_arr);
     free(global_arr);
-    cruckig_trajectory_destroy(traj);
-    cruckig_input_destroy(inp);
-    cruckig_destroy(otg);
+    scatti_trajectory_destroy(traj);
+    scatti_input_destroy(inp);
+    scatti_destroy(otg);
 
     return 0;
 }

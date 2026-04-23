@@ -1,9 +1,9 @@
-#ifndef CRUCKIG_TRAJECTORY_H
-#define CRUCKIG_TRAJECTORY_H
+#ifndef SCATTI_TRAJECTORY_H
+#define SCATTI_TRAJECTORY_H
 
 #include <stdbool.h>
 #include <stddef.h>
-#include <cruckig/profile.h>
+#include <scatti/profile.h>
 
 typedef struct {
     size_t degrees_of_freedom;
@@ -20,46 +20,46 @@ typedef struct {
 } CRuckigTrajectory;
 
 /* Create trajectory for single-section (backward compatible) */
-CRuckigTrajectory* cruckig_trajectory_create(size_t dofs);
-void cruckig_trajectory_destroy(CRuckigTrajectory *traj);
+CRuckigTrajectory* scatti_trajectory_create(size_t dofs);
+void scatti_trajectory_destroy(CRuckigTrajectory *traj);
 
 /* Resize trajectory for multi-section (num_sections = max_waypoints + 1) */
-bool cruckig_trajectory_resize(CRuckigTrajectory *traj, size_t num_sections);
+bool scatti_trajectory_resize(CRuckigTrajectory *traj, size_t num_sections);
 
 /* Query trajectory state at time */
-void cruckig_trajectory_at_time(const CRuckigTrajectory *traj, double time,
+void scatti_trajectory_at_time(const CRuckigTrajectory *traj, double time,
                                 double *new_position, double *new_velocity,
                                 double *new_acceleration, double *new_jerk,
                                 size_t *new_section);
 
 /* Simplified version without jerk/section */
-void cruckig_trajectory_at_time_simple(const CRuckigTrajectory *traj, double time,
+void scatti_trajectory_at_time_simple(const CRuckigTrajectory *traj, double time,
                                        double *new_position, double *new_velocity,
                                        double *new_acceleration);
 
-double cruckig_trajectory_get_duration(const CRuckigTrajectory *traj);
+double scatti_trajectory_get_duration(const CRuckigTrajectory *traj);
 
 /* Get intermediate durations (cumulative times array). Returns num_sections. */
-size_t cruckig_trajectory_get_intermediate_durations(const CRuckigTrajectory *traj,
+size_t scatti_trajectory_get_intermediate_durations(const CRuckigTrajectory *traj,
                                                      double *out_durations);
 
 /* Get position extrema for all DOFs */
-void cruckig_trajectory_get_position_extrema(CRuckigTrajectory *traj);
+void scatti_trajectory_get_position_extrema(CRuckigTrajectory *traj);
 
 /* Get first time at position for a DOF. Returns true if found. */
-bool cruckig_trajectory_get_first_time_at_position(const CRuckigTrajectory *traj,
+bool scatti_trajectory_get_first_time_at_position(const CRuckigTrajectory *traj,
                                                    size_t dof, double position,
                                                    double *time, double time_after);
 
 /* Get independent minimum durations (one per DOF). Caller provides array of dofs. */
-void cruckig_trajectory_get_independent_min_durations(const CRuckigTrajectory *traj,
+void scatti_trajectory_get_independent_min_durations(const CRuckigTrajectory *traj,
                                                       double *out_durations);
 
 /* Get the underlying profile for a specific DOF in a section (read-only). */
-const CRuckigProfile* cruckig_trajectory_get_profile(const CRuckigTrajectory *traj, size_t dof);
+const CRuckigProfile* scatti_trajectory_get_profile(const CRuckigTrajectory *traj, size_t dof);
 
 /* Get profile for specific section and DOF. */
-const CRuckigProfile* cruckig_trajectory_get_section_profile(const CRuckigTrajectory *traj,
+const CRuckigProfile* scatti_trajectory_get_section_profile(const CRuckigTrajectory *traj,
                                                               size_t section, size_t dof);
 
-#endif /* CRUCKIG_TRAJECTORY_H */
+#endif /* SCATTI_TRAJECTORY_H */

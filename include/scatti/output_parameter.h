@@ -1,10 +1,10 @@
-#ifndef CRUCKIG_OUTPUT_PARAMETER_H
-#define CRUCKIG_OUTPUT_PARAMETER_H
+#ifndef SCATTI_OUTPUT_PARAMETER_H
+#define SCATTI_OUTPUT_PARAMETER_H
 
 #include <stdbool.h>
 #include <stddef.h>
-#include <cruckig/trajectory.h>
-#include <cruckig/input_parameter.h>
+#include <scatti/trajectory.h>
+#include <scatti/input_parameter.h>
 
 typedef struct {
     size_t degrees_of_freedom;
@@ -24,8 +24,8 @@ typedef struct {
     double calculation_duration; /* microseconds */
 } CRuckigOutputParameter;
 
-CRuckigOutputParameter* cruckig_output_create(size_t dofs);
-void cruckig_output_destroy(CRuckigOutputParameter *out);
-void cruckig_output_pass_to_input(const CRuckigOutputParameter *out, CRuckigInputParameter *inp);
+CRuckigOutputParameter* scatti_output_create(size_t dofs);
+void scatti_output_destroy(CRuckigOutputParameter *out);
+void scatti_output_pass_to_input(const CRuckigOutputParameter *out, CRuckigInputParameter *inp);
 
-#endif /* CRUCKIG_OUTPUT_PARAMETER_H */
+#endif /* SCATTI_OUTPUT_PARAMETER_H */

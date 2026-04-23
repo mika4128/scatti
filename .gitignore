@@ -1,6 +1,24 @@
+# Root-level LICENSE (and similar legal files) must stay tracked — do not add
+# patterns here that would ignore them.
+
 # Build directories
 build/
+build-*/
 cmake-build-*/
+# Ad-hoc / benchmark CMake trees at repo root (e.g. build_c99_o0)
+/build_*/
+
+# In-tree CMake detritus (if cmake was run from repo root by mistake)
+/CMakeCache.txt
+/CMakeFiles/
+/cmake_install.cmake
+/CTestTestfile.cmake
+
+# Local install prefix
+/install/
+
+# CPack / Debian packages
+*.deb
 
 # Rust build artifacts
 wrapper/rust/target/
@@ -11,9 +29,21 @@ __pycache__/
 *.pyc
 *.pyo
 *.egg-info/
+.eggs/
+*.egg
 dist/
 *.so
 *.dylib
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Stray compile outputs (outside ignored build dirs)
+*.o
+*.obj
+*.a
 
 # Editor files
 .vscode/

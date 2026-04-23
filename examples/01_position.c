@@ -1,11 +1,11 @@
 #include <stdio.h>
-#include <cruckig/cruckig.h>
+#include <scatti/scatti.h>
 
 int main(void) {
-    /* Create a 3-DOF cruckig instance with 10ms control cycle */
-    CRuckig *otg = cruckig_create(3, 0.01);
-    CRuckigInputParameter *inp = cruckig_input_create(3);
-    CRuckigOutputParameter *out = cruckig_output_create(3);
+    /* Create a 3-DOF scatti instance with 10ms control cycle */
+    CRuckig *otg = scatti_create(3, 0.01);
+    CRuckigInputParameter *inp = scatti_input_create(3);
+    CRuckigOutputParameter *out = scatti_output_create(3);
 
     /* Set current state */
     inp->current_position[0] = 0.0;
@@ -28,13 +28,13 @@ int main(void) {
     inp->max_jerk[1] = 3.0;
     inp->max_jerk[2] = 2.0;
 
-    printf("cruckig - C port of Ruckig trajectory generation\n\n");
+    printf("scatti - C port of Ruckig trajectory generation\n\n");
 
     /* Run the trajectory */
     CRuckigResult result;
     int step = 0;
     while (1) {
-        result = cruckig_update(otg, inp, out);
+        result = scatti_update(otg, inp, out);
 
         if (step % 100 == 0 || result == CRuckigFinished) {
             printf("t=%.3f  pos=[%.4f, %.4f, %.4f]  vel=[%.4f, %.4f, %.4f]\n",
@@ -43,12 +43,12 @@ int main(void) {
                    out->new_velocity[0], out->new_velocity[1], out->new_velocity[2]);
         }
 
-        cruckig_output_pass_to_input(out, inp);
+        scatti_output_pass_to_input(out, inp);
         step++;
 
         if (result == CRuckigFinished) {
             printf("\nTrajectory finished after %.4f seconds (%d steps)\n",
-                   cruckig_trajectory_get_duration(out->trajectory), step);
+                   scatti_trajectory_get_duration(out->trajectory), step);
             break;
         }
 
@@ -58,8 +58,8 @@ int main(void) {
         }
     }
 
-    cruckig_output_destroy(out);
-    cruckig_input_destroy(inp);
-    cruckig_destroy(otg);
+    scatti_output_destroy(out);
+    scatti_input_destroy(inp);
+    scatti_destroy(otg);
     return 0;
 }

@@ -1,13 +1,13 @@
 [package]
-name = "cruckig"
-version = "0.1.0"
+name = "scatti"
+version = "0.2.0"
 edition = "2021"
-description = "Rust bindings for cruckig — jerk-limited real-time trajectory generation"
+description = "Rust bindings for scatti — jerk-limited real-time trajectory generation"
 license = "MIT"
-links = "cruckig"
+links = "scatti"
 
 [lib]
-name = "cruckig"
+name = "scatti"
 path = "src/lib.rs"
 
 [build-dependencies]

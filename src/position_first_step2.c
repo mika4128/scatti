@@ -1,13 +1,13 @@
-#include <cruckig/cruckig_config.h>
+#include <scatti/scatti_config.h>
 #include <math.h>
 #include <float.h>
 
-#include <cruckig/position.h>
-#include <cruckig/block.h>
-#include <cruckig/profile.h>
-#include <cruckig/roots.h>
+#include <scatti/position.h>
+#include <scatti/block.h>
+#include <scatti/profile.h>
+#include <scatti/roots.h>
 
-void cruckig_pos1_step2_init(CRuckigPositionFirstOrderStep2 *s,
+void scatti_pos1_step2_init(CRuckigPositionFirstOrderStep2 *s,
                      double tf, double p0, double pf, double vMax, double vMin)
 {
     s->tf = tf;
@@ -16,7 +16,7 @@ void cruckig_pos1_step2_init(CRuckigPositionFirstOrderStep2 *s,
     s->pd = pf - p0;
 }
 
-bool cruckig_pos1_step2_get_profile(CRuckigPositionFirstOrderStep2 *s, CRuckigProfile *profile)
+bool scatti_pos1_step2_get_profile(CRuckigPositionFirstOrderStep2 *s, CRuckigProfile *profile)
 {
     const double vf = s->pd / s->tf;
 
@@ -28,6 +28,6 @@ bool cruckig_pos1_step2_get_profile(CRuckigPositionFirstOrderStep2 *s, CRuckigPr
     profile->t[5] = 0;
     profile->t[6] = 0;
 
-    return cruckig_profile_check_for_first_order_with_timing_full(profile, ControlSignsUDDU, ReachedLimitsNONE,
+    return scatti_profile_check_for_first_order_with_timing_full(profile, ControlSignsUDDU, ReachedLimitsNONE,
                                                           s->tf, vf, s->_vMax, s->_vMin);
 }

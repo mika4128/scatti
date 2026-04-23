@@ -1,8 +1,8 @@
-"""cruckig — Python bindings for the cruckig trajectory generation library.
+"""scatti — Python bindings for the scatti trajectory generation library.
 
 Usage::
 
-    from cruckig import Ruckig, InputParameter, OutputParameter, Result
+    from scatti import Ruckig, InputParameter, OutputParameter, Result
 
     ruckig = Ruckig(3, 0.01)
     inp = InputParameter(3)
@@ -116,7 +116,7 @@ class Trajectory:
 
     @property
     def duration(self):
-        return lib.cruckig_trajectory_get_duration(self._ptr)
+        return lib.scatti_trajectory_get_duration(self._ptr)
 
     def at_time(self, time):
         """Return (position, velocity, acceleration, jerk) at *time*."""
@@ -125,7 +125,7 @@ class Trajectory:
         acc = ffi.new("double[]", self._dofs)
         jrk = ffi.new("double[]", self._dofs)
         sec = ffi.new("size_t *")
-        lib.cruckig_trajectory_at_time(self._ptr, time, pos, vel, acc, jrk, sec)
+        lib.scatti_trajectory_at_time(self._ptr, time, pos, vel, acc, jrk, sec)
         return (
             _arr_to_list(pos, self._dofs),
             _arr_to_list(vel, self._dofs),
@@ -135,7 +135,7 @@ class Trajectory:
 
     def get_position_extrema(self):
         """Compute and return position extrema as list of (min, max, t_min, t_max)."""
-        lib.cruckig_trajectory_get_position_extrema(self._ptr)
+        lib.scatti_trajectory_get_position_extrema(self._ptr)
         bounds = self._ptr.position_extrema
         result = []
         for i in range(self._dofs):
@@ -146,7 +146,7 @@ class Trajectory:
     def get_first_time_at_position(self, dof, position, time_after=0.0):
         """Return the first time the trajectory reaches *position* for *dof*, or None."""
         t = ffi.new("double *")
-        found = lib.cruckig_trajectory_get_first_time_at_position(
+        found = lib.scatti_trajectory_get_first_time_at_position(
             self._ptr, dof, position, t, time_after
         )
         return t[0] if found else None
@@ -154,7 +154,7 @@ class Trajectory:
     def get_independent_min_durations(self):
         """Return per-DOF minimum durations."""
         out = ffi.new("double[]", self._dofs)
-        lib.cruckig_trajectory_get_independent_min_durations(self._ptr, out)
+        lib.scatti_trajectory_get_independent_min_durations(self._ptr, out)
         return _arr_to_list(out, self._dofs)
 
 
@@ -167,7 +167,7 @@ class InputParameter:
 
     def __init__(self, dofs):
         self._dofs = dofs
-        self._ptr = lib.cruckig_input_create(dofs)
+        self._ptr = lib.scatti_input_create(dofs)
         if self._ptr == ffi.NULL:
             raise MemoryError("Failed to create CRuckigInputParameter")
         self._owned = {}  # field_name -> cdata ref (prevent GC of ffi.new buffers)
@@ -177,7 +177,7 @@ class InputParameter:
             # NULL out Python-allocated pointers so C's free() doesn't touch them
             for field in getattr(self, "_owned", {}):
                 setattr(self._ptr, field, ffi.NULL)
-            lib.cruckig_input_destroy(self._ptr)
+            lib.scatti_input_destroy(self._ptr)
             self._ptr = ffi.NULL
 
     @property
@@ -299,7 +299,7 @@ class InputParameter:
     @intermediate_positions.setter
     def intermediate_positions(self, waypoints):
         if not waypoints:
-            lib.cruckig_input_set_intermediate_positions(self._ptr, ffi.NULL, 0)
+            lib.scatti_input_set_intermediate_positions(self._ptr, ffi.NULL, 0)
             return
         n = len(waypoints)
         flat = ffi.new("double[]", n * self._dofs)
@@ -308,7 +308,7 @@ class InputParameter:
                 raise ValueError(f"Waypoint {i}: expected {self._dofs} values, got {len(wp)}")
             for d in range(self._dofs):
                 flat[i * self._dofs + d] = wp[d]
-        lib.cruckig_input_set_intermediate_positions(self._ptr, flat, n)
+        lib.scatti_input_set_intermediate_positions(self._ptr, flat, n)
 
     @property
     def max_position(self):
@@ -351,7 +351,7 @@ class InputParameter:
         self._ptr.interrupt_calculation_duration = value
 
     def validate(self, check_current_within_limits=False, check_target_within_limits=True):
-        return lib.cruckig_input_validate(
+        return lib.scatti_input_validate(
             self._ptr, check_current_within_limits, check_target_within_limits
         )
 
@@ -365,20 +365,20 @@ class OutputParameter:
 
     def __init__(self, dofs):
         self._dofs = dofs
-        self._ptr = lib.cruckig_output_create(dofs)
+        self._ptr = lib.scatti_output_create(dofs)
         if self._ptr == ffi.NULL:
             raise MemoryError("Failed to create CRuckigOutputParameter")
         self._trajectory = Trajectory(self._ptr.trajectory, dofs)
 
     def __del__(self):
         if hasattr(self, "_ptr") and self._ptr != ffi.NULL:
-            lib.cruckig_output_destroy(self._ptr)
+            lib.scatti_output_destroy(self._ptr)
             self._ptr = ffi.NULL
 
     def __copy__(self):
         new = OutputParameter.__new__(OutputParameter)
         new._dofs = self._dofs
-        new._ptr = lib.cruckig_output_create(self._dofs)
+        new._ptr = lib.scatti_output_create(self._dofs)
         # Copy scalar fields
         new._ptr.time = self._ptr.time
         new._ptr.new_section = self._ptr.new_section
@@ -445,7 +445,7 @@ class OutputParameter:
 
     def pass_to_input(self, inp):
         """Copy output state back to input for the next control cycle."""
-        lib.cruckig_output_pass_to_input(self._ptr, inp._ptr)
+        lib.scatti_output_pass_to_input(self._ptr, inp._ptr)
 
 
 # ---------------------------------------------------------------------------
@@ -458,15 +458,15 @@ class Ruckig:
     def __init__(self, dofs, delta_time, max_waypoints=0):
         self._dofs = dofs
         if max_waypoints > 0:
-            self._ptr = lib.cruckig_create_waypoints(dofs, delta_time, max_waypoints)
+            self._ptr = lib.scatti_create_waypoints(dofs, delta_time, max_waypoints)
         else:
-            self._ptr = lib.cruckig_create(dofs, delta_time)
+            self._ptr = lib.scatti_create(dofs, delta_time)
         if self._ptr == ffi.NULL:
             raise MemoryError("Failed to create CRuckig")
 
     def __del__(self):
         if hasattr(self, "_ptr") and self._ptr != ffi.NULL:
-            lib.cruckig_destroy(self._ptr)
+            lib.scatti_destroy(self._ptr)
             self._ptr = ffi.NULL
 
     @property
@@ -474,19 +474,19 @@ class Ruckig:
         return self._dofs
 
     def reset(self):
-        lib.cruckig_reset(self._ptr)
+        lib.scatti_reset(self._ptr)
 
     def validate_input(self, inp, check_current_within_limits=False,
                        check_target_within_limits=True):
-        return lib.cruckig_validate_input(
+        return lib.scatti_validate_input(
             self._ptr, inp._ptr,
             check_current_within_limits, check_target_within_limits
         )
 
     def update(self, inp, out):
         """Advance one control cycle. Returns a :class:`Result`."""
-        return Result(lib.cruckig_update(self._ptr, inp._ptr, out._ptr))
+        return Result(lib.scatti_update(self._ptr, inp._ptr, out._ptr))
 
     def calculate(self, inp, traj):
         """One-shot calculation. Returns a :class:`Result`."""
-        return Result(lib.cruckig_calculate(self._ptr, inp._ptr, traj._ptr))
+        return Result(lib.scatti_calculate(self._ptr, inp._ptr, traj._ptr))

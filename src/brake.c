@@ -1,13 +1,13 @@
 #include <math.h>
 #include <float.h>
 
-#include <cruckig/cruckig_config.h>
-#include <cruckig/brake.h>
-#include <cruckig/utils.h>
+#include <scatti/scatti_config.h>
+#include <scatti/brake.h>
+#include <scatti/utils.h>
 
 static const double brake_eps = 2.2e-14;
 
-void cruckig_brake_init(CRuckigBrakeProfile *bp) {
+void scatti_brake_init(CRuckigBrakeProfile *bp) {
     bp->duration = 0.0;
     bp->t[0] = 0.0;
     bp->t[1] = 0.0;
@@ -87,7 +87,7 @@ static void velocity_brake(CRuckigBrakeProfile *bp, double v0, double a0,
     }
 }
 
-void cruckig_brake_get_position_brake_trajectory(CRuckigBrakeProfile *bp, double v0, double a0,
+void scatti_brake_get_position_brake_trajectory(CRuckigBrakeProfile *bp, double v0, double a0,
                                          double vMax, double vMin, double aMax, double aMin, double jMax) {
     bp->t[0] = 0.0;
     bp->t[1] = 0.0;
@@ -112,7 +112,7 @@ void cruckig_brake_get_position_brake_trajectory(CRuckigBrakeProfile *bp, double
     }
 }
 
-void cruckig_brake_get_second_order_position_brake_trajectory(CRuckigBrakeProfile *bp, double v0,
+void scatti_brake_get_second_order_position_brake_trajectory(CRuckigBrakeProfile *bp, double v0,
                                                       double vMax, double vMin, double aMax, double aMin) {
     bp->t[0] = 0.0;
     bp->t[1] = 0.0;
@@ -135,7 +135,7 @@ void cruckig_brake_get_second_order_position_brake_trajectory(CRuckigBrakeProfil
     }
 }
 
-void cruckig_brake_get_velocity_brake_trajectory(CRuckigBrakeProfile *bp, double a0,
+void scatti_brake_get_velocity_brake_trajectory(CRuckigBrakeProfile *bp, double a0,
                                          double aMax, double aMin, double jMax) {
     bp->t[0] = 0.0;
     bp->t[1] = 0.0;
@@ -156,14 +156,14 @@ void cruckig_brake_get_velocity_brake_trajectory(CRuckigBrakeProfile *bp, double
     }
 }
 
-void cruckig_brake_get_second_order_velocity_brake_trajectory(CRuckigBrakeProfile *bp) {
+void scatti_brake_get_second_order_velocity_brake_trajectory(CRuckigBrakeProfile *bp) {
     bp->t[0] = 0.0;
     bp->t[1] = 0.0;
     bp->j[0] = 0.0;
     bp->j[1] = 0.0;
 }
 
-void cruckig_brake_finalize(CRuckigBrakeProfile *bp, double *ps, double *vs, double *as) {
+void scatti_brake_finalize(CRuckigBrakeProfile *bp, double *ps, double *vs, double *as) {
     if (bp->t[0] <= 0.0 && bp->t[1] <= 0.0) {
         bp->duration = 0.0;
         return;
@@ -173,18 +173,18 @@ void cruckig_brake_finalize(CRuckigBrakeProfile *bp, double *ps, double *vs, dou
     bp->p[0] = *ps;
     bp->v[0] = *vs;
     bp->a[0] = *as;
-    cruckig_integrate(bp->t[0], *ps, *vs, *as, bp->j[0], ps, vs, as);
+    scatti_integrate(bp->t[0], *ps, *vs, *as, bp->j[0], ps, vs, as);
 
     if (bp->t[1] > 0.0) {
         bp->duration += bp->t[1];
         bp->p[1] = *ps;
         bp->v[1] = *vs;
         bp->a[1] = *as;
-        cruckig_integrate(bp->t[1], *ps, *vs, *as, bp->j[1], ps, vs, as);
+        scatti_integrate(bp->t[1], *ps, *vs, *as, bp->j[1], ps, vs, as);
     }
 }
 
-void cruckig_brake_finalize_second_order(CRuckigBrakeProfile *bp, double *ps, double *vs, double *as) {
+void scatti_brake_finalize_second_order(CRuckigBrakeProfile *bp, double *ps, double *vs, double *as) {
     if (bp->t[0] <= 0.0) {
         bp->duration = 0.0;
         return;
@@ -193,5 +193,5 @@ void cruckig_brake_finalize_second_order(CRuckigBrakeProfile *bp, double *ps, do
     bp->duration = bp->t[0];
     bp->p[0] = *ps;
     bp->v[0] = *vs;
-    cruckig_integrate(bp->t[0], *ps, *vs, bp->a[0], 0.0, ps, vs, as);
+    scatti_integrate(bp->t[0], *ps, *vs, bp->a[0], 0.0, ps, vs, as);
 }

@@ -1,4 +1,4 @@
-use cruckig::{InputParameter, OutputParameter, Result, Ruckig};
+use scatti::{InputParameter, OutputParameter, Result, Ruckig};
 
 fn main() {
     // Create instances: 3 DOFs, 0.01 s control cycle

@@ -1,12 +1,12 @@
-#ifndef CRUCKIG_CALCULATOR_H
-#define CRUCKIG_CALCULATOR_H
+#ifndef SCATTI_CALCULATOR_H
+#define SCATTI_CALCULATOR_H
 
 #include <stdbool.h>
 #include <stddef.h>
-#include <cruckig/result.h>
-#include <cruckig/block.h>
-#include <cruckig/input_parameter.h>
-#include <cruckig/trajectory.h>
+#include <scatti/result.h>
+#include <scatti/block.h>
+#include <scatti/input_parameter.h>
+#include <scatti/trajectory.h>
 
 typedef struct {
     size_t degrees_of_freedom;
@@ -26,28 +26,28 @@ typedef struct {
     CRuckigInputParameter *segment_input;  /* Reusable per-segment input */
 } CRuckigCalculator;
 
-CRuckigCalculator* cruckig_calculator_create(size_t dofs);
-void cruckig_calculator_destroy(CRuckigCalculator *calc);
+CRuckigCalculator* scatti_calculator_create(size_t dofs);
+void scatti_calculator_destroy(CRuckigCalculator *calc);
 
 /* Single-segment calculation (existing, backward compatible) */
-CRuckigResult cruckig_calculator_calculate(CRuckigCalculator *calc,
+CRuckigResult scatti_calculator_calculate(CRuckigCalculator *calc,
                                            const CRuckigInputParameter *inp,
                                            CRuckigTrajectory *traj,
                                            double delta_time,
                                            bool *was_interrupted);
 
 /* Multi-segment waypoint calculation */
-CRuckigResult cruckig_calculator_calculate_waypoints(CRuckigCalculator *calc,
+CRuckigResult scatti_calculator_calculate_waypoints(CRuckigCalculator *calc,
                                                      const CRuckigInputParameter *inp,
                                                      CRuckigTrajectory *traj,
                                                      double delta_time,
                                                      bool *was_interrupted);
 
 /* Continue an interrupted calculation */
-CRuckigResult cruckig_calculator_continue(CRuckigCalculator *calc,
+CRuckigResult scatti_calculator_continue(CRuckigCalculator *calc,
                                           const CRuckigInputParameter *inp,
                                           CRuckigTrajectory *traj,
                                           double delta_time,
                                           bool *was_interrupted);
 
-#endif /* CRUCKIG_CALCULATOR_H */
+#endif /* SCATTI_CALCULATOR_H */

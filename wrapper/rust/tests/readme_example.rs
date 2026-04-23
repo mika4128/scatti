@@ -1,6 +1,6 @@
 //! README 示例路径冒烟测试（与 C `test_readme_example` 一致）。
 
-use cruckig::{InputParameter, OutputParameter, Result, Ruckig};
+use scatti::{InputParameter, OutputParameter, Result, Ruckig};
 
 fn near(a: f64, b: f64, eps: f64) -> bool {
     (a - b).abs() <= eps

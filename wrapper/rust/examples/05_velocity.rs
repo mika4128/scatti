@@ -1,4 +1,4 @@
-use cruckig::{ControlInterface, InputParameter, OutputParameter, Result, Ruckig};
+use scatti::{ControlInterface, InputParameter, OutputParameter, Result, Ruckig};
 
 fn main() {
     let mut ruckig = Ruckig::new(3, 0.01);

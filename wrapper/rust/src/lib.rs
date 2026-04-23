@@ -1,9 +1,9 @@
-//! Safe Rust bindings for **cruckig** — jerk-limited real-time trajectory
+//! Safe Rust bindings for **scatti** — jerk-limited real-time trajectory
 //! generation.
 //!
 //! # Example
 //! ```no_run
-//! use cruckig::{Ruckig, InputParameter, OutputParameter, Result};
+//! use scatti::{Ruckig, InputParameter, OutputParameter, Result};
 //!
 //! let mut ruckig = Ruckig::new(3, 0.01);
 //! let mut input = InputParameter::new(3);
@@ -121,8 +121,8 @@ macro_rules! input_array_accessors {
 
 impl InputParameter {
     pub fn new(dofs: usize) -> Self {
-        let ptr = unsafe { ffi::cruckig_input_create(dofs) };
-        assert!(!ptr.is_null(), "cruckig_input_create returned NULL");
+        let ptr = unsafe { ffi::scatti_input_create(dofs) };
+        assert!(!ptr.is_null(), "scatti_input_create returned NULL");
         Self { ptr, dofs }
     }
 
@@ -205,7 +205,7 @@ impl InputParameter {
     /// Set intermediate waypoints. Each inner slice must have `dofs` elements.
     pub fn set_intermediate_positions(&mut self, waypoints: &[&[f64]]) {
         if waypoints.is_empty() {
-            unsafe { ffi::cruckig_input_set_intermediate_positions(self.ptr, ptr::null(), 0); }
+            unsafe { ffi::scatti_input_set_intermediate_positions(self.ptr, ptr::null(), 0); }
             return;
         }
         let n = waypoints.len();
@@ -215,7 +215,7 @@ impl InputParameter {
             flat[i * self.dofs..(i + 1) * self.dofs].copy_from_slice(wp);
         }
         unsafe {
-            ffi::cruckig_input_set_intermediate_positions(self.ptr, flat.as_ptr(), n);
+            ffi::scatti_input_set_intermediate_positions(self.ptr, flat.as_ptr(), n);
         }
     }
 
@@ -244,7 +244,7 @@ impl InputParameter {
     }
 
     pub fn validate(&self, check_current: bool, check_target: bool) -> bool {
-        unsafe { ffi::cruckig_input_validate(self.ptr, check_current, check_target) }
+        unsafe { ffi::scatti_input_validate(self.ptr, check_current, check_target) }
     }
 
     pub(crate) fn as_ptr(&self) -> *mut ffi::CRuckigInputParameter {
@@ -255,7 +255,7 @@ impl InputParameter {
 impl Drop for InputParameter {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
-            unsafe { ffi::cruckig_input_destroy(self.ptr); }
+            unsafe { ffi::scatti_input_destroy(self.ptr); }
             self.ptr = ptr::null_mut();
         }
     }
@@ -273,8 +273,8 @@ pub struct OutputParameter {
 
 impl OutputParameter {
     pub fn new(dofs: usize) -> Self {
-        let ptr = unsafe { ffi::cruckig_output_create(dofs) };
-        assert!(!ptr.is_null(), "cruckig_output_create returned NULL");
+        let ptr = unsafe { ffi::scatti_output_create(dofs) };
+        assert!(!ptr.is_null(), "scatti_output_create returned NULL");
         Self { ptr, dofs }
     }
 
@@ -333,7 +333,7 @@ impl OutputParameter {
 
     /// Copy output state back into input for the next control cycle.
     pub fn pass_to_input(&self, inp: &mut InputParameter) {
-        unsafe { ffi::cruckig_output_pass_to_input(self.ptr, inp.as_ptr()); }
+        unsafe { ffi::scatti_output_pass_to_input(self.ptr, inp.as_ptr()); }
     }
 
     pub(crate) fn as_ptr(&mut self) -> *mut ffi::CRuckigOutputParameter {
@@ -344,7 +344,7 @@ impl OutputParameter {
 impl Drop for OutputParameter {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
-            unsafe { ffi::cruckig_output_destroy(self.ptr); }
+            unsafe { ffi::scatti_output_destroy(self.ptr); }
             self.ptr = ptr::null_mut();
         }
     }
@@ -363,7 +363,7 @@ pub struct Trajectory<'a> {
 
 impl Trajectory<'_> {
     pub fn duration(&self) -> f64 {
-        unsafe { ffi::cruckig_trajectory_get_duration(self.ptr) }
+        unsafe { ffi::scatti_trajectory_get_duration(self.ptr) }
     }
 
     /// Sample the trajectory at a given time.
@@ -374,7 +374,7 @@ impl Trajectory<'_> {
         let mut jrk = vec![0.0; self.dofs];
         let mut sec: usize = 0;
         unsafe {
-            ffi::cruckig_trajectory_at_time(
+            ffi::scatti_trajectory_at_time(
                 self.ptr,
                 time,
                 pos.as_mut_ptr(),
@@ -390,7 +390,7 @@ impl Trajectory<'_> {
     pub fn get_independent_min_durations(&self) -> Vec<f64> {
         let mut out = vec![0.0; self.dofs];
         unsafe {
-            ffi::cruckig_trajectory_get_independent_min_durations(self.ptr, out.as_mut_ptr());
+            ffi::scatti_trajectory_get_independent_min_durations(self.ptr, out.as_mut_ptr());
         }
         out
     }
@@ -398,7 +398,7 @@ impl Trajectory<'_> {
     pub fn get_first_time_at_position(&self, dof: usize, position: f64, time_after: f64) -> Option<f64> {
         let mut t: f64 = 0.0;
         let found = unsafe {
-            ffi::cruckig_trajectory_get_first_time_at_position(
+            ffi::scatti_trajectory_get_first_time_at_position(
                 self.ptr, dof, position, &mut t, time_after,
             )
         };
@@ -420,15 +420,15 @@ impl Ruckig {
     /// Create a new trajectory generator for `dofs` degrees of freedom
     /// with the given control cycle `delta_time` (seconds).
     pub fn new(dofs: usize, delta_time: f64) -> Self {
-        let ptr = unsafe { ffi::cruckig_create(dofs, delta_time) };
-        assert!(!ptr.is_null(), "cruckig_create returned NULL");
+        let ptr = unsafe { ffi::scatti_create(dofs, delta_time) };
+        assert!(!ptr.is_null(), "scatti_create returned NULL");
         Self { ptr, dofs }
     }
 
     /// Create with waypoint support.
     pub fn new_with_waypoints(dofs: usize, delta_time: f64, max_waypoints: usize) -> Self {
-        let ptr = unsafe { ffi::cruckig_create_waypoints(dofs, delta_time, max_waypoints) };
-        assert!(!ptr.is_null(), "cruckig_create_waypoints returned NULL");
+        let ptr = unsafe { ffi::scatti_create_waypoints(dofs, delta_time, max_waypoints) };
+        assert!(!ptr.is_null(), "scatti_create_waypoints returned NULL");
         Self { ptr, dofs }
     }
 
@@ -437,16 +437,16 @@ impl Ruckig {
     }
 
     pub fn reset(&mut self) {
-        unsafe { ffi::cruckig_reset(self.ptr); }
+        unsafe { ffi::scatti_reset(self.ptr); }
     }
 
     pub fn validate_input(&self, inp: &InputParameter, check_current: bool, check_target: bool) -> bool {
-        unsafe { ffi::cruckig_validate_input(self.ptr, inp.as_ptr(), check_current, check_target) }
+        unsafe { ffi::scatti_validate_input(self.ptr, inp.as_ptr(), check_current, check_target) }
     }
 
     /// Advance one control cycle.
     pub fn update(&mut self, inp: &InputParameter, out: &mut OutputParameter) -> Result {
-        let rc = unsafe { ffi::cruckig_update(self.ptr, inp.as_ptr(), out.as_ptr()) };
+        let rc = unsafe { ffi::scatti_update(self.ptr, inp.as_ptr(), out.as_ptr()) };
         Result::from(rc)
     }
 }
@@ -454,7 +454,7 @@ impl Ruckig {
 impl Drop for Ruckig {
     fn drop(&mut self) {
         if !self.ptr.is_null() {
-            unsafe { ffi::cruckig_destroy(self.ptr); }
+            unsafe { ffi::scatti_destroy(self.ptr); }
             self.ptr = ptr::null_mut();
         }
     }

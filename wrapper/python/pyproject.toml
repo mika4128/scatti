@@ -3,16 +3,16 @@ requires = ["setuptools>=64", "cffi>=1.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "cruckig"
-version = "0.1.0"
-description = "Python bindings for cruckig — jerk-limited real-time trajectory generation"
+name = "scatti"
+version = "0.2.0"
+description = "Python bindings for scatti — jerk-limited real-time trajectory generation"
 readme = "README.md"
 requires-python = ">=3.8"
 license = "MIT"
 dependencies = ["cffi>=1.0"]
 
 [project.urls]
-Homepage = "https://github.com/mika4128/cruckig"
+Homepage = "https://github.com/mika4128/scatti"
 
 [tool.setuptools.packages.find]
-include = ["cruckig*"]
+include = ["scatti*"]

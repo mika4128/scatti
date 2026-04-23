@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """README Python 示例路径冒烟测试。
 
-优先使用环境变量 CRUCKIG_LIB；未设置时尝试仓库根目录下 ``build/libcruckig.so``。
-运行前需将 ``wrapper/python`` 加入 PYTHONPATH（或由已安装的 cruckig 包提供模块）。
+优先使用环境变量 SCATTI_LIB；未设置时尝试仓库根目录下 ``build/libscatti.so``。
+运行前需将 ``wrapper/python`` 加入 PYTHONPATH（或由已安装的 scatti 包提供模块）。
 """
 
 from __future__ import annotations
@@ -16,10 +16,10 @@ def near(a: float, b: float, eps: float) -> bool:
     return abs(a - b) <= eps
 
 
-def _guess_cruckig_lib() -> Optional[str]:
+def _guess_scatti_lib() -> Optional[str]:
     here = os.path.dirname(os.path.abspath(__file__))
     root = os.path.normpath(os.path.join(here, "..", "..", ".."))
-    for name in ("libcruckig.so", "libcruckig.dylib"):
+    for name in ("libscatti.so", "libscatti.dylib"):
         p = os.path.join(root, "build", name)
         if os.path.isfile(p):
             return p
@@ -27,20 +27,20 @@ def _guess_cruckig_lib() -> Optional[str]:
 
 
 def main() -> int:
-    lib = os.environ.get("CRUCKIG_LIB") or _guess_cruckig_lib()
+    lib = os.environ.get("SCATTI_LIB") or _guess_scatti_lib()
     if not lib or not os.path.isfile(lib):
         print(
-            "error: set CRUCKIG_LIB to the built libcruckig.so "
-            "(e.g. build/libcruckig.so) or build the shared library under <repo>/build/",
+            "error: set SCATTI_LIB to the built libscatti.so "
+            "(e.g. build/libscatti.so) or build the shared library under <repo>/build/",
             file=sys.stderr,
         )
         return 1
-    os.environ["CRUCKIG_LIB"] = lib
+    os.environ["SCATTI_LIB"] = lib
 
     try:
-        from cruckig import InputParameter, OutputParameter, Result, Ruckig
+        from scatti import InputParameter, OutputParameter, Result, Ruckig
     except ImportError as e:
-        print(f"error: cannot import cruckig ({e}); pip install cffi", file=sys.stderr)
+        print(f"error: cannot import scatti ({e}); pip install cffi", file=sys.stderr)
         return 1
 
     r = Ruckig(3, 0.01)

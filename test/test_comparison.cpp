@@ -1,15 +1,15 @@
 /*
- * Cross-validation test: compare cruckig (C) against Ruckig (C++)
+ * Cross-validation test: compare scatti (C) against Ruckig (C++)
  *
  * Generates random inputs, computes trajectories with both libraries,
  * and verifies that durations and final states match within tolerance.
  *
  * Build:
  *   g++ -O2 -std=c++17 \
- *       -I/path/to/ruckig/include -I/path/to/cruckig/include \
+ *       -I/path/to/ruckig/include -I/path/to/scatti/include \
  *       test_comparison.cpp \
  *       -L/path/to/ruckig/build -lruckig \
- *       -L/path/to/cruckig/build -lcruckig \
+ *       -L/path/to/scatti/build -lscatti \
  *       -lm -o test_comparison
  */
 
@@ -22,7 +22,7 @@
 #include <ruckig/ruckig.hpp>
 
 extern "C" {
-#include <cruckig/cruckig.h>
+#include <scatti/scatti.h>
 }
 
 using namespace ruckig;
@@ -77,31 +77,31 @@ static void compare_one(
     }
 
     /* Compute C trajectory */
-    CRuckigOutputParameter* out_c = cruckig_output_create(3);
-    cruckig_reset(ruckig_c);
-    CRuckigResult result_c = cruckig_update(ruckig_c, inp_c, out_c);
+    CRuckigOutputParameter* out_c = scatti_output_create(3);
+    scatti_reset(ruckig_c);
+    CRuckigResult result_c = scatti_update(ruckig_c, inp_c, out_c);
 
     /* Compare results */
     int cpp_ok = (result_cpp == Result::Working ||
                   (result_cpp == Result::Finished && out_cpp.trajectory.get_duration() < 0.005));
     int c_ok = (result_c == CRuckigWorking ||
-                (result_c == CRuckigFinished && cruckig_trajectory_get_duration(out_c->trajectory) < 0.005));
+                (result_c == CRuckigFinished && scatti_trajectory_get_duration(out_c->trajectory) < 0.005));
 
     if (cpp_ok != c_ok) {
         stats.result_mismatch++;
-        cruckig_output_destroy(out_c);
+        scatti_output_destroy(out_c);
         return;
     }
 
     if (!cpp_ok) {
         stats.skipped++;
-        cruckig_output_destroy(out_c);
+        scatti_output_destroy(out_c);
         return;
     }
 
     /* Compare durations */
     double dur_cpp = out_cpp.trajectory.get_duration();
-    double dur_c   = cruckig_trajectory_get_duration(out_c->trajectory);
+    double dur_c   = scatti_trajectory_get_duration(out_c->trajectory);
     double dur_diff = std::abs(dur_cpp - dur_c);
 
     stats.max_duration_diff = std::max(stats.max_duration_diff, dur_diff);
@@ -114,7 +114,7 @@ static void compare_one(
                    inp_cpp.current_position[0], inp_cpp.current_position[1], inp_cpp.current_position[2],
                    inp_cpp.target_position[0], inp_cpp.target_position[1], inp_cpp.target_position[2]);
         }
-        cruckig_output_destroy(out_c);
+        scatti_output_destroy(out_c);
         return;
     }
 
@@ -123,7 +123,7 @@ static void compare_one(
     out_cpp.trajectory.at_time(dur_cpp, pos_cpp, vel_cpp, acc_cpp);
 
     double pos_c[3], vel_c[3], acc_c[3];
-    cruckig_trajectory_at_time_simple(out_c->trajectory, dur_c, pos_c, vel_c, acc_c);
+    scatti_trajectory_at_time_simple(out_c->trajectory, dur_c, pos_c, vel_c, acc_c);
 
     bool state_ok = true;
     for (int d = 0; d < 3; d++) {
@@ -146,12 +146,12 @@ static void compare_one(
                        d, pos_cpp[d], pos_c[d], std::abs(pos_cpp[d] - pos_c[d]));
             }
         }
-        cruckig_output_destroy(out_c);
+        scatti_output_destroy(out_c);
         return;
     }
 
     stats.matched++;
-    cruckig_output_destroy(out_c);
+    scatti_output_destroy(out_c);
 }
 
 int main(int argc, char** argv) {
@@ -161,14 +161,14 @@ int main(int argc, char** argv) {
     if (argc > 1) num_trajectories = std::atol(argv[1]);
     if (argc > 2) seed = std::atoi(argv[2]);
 
-    printf("=== cruckig vs Ruckig Cross-Validation ===\n");
+    printf("=== scatti vs Ruckig Cross-Validation ===\n");
     printf("Trajectories: %zu, Seed: %d\n\n", num_trajectories, seed);
 
     Ruckig<3> ruckig_cpp{0.005};
     InputParameter<3> inp_cpp;
 
-    CRuckig* ruckig_c = cruckig_create(3, 0.005);
-    CRuckigInputParameter* inp_c = cruckig_input_create(3);
+    CRuckig* ruckig_c = scatti_create(3, 0.005);
+    CRuckigInputParameter* inp_c = scatti_input_create(3);
 
     std::default_random_engine gen(seed);
     std::normal_distribution<double> position_dist(0.0, 4.0);
@@ -213,8 +213,8 @@ int main(int argc, char** argv) {
     printf("  Position: %.2e\n", stats.max_position_diff);
     printf("  Velocity: %.2e\n", stats.max_velocity_diff);
 
-    cruckig_input_destroy(inp_c);
-    cruckig_destroy(ruckig_c);
+    scatti_input_destroy(inp_c);
+    scatti_destroy(ruckig_c);
 
     return (stats.result_mismatch + stats.duration_mismatch + stats.final_state_mismatch) > 0 ? 1 : 0;
 }

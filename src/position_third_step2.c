@@ -1,14 +1,14 @@
-#include <cruckig/cruckig_config.h>
+#include <scatti/scatti_config.h>
 #include <math.h>
 #include <float.h>
 #include <stdbool.h>
 #include <stddef.h>
 
-#include <cruckig/position.h>
-#include <cruckig/block.h>
-#include <cruckig/profile.h>
-#include <cruckig/roots.h>
-#include <cruckig/utils.h>
+#include <scatti/position.h>
+#include <scatti/block.h>
+#include <scatti/profile.h>
+#include <scatti/roots.h>
+#include <scatti/utils.h>
 
 #define ROOTS_TOLERANCE 1e-14
 
@@ -25,7 +25,7 @@ static void poly_monic_derivative(const double *coeffs, size_t n, double *deriv)
     }
 }
 
-void cruckig_pos3_step2_init(CRuckigPositionThirdOrderStep2 *s,
+void scatti_pos3_step2_init(CRuckigPositionThirdOrderStep2 *s,
                      double tf, double p0, double v0, double a0,
                      double pf, double vf, double af,
                      double vMax, double vMin, double aMax, double aMin, double jMax)
@@ -97,7 +97,7 @@ static bool time_acc0_acc1_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile
         profile->t[5] = tf - (profile->t[0] + profile->t[1] + profile->t[2] + profile->t[3] + 2 * profile->t[4] + af / jMax);
         profile->t[6] = profile->t[4] + af / jMax;
 
-        if (cruckig_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsACC0_ACC1_VEL, tf, jMax, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsACC0_ACC1_VEL, tf, jMax, vMax, vMin, aMax, aMin)) {
             return true;
         }
     }
@@ -112,7 +112,7 @@ static bool time_acc0_acc1_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile
         profile->t[5] = tf - (profile->t[0] + profile->t[1] + profile->t[2] + profile->t[3] + 2 * profile->t[4] - af / jMax);
         profile->t[6] = profile->t[4] - af / jMax;
 
-        if (cruckig_profile_check_with_timing(profile, ControlSignsUDUD, ReachedLimitsACC0_ACC1_VEL, tf, jMax, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check_with_timing(profile, ControlSignsUDUD, ReachedLimitsACC0_ACC1_VEL, tf, jMax, vMax, vMin, aMax, aMin)) {
             return true;
         }
     }
@@ -151,8 +151,8 @@ static bool time_acc1_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *pro
         double t_max_b = (aMax - a0) / jMax;
         const double t_max = (t_max_a < t_max_b) ? t_max_a : t_max_b;
 
-        CRuckigRootSet roots = cruckig_roots_solve_quart_monic(polynom[0], polynom[1], polynom[2], polynom[3]);
-        cruckig_root_set_sort(&roots);
+        CRuckigRootSet roots = scatti_roots_solve_quart_monic(polynom[0], polynom[1], polynom[2], polynom[3]);
+        scatti_root_set_sort(&roots);
         for (size_t i = 0; i < roots.size; ++i) {
             double t = roots.data[i];
             if (t < t_min || t > t_max) {
@@ -179,7 +179,7 @@ static bool time_acc1_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *pro
                 profile->t[5] = (h1 + aMin) / jMax;
                 profile->t[6] = profile->t[4] + af / jMax;
 
-                if (cruckig_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsACC1_VEL, tf, jMax, vMax, vMin, aMax, aMin)) {
+                if (scatti_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsACC1_VEL, tf, jMax, vMax, vMin, aMax, aMin)) {
                     return true;
                 }
             }
@@ -204,8 +204,8 @@ static bool time_acc1_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *pro
         double t_max_b = (aMax - a0) / jMax;
         const double t_max = (t_max_a < t_max_b) ? t_max_a : t_max_b;
 
-        CRuckigRootSet roots = cruckig_roots_solve_quart_monic(polynom[0], polynom[1], polynom[2], polynom[3]);
-        cruckig_root_set_sort(&roots);
+        CRuckigRootSet roots = scatti_roots_solve_quart_monic(polynom[0], polynom[1], polynom[2], polynom[3]);
+        scatti_root_set_sort(&roots);
         for (size_t i = 0; i < roots.size; ++i) {
             double t = roots.data[i];
             if (t > t_max || t < t_min) {
@@ -223,7 +223,7 @@ static bool time_acc1_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *pro
                 profile->t[5] = -(h1 + aMax) / jMax;
                 profile->t[6] = profile->t[4] - af / jMax;
 
-                if (cruckig_profile_check_with_timing(profile, ControlSignsUDUD, ReachedLimitsACC1_VEL, tf, jMax, vMax, vMin, aMax, aMin)) {
+                if (scatti_profile_check_with_timing(profile, ControlSignsUDUD, ReachedLimitsACC1_VEL, tf, jMax, vMax, vMin, aMax, aMin)) {
                     return true;
                 }
             }
@@ -236,7 +236,7 @@ static bool time_acc1_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *pro
 static bool time_acc0_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
                           double vMax, double vMin, double aMax, double aMin, double jMax)
 {
-    const double v0 = s->v0, a0 = s->a0, vf = s->vf, af = s->af;
+    const double a0 = s->a0, vf = s->vf, af = s->af;
     const double tf = s->tf;
     const double pd = s->pd;
     const double vd = s->vd, vd_vd = s->vd_vd;
@@ -271,8 +271,8 @@ static bool time_acc0_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *pro
         double t_max_b = -aMin / jMax;
         const double t_max = (t_max_a < t_max_b) ? t_max_a : t_max_b;
 
-        CRuckigRootSet roots = cruckig_roots_solve_quart_monic(polynom[0], polynom[1], polynom[2], polynom[3]);
-        cruckig_root_set_sort(&roots);
+        CRuckigRootSet roots = scatti_roots_solve_quart_monic(polynom[0], polynom[1], polynom[2], polynom[3]);
+        scatti_root_set_sort(&roots);
         for (size_t i = 0; i < roots.size; ++i) {
             double t = roots.data[i];
             if (t < t_min || t > t_max) {
@@ -299,7 +299,7 @@ static bool time_acc0_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *pro
                 profile->t[5] = 0;
                 profile->t[6] = af / jMax + t;
 
-                if (cruckig_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsACC0_VEL, tf, jMax, vMax, vMin, aMax, aMin)) {
+                if (scatti_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsACC0_VEL, tf, jMax, vMax, vMin, aMax, aMin)) {
                     return true;
                 }
             }
@@ -319,8 +319,8 @@ static bool time_acc0_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *pro
         double t_max_b = aMax / jMax;
         const double t_max = (t_max_a < t_max_b) ? t_max_a : t_max_b;
 
-        CRuckigRootSet roots = cruckig_roots_solve_quart_monic(polynom[0], polynom[1], polynom[2], polynom[3]);
-        cruckig_root_set_sort(&roots);
+        CRuckigRootSet roots = scatti_roots_solve_quart_monic(polynom[0], polynom[1], polynom[2], polynom[3]);
+        scatti_root_set_sort(&roots);
         for (size_t i = 0; i < roots.size; ++i) {
             double t = roots.data[i];
             if (t < t_min || t > t_max) {
@@ -347,7 +347,7 @@ static bool time_acc0_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *pro
                 profile->t[5] = 0;
                 profile->t[6] = -(af / jMax) + t;
 
-                if (cruckig_profile_check_with_timing(profile, ControlSignsUDUD, ReachedLimitsACC0_VEL, tf, jMax, vMax, vMin, aMax, aMin)) {
+                if (scatti_profile_check_with_timing(profile, ControlSignsUDUD, ReachedLimitsACC0_VEL, tf, jMax, vMax, vMin, aMax, aMin)) {
                     return true;
                 }
             }
@@ -361,18 +361,17 @@ static bool time_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
                      double vMax, double vMin, double aMax, double aMin, double jMax)
 {
     const double v0 = s->v0, a0 = s->a0, vf = s->vf, af = s->af;
-    const double tf = s->tf, tf_tf = s->tf_tf, tf_p3 = s->tf_p3, tf_p4 = s->tf_p4;
+    const double tf = s->tf, tf_tf = s->tf_tf;
     const double pd = s->pd;
     const double vd = s->vd, vd_vd = s->vd_vd;
-    const double v0_v0 = s->v0_v0, vf_vf = s->vf_vf;
-    const double ad = s->ad, ad_ad = s->ad_ad;
+    const double ad = s->ad;
     const double a0_a0 = s->a0_a0, af_af = s->af_af;
     const double a0_p3 = s->a0_p3, af_p3 = s->af_p3;
     const double a0_p4 = s->a0_p4, af_p4 = s->af_p4;
     const double a0_p5 = s->a0_p5, a0_p6 = s->a0_p6;
-    const double af_p5 = s->af_p5, af_p6 = s->af_p6;
+    const double af_p6 = s->af_p6;
     const double jMax_jMax = s->jMax_jMax;
-    const double g1 = s->g1, g2 = s->g2;
+    const double g1 = s->g1;
 
     double tz_min = -a0 / jMax;
     if (tz_min < 0.0) tz_min = 0.0;
@@ -388,8 +387,8 @@ static bool time_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
         polynom[2] = 0;
         polynom[3] = pd / (2 * jMax);
 
-        CRuckigRootSet roots = cruckig_roots_solve_cubic(polynom[0], polynom[1], polynom[2], polynom[3]);
-        cruckig_root_set_sort(&roots);
+        CRuckigRootSet roots = scatti_roots_solve_cubic(polynom[0], polynom[1], polynom[2], polynom[3]);
+        scatti_root_set_sort(&roots);
         for (size_t i = 0; i < roots.size; ++i) {
             double t = roots.data[i];
             if (t > tf / 4) {
@@ -411,7 +410,7 @@ static bool time_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
             profile->t[5] = 0;
             profile->t[6] = t;
 
-            if (cruckig_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsVEL, tf, jMax, vMax, vMin, aMax, aMin)) {
+            if (scatti_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsVEL, tf, jMax, vMax, vMin, aMax, aMin)) {
                 return true;
             }
         }
@@ -435,16 +434,16 @@ static bool time_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
         double deriv[5];
         poly_monic_derivative(polynom, 6, deriv);
         double dderiv[4];
-        cruckig_roots_poly_derivative(deriv, 5, dderiv);
+        scatti_roots_poly_derivative(deriv, 5, dderiv);
 
         /* Solve 4th order derivative analytically */
-        CRuckigRootSet d_extremas = cruckig_roots_solve_quart_monic(dderiv[1] / dderiv[0], dderiv[2] / dderiv[0], dderiv[3] / dderiv[0], 0.0);
+        CRuckigRootSet d_extremas = scatti_roots_solve_quart_monic(dderiv[1] / dderiv[0], dderiv[2] / dderiv[0], dderiv[3] / dderiv[0], 0.0);
         /* Correct: dderiv has 4 coeffs, the quartic monic needs a,b,c,d where leading is 1 */
         /* Actually dderiv[0] is leading coefficient. Let me recompute correctly */
         /* dderiv = derivative of deriv (which has 5 coefficients, monic). So dderiv has 4 coefficients, not monic. */
         /* For solve_quart_monic, we need the monic form: divide by leading coeff */
         if (fabs(dderiv[0]) > DBL_EPSILON) {
-            d_extremas = cruckig_roots_solve_quart_monic(dderiv[1] / dderiv[0], dderiv[2] / dderiv[0], dderiv[3] / dderiv[0], 0.0);
+            d_extremas = scatti_roots_solve_quart_monic(dderiv[1] / dderiv[0], dderiv[2] / dderiv[0], dderiv[3] / dderiv[0], 0.0);
         }
         /* Actually poly_derivative of 5-element monic gives 4 elements, which is a cubic.
            We should use solve_cubic instead. */
@@ -457,11 +456,11 @@ static bool time_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
         /* But the C++ code does: d_extremas = roots::solve_quart_monic(deriv[1], deriv[2], deriv[3], deriv[4]);
            That solves the quartic x^4 + deriv[1]*x^3 + deriv[2]*x^2 + deriv[3]*x + deriv[4] = 0
            which is finding zeros of deriv (the degree 4 monic polynomial). Those are the extremas of the 5th order polynomial. */
-        d_extremas = cruckig_roots_solve_quart_monic(deriv[1], deriv[2], deriv[3], deriv[4]);
+        d_extremas = scatti_roots_solve_quart_monic(deriv[1], deriv[2], deriv[3], deriv[4]);
 
         {
             double tz_current = tz_min;
-            cruckig_root_set_sort(&d_extremas);
+            scatti_root_set_sort(&d_extremas);
 
             for (size_t idx = 0; idx < d_extremas.size; ++idx) {
                 double tz = d_extremas.data[idx];
@@ -470,14 +469,14 @@ static bool time_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
                 }
 
                 {
-                    const double orig_d = cruckig_roots_poly_eval(deriv, 5, tz);
+                    const double orig_d = scatti_roots_poly_eval(deriv, 5, tz);
                     if (fabs(orig_d) > ROOTS_TOLERANCE) {
-                        tz -= orig_d / cruckig_roots_poly_eval(dderiv, 4, tz);
+                        tz -= orig_d / scatti_roots_poly_eval(dderiv, 4, tz);
                     }
                 }
 
-                const double val_new = cruckig_roots_poly_eval(polynom, 6, tz);
-                if (fabs(val_new) < 64 * fabs(cruckig_roots_poly_eval(dderiv, 4, tz)) * ROOTS_TOLERANCE) {
+                const double val_new = scatti_roots_poly_eval(polynom, 6, tz);
+                if (fabs(val_new) < 64 * fabs(scatti_roots_poly_eval(dderiv, 4, tz)) * ROOTS_TOLERANCE) {
                     /* check_root inline for UDDU */
                     double t = tz;
                     {
@@ -500,12 +499,12 @@ static bool time_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
                         profile->t[5] = 0;
                         profile->t[6] = h1 + af / jMax;
 
-                        if (cruckig_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsVEL, tf, jMax, vMax, vMin, aMax, aMin)) {
+                        if (scatti_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsVEL, tf, jMax, vMax, vMin, aMax, aMin)) {
                             return true;
                         }
                     }
-                } else if (cruckig_roots_poly_eval(polynom, 6, tz_current) * val_new < 0) {
-                    double t = cruckig_roots_shrink_interval(polynom, 6, tz_current, tz);
+                } else if (scatti_roots_poly_eval(polynom, 6, tz_current) * val_new < 0) {
+                    double t = scatti_roots_shrink_interval(polynom, 6, tz_current, tz);
                     /* check_root inline for UDDU */
                     {
                         const double h1_sq = (a0_a0 + af_af) / (2 * jMax_jMax) + (2 * a0 * t + jMax * t * t - vd) / jMax;
@@ -530,7 +529,7 @@ static bool time_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
                         profile->t[5] = 0;
                         profile->t[6] = h1 + af / jMax;
 
-                        if (cruckig_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsVEL, tf, jMax, vMax, vMin, aMax, aMin)) {
+                        if (scatti_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsVEL, tf, jMax, vMax, vMin, aMax, aMin)) {
                             return true;
                         }
                     }
@@ -539,9 +538,9 @@ static bool time_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
             }
 
             {
-                const double val_max = cruckig_roots_poly_eval(polynom, 6, tz_max);
-                if (cruckig_roots_poly_eval(polynom, 6, tz_current) * val_max < 0) {
-                    double t = cruckig_roots_shrink_interval(polynom, 6, tz_current, tz_max);
+                const double val_max = scatti_roots_poly_eval(polynom, 6, tz_max);
+                if (scatti_roots_poly_eval(polynom, 6, tz_current) * val_max < 0) {
+                    double t = scatti_roots_shrink_interval(polynom, 6, tz_current, tz_max);
                     {
                         const double h1_sq = (a0_a0 + af_af) / (2 * jMax_jMax) + (2 * a0 * t + jMax * t * t - vd) / jMax;
                         if (h1_sq >= 0) {
@@ -565,7 +564,7 @@ static bool time_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
                         profile->t[5] = 0;
                         profile->t[6] = h1 + af / jMax;
 
-                        if (cruckig_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsVEL, tf, jMax, vMax, vMin, aMax, aMin)) {
+                        if (scatti_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsVEL, tf, jMax, vMax, vMin, aMax, aMin)) {
                             return true;
                         }
                     }
@@ -594,7 +593,7 @@ static bool time_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
                         profile->t[5] = 0;
                         profile->t[6] = h1 + af / jMax;
 
-                        if (cruckig_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsVEL, tf, jMax, vMax, vMin, aMax, aMin)) {
+                        if (scatti_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsVEL, tf, jMax, vMax, vMin, aMax, aMin)) {
                             return true;
                         }
                     }
@@ -629,11 +628,11 @@ static bool time_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
 
         /* 4th order derivative of dderiv6 (degree 3) */
         double ddderiv6[4];
-        cruckig_roots_poly_derivative(dderiv6, 5, ddderiv6);
+        scatti_roots_poly_derivative(dderiv6, 5, ddderiv6);
 
         /* Solve the 4th order dderiv6 (monic quartic): find zeros of dderiv6 */
-        CRuckigRootSet dd_extremas = cruckig_roots_solve_quart_monic(dderiv6[1], dderiv6[2], dderiv6[3], dderiv6[4]);
-        cruckig_root_set_sort(&dd_extremas);
+        CRuckigRootSet dd_extremas = scatti_roots_solve_quart_monic(dderiv6[1], dderiv6[2], dderiv6[3], dderiv6[4]);
+        scatti_root_set_sort(&dd_extremas);
 
         /* Build intervals where deriv6 changes sign */
         typedef struct { double first; double second; } interval_pair;
@@ -648,20 +647,20 @@ static bool time_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
             }
 
             {
-                const double orig_dd = cruckig_roots_poly_eval(dderiv6, 5, tz);
+                const double orig_dd = scatti_roots_poly_eval(dderiv6, 5, tz);
                 if (fabs(orig_dd) > ROOTS_TOLERANCE) {
-                    tz -= orig_dd / cruckig_roots_poly_eval(ddderiv6, 4, tz);
+                    tz -= orig_dd / scatti_roots_poly_eval(ddderiv6, 4, tz);
                 }
             }
 
-            if (cruckig_roots_poly_eval(deriv6, 6, dd_tz_current) * cruckig_roots_poly_eval(deriv6, 6, tz) < 0) {
+            if (scatti_roots_poly_eval(deriv6, 6, dd_tz_current) * scatti_roots_poly_eval(deriv6, 6, tz) < 0) {
                 dd_tz_intervals[dd_tz_interval_count].first = dd_tz_current;
                 dd_tz_intervals[dd_tz_interval_count].second = tz;
                 dd_tz_interval_count++;
             }
             dd_tz_current = tz;
         }
-        if (cruckig_roots_poly_eval(deriv6, 6, dd_tz_current) * cruckig_roots_poly_eval(deriv6, 6, tz_max) < 0) {
+        if (scatti_roots_poly_eval(deriv6, 6, dd_tz_current) * scatti_roots_poly_eval(deriv6, 6, tz_max) < 0) {
             dd_tz_intervals[dd_tz_interval_count].first = dd_tz_current;
             dd_tz_intervals[dd_tz_interval_count].second = tz_max;
             dd_tz_interval_count++;
@@ -670,14 +669,14 @@ static bool time_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
         double tz_current = tz_min;
 
         for (size_t int_idx = 0; int_idx < dd_tz_interval_count; ++int_idx) {
-            const double tz = cruckig_roots_shrink_interval(deriv6, 6, dd_tz_intervals[int_idx].first, dd_tz_intervals[int_idx].second);
+            const double tz = scatti_roots_shrink_interval(deriv6, 6, dd_tz_intervals[int_idx].first, dd_tz_intervals[int_idx].second);
 
             if (tz >= tz_max) {
                 continue;
             }
 
-            const double p_val = cruckig_roots_poly_eval(polynom, 7, tz);
-            if (fabs(p_val) < 64 * fabs(cruckig_roots_poly_eval(dderiv6, 5, tz)) * ROOTS_TOLERANCE) {
+            const double p_val = scatti_roots_poly_eval(polynom, 7, tz);
+            if (fabs(p_val) < 64 * fabs(scatti_roots_poly_eval(dderiv6, 5, tz)) * ROOTS_TOLERANCE) {
                 /* check_root UDUD inline */
                 double t = tz;
                 {
@@ -706,12 +705,12 @@ static bool time_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
                     profile->t[5] = 0;
                     profile->t[6] = h1 - af / jMax;
 
-                    if (cruckig_profile_check_with_timing(profile, ControlSignsUDUD, ReachedLimitsVEL, tf, jMax, vMax, vMin, aMax, aMin)) {
+                    if (scatti_profile_check_with_timing(profile, ControlSignsUDUD, ReachedLimitsVEL, tf, jMax, vMax, vMin, aMax, aMin)) {
                         return true;
                     }
                 }
-            } else if (cruckig_roots_poly_eval(polynom, 7, tz_current) * p_val < 0) {
-                double t = cruckig_roots_shrink_interval(polynom, 7, tz_current, tz);
+            } else if (scatti_roots_poly_eval(polynom, 7, tz_current) * p_val < 0) {
+                double t = scatti_roots_shrink_interval(polynom, 7, tz_current, tz);
                 /* check_root UDUD inline */
                 {
                     double h1 = sqrt((af_af - a0_a0) / (2 * jMax_jMax) - ((2 * a0 + jMax * t) * t - vd) / jMax);
@@ -739,7 +738,7 @@ static bool time_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
                     profile->t[5] = 0;
                     profile->t[6] = h1 - af / jMax;
 
-                    if (cruckig_profile_check_with_timing(profile, ControlSignsUDUD, ReachedLimitsVEL, tf, jMax, vMax, vMin, aMax, aMin)) {
+                    if (scatti_profile_check_with_timing(profile, ControlSignsUDUD, ReachedLimitsVEL, tf, jMax, vMax, vMin, aMax, aMin)) {
                         return true;
                     }
                 }
@@ -747,8 +746,8 @@ static bool time_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
             tz_current = tz;
         }
 
-        if (cruckig_roots_poly_eval(polynom, 7, tz_current) * cruckig_roots_poly_eval(polynom, 7, tz_max) < 0) {
-            double t = cruckig_roots_shrink_interval(polynom, 7, tz_current, tz_max);
+        if (scatti_roots_poly_eval(polynom, 7, tz_current) * scatti_roots_poly_eval(polynom, 7, tz_max) < 0) {
+            double t = scatti_roots_shrink_interval(polynom, 7, tz_current, tz_max);
             {
                 double h1 = sqrt((af_af - a0_a0) / (2 * jMax_jMax) - ((2 * a0 + jMax * t) * t - vd) / jMax);
                 double orig_nr = -pd + (af_p3 - a0_p3 + 3 * a0_a0 * jMax * (tf - 2 * t)) / (6 * jMax_jMax) + (2 * a0 + jMax * t) * t * (tf - t) + (jMax * h1 - af) * h1 * h1 + tf * v0;
@@ -775,7 +774,7 @@ static bool time_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
                 profile->t[5] = 0;
                 profile->t[6] = h1 - af / jMax;
 
-                if (cruckig_profile_check_with_timing(profile, ControlSignsUDUD, ReachedLimitsVEL, tf, jMax, vMax, vMin, aMax, aMin)) {
+                if (scatti_profile_check_with_timing(profile, ControlSignsUDUD, ReachedLimitsVEL, tf, jMax, vMax, vMin, aMax, aMin)) {
                     return true;
                 }
             }
@@ -795,7 +794,6 @@ static bool time_acc0_acc1(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *pr
     const double ad = s->ad;
     const double a0_a0 = s->a0_a0, af_af = s->af_af;
     const double a0_p3 = s->a0_p3, af_p3 = s->af_p3;
-    const double jMax_jMax = s->jMax_jMax;
     const double g1 = s->g1, g2 = s->g2;
 
     if (fabs(a0) < DBL_EPSILON && fabs(af) < DBL_EPSILON) {
@@ -811,12 +809,12 @@ static bool time_acc0_acc1(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *pr
         profile->t[5] = tf - (2 * profile->t[0] + profile->t[1] + 2 * profile->t[4]);
         profile->t[6] = profile->t[4];
 
-        return cruckig_profile_check_with_timing_full(profile, ControlSignsUDDU, ReachedLimitsACC0_ACC1, tf, jf, vMax, vMin, aMax, aMin, jMax);
+        return scatti_profile_check_with_timing_full(profile, ControlSignsUDDU, ReachedLimitsACC0_ACC1, tf, jf, vMax, vMin, aMax, aMin, jMax);
     }
 
     /* UDDU */
     {
-        const double h1 = sqrt(144 * cruckig_pow2((aMax - aMin) * (-aMin * vd + aMax * (aMin * tf - vd)) - af_af * (aMax * tf - vd) + 2 * af * aMin * (aMax * tf - vd) + a0_a0 * (aMin * tf + v0 - vf) - 2 * a0 * aMax * (aMin * tf - vd)) + 48 * ad * (3 * a0_p3 - 3 * af_p3 + 12 * aMax * aMin * (-aMax + aMin) + 4 * af_af * (aMax + 2 * aMin) + a0 * (-3 * af_af + 8 * af * (aMin - aMax) + 6 * (aMax * aMax + 2 * aMax * aMin - aMin * aMin)) + 6 * af * (aMax * aMax - 2 * aMax * aMin - aMin * aMin) + a0_a0 * (3 * af - 4 * (2 * aMax + aMin))) * (2 * aMin * g1 + vd * vd + aMax * (2 * pd + aMin * tf * tf - 2 * tf * vf)));
+        const double h1 = sqrt(144 * scatti_pow2((aMax - aMin) * (-aMin * vd + aMax * (aMin * tf - vd)) - af_af * (aMax * tf - vd) + 2 * af * aMin * (aMax * tf - vd) + a0_a0 * (aMin * tf + v0 - vf) - 2 * a0 * aMax * (aMin * tf - vd)) + 48 * ad * (3 * a0_p3 - 3 * af_p3 + 12 * aMax * aMin * (-aMax + aMin) + 4 * af_af * (aMax + 2 * aMin) + a0 * (-3 * af_af + 8 * af * (aMin - aMax) + 6 * (aMax * aMax + 2 * aMax * aMin - aMin * aMin)) + 6 * af * (aMax * aMax - 2 * aMax * aMin - aMin * aMin) + a0_a0 * (3 * af - 4 * (2 * aMax + aMin))) * (2 * aMin * g1 + vd * vd + aMax * (2 * pd + aMin * tf * tf - 2 * tf * vf)));
 
         const double jf = -(3 * af_af * aMax * tf - 3 * a0_a0 * aMin * tf - 6 * ad * aMax * aMin * tf + 3 * aMax * aMin * (aMin - aMax) * tf + 3 * (a0_a0 - af_af) * vd + 6 * vd * (af * aMin - a0 * aMax) + 3 * (aMax * aMax - aMin * aMin) * vd + h1 / 4) / (6 * (2 * aMin * g1 + vd * vd + aMax * (2 * pd + aMin * tf_tf - 2 * tf * vf)));
         profile->t[0] = (aMax - a0) / jf;
@@ -827,7 +825,7 @@ static bool time_acc0_acc1(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *pr
         profile->t[5] = tf - (profile->t[0] + profile->t[1] + profile->t[2] + 2 * profile->t[4] + af / jf);
         profile->t[6] = profile->t[4] + af / jf;
 
-        if (cruckig_profile_check_with_timing_full(profile, ControlSignsUDDU, ReachedLimitsACC0_ACC1, tf, jf, vMax, vMin, aMax, aMin, jMax)) {
+        if (scatti_profile_check_with_timing_full(profile, ControlSignsUDDU, ReachedLimitsACC0_ACC1, tf, jf, vMax, vMin, aMax, aMin, jMax)) {
             return true;
         }
     }
@@ -838,7 +836,7 @@ static bool time_acc0_acc1(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *pr
 static bool time_acc1(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
                       double vMax, double vMin, double aMax, double aMin, double jMax)
 {
-    const double v0 = s->v0, a0 = s->a0, vf = s->vf, af = s->af;
+    const double a0 = s->a0, vf = s->vf, af = s->af;
     const double tf = s->tf, tf_tf = s->tf_tf;
     const double pd = s->pd;
     const double vd = s->vd, vd_vd = s->vd_vd;
@@ -862,7 +860,7 @@ static bool time_acc1(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
         profile->t[5] = h1;
         profile->t[6] = tf - (profile->t[0] + profile->t[2] + profile->t[5]);
 
-        if (cruckig_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsACC1, tf, jMax, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsACC1, tf, jMax, vMax, vMin, aMax, aMin)) {
             return true;
         }
     }
@@ -880,7 +878,7 @@ static bool time_acc1(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
         profile->t[5] = h1;
         profile->t[6] = tf - (profile->t[5] + profile->t[4] + profile->t[2]);
 
-        if (cruckig_profile_check_with_timing(profile, ControlSignsUDUD, ReachedLimitsACC1, tf, jMax, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check_with_timing(profile, ControlSignsUDUD, ReachedLimitsACC1, tf, jMax, vMax, vMin, aMax, aMin)) {
             return true;
         }
     }
@@ -901,7 +899,7 @@ static bool time_acc1(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
         profile->t[5] = tf - (profile->t[2] + profile->t[3] + profile->t[4] + (af - aMin) / jMax);
         profile->t[6] = (af - aMin) / jMax;
 
-        if (cruckig_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsACC1, tf, jMax, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsACC1, tf, jMax, vMax, vMin, aMax, aMin)) {
             return true;
         }
     }
@@ -922,7 +920,7 @@ static bool time_acc1(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
         profile->t[5] = tf - (profile->t[2] + profile->t[3] + profile->t[4] + (-af + aMax) / jMax);
         profile->t[6] = (-af + aMax) / jMax;
 
-        if (cruckig_profile_check_with_timing(profile, ControlSignsUDUD, ReachedLimitsACC1, tf, jMax, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check_with_timing(profile, ControlSignsUDUD, ReachedLimitsACC1, tf, jMax, vMax, vMin, aMax, aMin)) {
             return true;
         }
     }
@@ -932,14 +930,13 @@ static bool time_acc1(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
 static bool time_acc0(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
                       double vMax, double vMin, double aMax, double aMin, double jMax)
 {
-    const double v0 = s->v0, a0 = s->a0, vf = s->vf, af = s->af;
+    const double v0 = s->v0, a0 = s->a0, af = s->af;
     const double tf = s->tf, tf_tf = s->tf_tf;
     const double pd = s->pd;
-    const double vd = s->vd, vd_vd = s->vd_vd;
+    const double vd = s->vd;
     const double ad = s->ad, ad_ad = s->ad_ad;
     const double a0_a0 = s->a0_a0, af_af = s->af_af;
     const double a0_p3 = s->a0_p3, af_p3 = s->af_p3;
-    const double a0_p4 = s->a0_p4, af_p4 = s->af_p4;
     const double jMax_jMax = s->jMax_jMax;
     const double g1 = s->g1, g2 = s->g2;
 
@@ -955,7 +952,7 @@ static bool time_acc0(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
         profile->t[5] = 0;
         profile->t[6] = 0;
 
-        if (cruckig_profile_check_with_timing(profile, ControlSignsUDUD, ReachedLimitsNONE, tf, jMax, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check_with_timing(profile, ControlSignsUDUD, ReachedLimitsNONE, tf, jMax, vMax, vMin, aMax, aMin)) {
             return true;
         }
     }
@@ -975,7 +972,7 @@ static bool time_acc0(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
         profile->t[5] = 0;
         profile->t[6] = tf - (profile->t[0] + profile->t[1] + profile->t[2] + profile->t[3]);
 
-        if (cruckig_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsNONE, tf, jMax, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsNONE, tf, jMax, vMax, vMin, aMax, aMin)) {
             return true;
         }
     }
@@ -996,7 +993,7 @@ static bool time_acc0(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
         profile->t[5] = 0;
         profile->t[6] = 0;
 
-        if (cruckig_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsACC0, tf, jMax, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsACC0, tf, jMax, vMax, vMin, aMax, aMin)) {
             return true;
         }
     }
@@ -1011,7 +1008,7 @@ static bool time_none(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
     const double tf = s->tf, tf_tf = s->tf_tf, tf_p3 = s->tf_p3, tf_p4 = s->tf_p4;
     const double pd = s->pd;
     const double vd = s->vd, vd_vd = s->vd_vd;
-    const double v0_v0 = s->v0_v0, vf_vf = s->vf_vf;
+    const double vf_vf = s->vf_vf;
     const double ad = s->ad, ad_ad = s->ad_ad;
     const double a0_a0 = s->a0_a0, af_af = s->af_af;
     const double a0_p3 = s->a0_p3, af_p3 = s->af_p3;
@@ -1022,7 +1019,7 @@ static bool time_none(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
     const double g1 = s->g1, g2 = s->g2;
 
     if (fabs(v0) < DBL_EPSILON && fabs(a0) < DBL_EPSILON && fabs(af) < DBL_EPSILON) {
-        const double h1 = sqrt(tf_tf * vf_vf + cruckig_pow2(4 * pd - tf * vf));
+        const double h1 = sqrt(tf_tf * vf_vf + scatti_pow2(4 * pd - tf * vf));
         const double jf = 4 * (4 * pd - 2 * tf * vf + h1) / tf_p3;
 
         profile->t[0] = tf / 4;
@@ -1033,7 +1030,7 @@ static bool time_none(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
         profile->t[5] = 0;
         profile->t[6] = profile->t[0];
 
-        if (cruckig_profile_check_with_timing_full(profile, ControlSignsUDDU, ReachedLimitsNONE, tf, jf, vMax, vMin, aMax, aMin, jMax)) {
+        if (scatti_profile_check_with_timing_full(profile, ControlSignsUDDU, ReachedLimitsNONE, tf, jf, vMax, vMin, aMax, aMin, jMax)) {
             return true;
         }
     }
@@ -1049,8 +1046,8 @@ static bool time_none(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
                 polynom[2] = 4 * (pd - tf * vf) / jMax;
                 polynom[3] = (vd_vd + jMax * tf * g2) / (jMax_jMax);
 
-                CRuckigRootSet roots = cruckig_roots_solve_quart_monic(polynom[0], polynom[1], polynom[2], polynom[3]);
-                cruckig_root_set_sort(&roots);
+                CRuckigRootSet roots = scatti_roots_solve_quart_monic(polynom[0], polynom[1], polynom[2], polynom[3]);
+                scatti_root_set_sort(&roots);
                 for (size_t i = 0; i < roots.size; ++i) {
                     double t = roots.data[i];
                     if (t > tf / 2 || t > (aMax - a0) / jMax) {
@@ -1075,7 +1072,7 @@ static bool time_none(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
                     profile->t[5] = 0;
                     profile->t[6] = 0;
 
-                    if (cruckig_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsNONE, tf, jMax, vMax, vMin, aMax, aMin)) {
+                    if (scatti_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsNONE, tf, jMax, vMax, vMin, aMax, aMin)) {
                         return true;
                     }
                 }
@@ -1085,7 +1082,7 @@ static bool time_none(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
 
     /* UDUD T 0246 */
     {
-        const double h0 = sqrt(2 * jMax_jMax * (2 * cruckig_pow2(a0_p3 - af_p3 - 3 * af_af * jMax * tf + 9 * af * jMax_jMax * tf_tf - 3 * a0_a0 * (af + jMax * tf) + 3 * a0 * cruckig_pow2(af + jMax * tf) + 3 * jMax_jMax * (8 * pd + jMax * tf_tf * tf - 8 * tf * vf)) - 3 * (a0_a0 + af_af - 2 * af * jMax * tf - 2 * a0 * (af + jMax * tf) - jMax * (jMax * tf_tf + 4 * v0 - 4 * vf)) * (a0_p4 + af_p4 + 4 * af_p3 * jMax * tf + 6 * af_af * jMax_jMax * tf_tf - 3 * jMax_jMax * jMax_jMax * tf_tf * tf_tf - 4 * a0_p3 * (af + jMax * tf) + 6 * a0_a0 * cruckig_pow2(af + jMax * tf) - 12 * af * jMax_jMax * (8 * pd + jMax * tf_tf * tf - 8 * tf * v0) + 48 * jMax_jMax * vd_vd + 48 * jMax_jMax * jMax * tf * g2 - 4 * a0 * (af_p3 + 3 * af_af * jMax * tf - 9 * af * jMax_jMax * tf_tf - 3 * jMax_jMax * (8 * pd + jMax * tf_tf * tf - 8 * tf * vf))))) / jMax;
+        const double h0 = sqrt(2 * jMax_jMax * (2 * scatti_pow2(a0_p3 - af_p3 - 3 * af_af * jMax * tf + 9 * af * jMax_jMax * tf_tf - 3 * a0_a0 * (af + jMax * tf) + 3 * a0 * scatti_pow2(af + jMax * tf) + 3 * jMax_jMax * (8 * pd + jMax * tf_tf * tf - 8 * tf * vf)) - 3 * (a0_a0 + af_af - 2 * af * jMax * tf - 2 * a0 * (af + jMax * tf) - jMax * (jMax * tf_tf + 4 * v0 - 4 * vf)) * (a0_p4 + af_p4 + 4 * af_p3 * jMax * tf + 6 * af_af * jMax_jMax * tf_tf - 3 * jMax_jMax * jMax_jMax * tf_tf * tf_tf - 4 * a0_p3 * (af + jMax * tf) + 6 * a0_a0 * scatti_pow2(af + jMax * tf) - 12 * af * jMax_jMax * (8 * pd + jMax * tf_tf * tf - 8 * tf * v0) + 48 * jMax_jMax * vd_vd + 48 * jMax_jMax * jMax * tf * g2 - 4 * a0 * (af_p3 + 3 * af_af * jMax * tf - 9 * af * jMax_jMax * tf_tf - 3 * jMax_jMax * (8 * pd + jMax * tf_tf * tf - 8 * tf * vf))))) / jMax;
         const double h1 = 12 * jMax * (-a0_a0 - af_af + 2 * af * jMax * tf + 2 * a0 * (af + jMax * tf) + jMax * (jMax * tf_tf + 4 * v0 - 4 * vf));
         const double h2 = -4 * a0_p3 + 4 * af_p3 + 12 * a0_a0 * af - 12 * a0 * af_af + 48 * jMax_jMax * pd + 12 * (a0_a0 - af_af) * jMax * tf - 24 * jMax_jMax * tf * (v0 + vf) + 24 * ad * jMax * vd;
         const double h3 = 2 * a0_p3 - 2 * af_p3 - 6 * a0_a0 * af + 6 * a0 * af_af;
@@ -1098,7 +1095,7 @@ static bool time_none(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
         profile->t[5] = 0;
         profile->t[6] = (-h3 + 48 * jMax_jMax * (tf * v0 - pd) - 6 * (a0_a0 + af_af) * jMax * tf + 12 * a0 * af * jMax * tf + 6 * (af + 3 * a0 + jMax * tf) * tf_tf * jMax_jMax - h0) / h1;
 
-        if (cruckig_profile_check_with_timing(profile, ControlSignsUDUD, ReachedLimitsNONE, tf, jMax, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check_with_timing(profile, ControlSignsUDUD, ReachedLimitsNONE, tf, jMax, vMax, vMin, aMax, aMin)) {
             return true;
         }
     }
@@ -1120,8 +1117,8 @@ static bool time_none(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
             double t_max_b = (ad / jMax + tf) / 2;
             const double t_max = (t_max_a < t_max_b) ? t_max_a : t_max_b;
 
-            CRuckigRootSet roots = cruckig_roots_solve_quart_monic(polynom[0], polynom[1], polynom[2], polynom[3]);
-            cruckig_root_set_sort(&roots);
+            CRuckigRootSet roots = scatti_roots_solve_quart_monic(polynom[0], polynom[1], polynom[2], polynom[3]);
+            scatti_root_set_sort(&roots);
             for (size_t i = 0; i < roots.size; ++i) {
                 double t = roots.data[i];
                 if (t < t_min || t > t_max) {
@@ -1147,7 +1144,7 @@ static bool time_none(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
                 profile->t[5] = 0;
                 profile->t[6] = 0;
 
-                if (cruckig_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsNONE, tf, jMax, vMax, vMin, aMax, aMin)) {
+                if (scatti_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsNONE, tf, jMax, vMax, vMin, aMax, aMin)) {
                     return true;
                 }
             }
@@ -1157,7 +1154,7 @@ static bool time_none(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
         {
             const double h1_val = 3 * jMax * (ad_ad + 2 * jMax * (a0 * tf - vd));
             const double h2_val = ad_ad + 2 * jMax * (a0 * tf - vd);
-            const double h0 = sqrt(4 * cruckig_pow2(2 * (a0_p3 - af_p3) - 6 * a0_a0 * (af - jMax * tf) + 6 * jMax_jMax * g1 + 3 * a0 * (2 * af_af - 2 * jMax * af * tf + jMax_jMax * tf_tf) + 6 * ad * jMax * vd) - 18 * h2_val * h2_val * h2_val) / h1_val * fabs(jMax) / jMax;
+            const double h0 = sqrt(4 * scatti_pow2(2 * (a0_p3 - af_p3) - 6 * a0_a0 * (af - jMax * tf) + 6 * jMax_jMax * g1 + 3 * a0 * (2 * af_af - 2 * jMax * af * tf + jMax_jMax * tf_tf) + 6 * ad * jMax * vd) - 18 * h2_val * h2_val * h2_val) / h1_val * fabs(jMax) / jMax;
 
             profile->t[0] = 0;
             profile->t[1] = 0;
@@ -1167,7 +1164,7 @@ static bool time_none(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
             profile->t[5] = h0;
             profile->t[6] = (tf - profile->t[3] + ad / jMax - h0) / 2;
 
-            if (cruckig_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsNONE, tf, jMax, vMax, vMin, aMax, aMin)) {
+            if (scatti_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsNONE, tf, jMax, vMax, vMin, aMax, aMin)) {
                 return true;
             }
         }
@@ -1189,8 +1186,8 @@ static bool time_none(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
 
             const double t_max_v = (a0 - aMin) / jMax;
 
-            CRuckigRootSet roots = cruckig_roots_solve_quart_monic(polynom[0], polynom[1], polynom[2], polynom[3]);
-            cruckig_root_set_sort(&roots);
+            CRuckigRootSet roots = scatti_roots_solve_quart_monic(polynom[0], polynom[1], polynom[2], polynom[3]);
+            scatti_root_set_sort(&roots);
             for (size_t i = 0; i < roots.size; ++i) {
                 double t = roots.data[i];
                 if (t > t_max_v) {
@@ -1220,7 +1217,7 @@ static bool time_none(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
                     profile->t[5] = 0;
                     profile->t[6] = tf - (t + profile->t[3] + profile->t[4]);
 
-                    if (cruckig_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsNONE, tf, jMax, vMax, vMin, aMax, aMin)) {
+                    if (scatti_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsNONE, tf, jMax, vMax, vMin, aMax, aMin)) {
                         return true;
                     }
                 }
@@ -1247,8 +1244,8 @@ static bool time_none(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
             polynom[2] = (-a0_p5 + af_p5 - af_p4 * jMax * tf + 5 * a0_p4 * (af - jMax * tf) - 2 * a0_p3 * ph3 - 4 * af_p3 * jMax * (jMax * tf_tf + vd) + 12 * af_af * jMax_jMax * g2 - 12 * af * jMax_jMax * ph6 + 2 * a0_a0 * (5 * af_p3 - 9 * af_af * jMax * tf - 6 * af * jMax * vd + 6 * jMax_jMax * ph0) + 12 * jMax_jMax * jMax * ph2 + a0 * (-5 * af_p4 + 8 * af_p3 * jMax * tf + 12 * af_af * jMax * (jMax * tf_tf + vd) - 24 * af * jMax_jMax * (-2 * pd + jMax * tf_p3 + 2 * tf * vf) + 6 * jMax_jMax * ph4)) / (jMax * ph7);
             polynom[3] = -(a0_p6 + af_p6 - 6 * a0_p5 * (af - jMax * tf) + 48 * af_p3 * jMax_jMax * g1 - 72 * jMax_jMax * jMax * (jMax * g1 * g1 + vd_vd * vd + 2 * af * g1 * vd) + 3 * a0_p4 * ph3 - 6 * af_p4 * jMax * vd + 36 * af_af * jMax_jMax * vd_vd - 4 * a0_p3 * (5 * af_p3 - 9 * af_af * jMax * tf - 6 * af * jMax * vd + 6 * jMax_jMax * ph0) + 3 * a0_a0 * ph5 - 6 * a0 * (af_p5 - af_p4 * jMax * tf - 4 * af_p3 * jMax * (jMax * tf_tf + vd) + 12 * jMax_jMax * (af_af * g2 - af * ph6 + jMax * ph2))) / (6 * jMax_jMax * ph7);
 
-            CRuckigRootSet roots = cruckig_roots_solve_quart_monic(polynom[0], polynom[1], polynom[2], polynom[3]);
-            cruckig_root_set_sort(&roots);
+            CRuckigRootSet roots = scatti_roots_solve_quart_monic(polynom[0], polynom[1], polynom[2], polynom[3]);
+            scatti_root_set_sort(&roots);
             for (size_t i = 0; i < roots.size; ++i) {
                 double t = roots.data[i];
                 if (t > tf || t > (aMax - a0) / jMax) {
@@ -1266,7 +1263,7 @@ static bool time_none(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
                     profile->t[5] = 0;
                     profile->t[6] = 0;
 
-                    if (cruckig_profile_check_with_timing(profile, ControlSignsUDUD, ReachedLimitsNONE, tf, jMax, vMax, vMin, aMax, aMin)) {
+                    if (scatti_profile_check_with_timing(profile, ControlSignsUDUD, ReachedLimitsNONE, tf, jMax, vMax, vMin, aMax, aMin)) {
                         return true;
                     }
                 }
@@ -1286,7 +1283,7 @@ static bool time_none(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
         profile->t[5] = 0;
         profile->t[6] = 0;
 
-        if (cruckig_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsNONE, tf, jMax, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsNONE, tf, jMax, vMax, vMin, aMax, aMin)) {
             return true;
         }
     }
@@ -1299,8 +1296,8 @@ static bool time_none(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
         polynom[2] = (a0_a0 + af_af + 10 * a0 * af) * tf_tf + 24 * (tf * (af * v0 - a0 * vf) - pd * ad) + 12 * vd_vd;
         polynom[3] = -3 * tf * ((a0_a0 + af_af + 2 * a0 * af) * tf_tf - 4 * vd * (a0 + af) * tf + 4 * vd_vd);
 
-        CRuckigRootSet roots = cruckig_roots_solve_cubic(polynom[0], polynom[1], polynom[2], polynom[3]);
-        cruckig_root_set_sort(&roots);
+        CRuckigRootSet roots = scatti_roots_solve_cubic(polynom[0], polynom[1], polynom[2], polynom[3]);
+        scatti_root_set_sort(&roots);
         for (size_t i = 0; i < roots.size; ++i) {
             double t = roots.data[i];
             if (t > tf) {
@@ -1317,7 +1314,7 @@ static bool time_none(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
             profile->t[5] = 0;
             profile->t[6] = tf - (profile->t[0] + profile->t[1]);
 
-            if (cruckig_profile_check_with_timing_full(profile, ControlSignsUDDU, ReachedLimitsNONE, tf, jf, vMax, vMin, aMax, aMin, jMax)) {
+            if (scatti_profile_check_with_timing_full(profile, ControlSignsUDDU, ReachedLimitsNONE, tf, jf, vMax, vMin, aMax, aMin, jMax)) {
                 return true;
             }
         }
@@ -1333,7 +1330,7 @@ static bool time_none(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
         profile->t[5] = 0;
         profile->t[6] = tf - (profile->t[0] + profile->t[2]);
 
-        if (cruckig_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsNONE, tf, jMax, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsNONE, tf, jMax, vMax, vMin, aMax, aMin)) {
             return true;
         }
     }
@@ -1341,6 +1338,21 @@ static bool time_none(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
     return false;
 }
 
+#ifdef SCATTI_ENABLE_EXTRA_SOLVERS
+/*
+ * time_none_smooth() — smooth-phase synchronization candidate solver.
+ *
+ * Preserved from the upstream Ruckig C++ reference. Not wired into the
+ * default dispatcher (scatti_pos3_step2_get_profile below) — compile with
+ * -DSCATTI_ENABLE_EXTRA_SOLVERS to include it for research / future hookup.
+ * Until wired up, it deliberately has no callers and some unpacked locals
+ * are kept verbatim from the reference, so suppress the expected warnings.
+ */
+#if defined(__GNUC__) || defined(__clang__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wunused-function"
+#  pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
 static bool time_none_smooth(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
                              double vMax, double vMin, double aMax, double aMin, double jMax)
 {
@@ -1369,7 +1381,7 @@ static bool time_none_smooth(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *
         profile->t[5] = 0;
         profile->t[6] = tf - (profile->t[1] + profile->t[2] + profile->t[3]);
 
-        if (cruckig_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsNONE, tf, jMax, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsNONE, tf, jMax, vMax, vMin, aMax, aMin)) {
             return true;
         }
     }
@@ -1388,7 +1400,7 @@ static bool time_none_smooth(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *
         profile->t[5] = tf - (profile->t[0] + profile->t[1] + profile->t[2]);
         profile->t[6] = 0;
 
-        if (cruckig_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsNONE, tf, jMax, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsNONE, tf, jMax, vMax, vMin, aMax, aMin)) {
             return true;
         }
     }
@@ -1406,7 +1418,7 @@ static bool time_none_smooth(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *
         profile->t[5] = 0;
         profile->t[6] = tf - (profile->t[0] + profile->t[2] + profile->t[3]);
 
-        if (cruckig_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsNONE, tf, jMax, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsNONE, tf, jMax, vMax, vMin, aMax, aMin)) {
             return true;
         }
     }
@@ -1427,7 +1439,7 @@ static bool time_none_smooth(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *
         profile->t[5] = tf - (profile->t[2] + profile->t[3] + profile->t[4]);
         profile->t[6] = 0;
 
-        if (cruckig_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsNONE, tf, jMax, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsNONE, tf, jMax, vMax, vMin, aMax, aMin)) {
             return true;
         }
     }
@@ -1445,16 +1457,20 @@ static bool time_none_smooth(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *
         profile->t[5] = h1 / jMax;
         profile->t[6] = tf - (profile->t[0] + profile->t[4] + profile->t[5]);
 
-        if (cruckig_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsNONE, tf, jMax, vMax, vMin, aMax, aMin)) {
+        if (scatti_profile_check_with_timing(profile, ControlSignsUDDU, ReachedLimitsNONE, tf, jMax, vMax, vMin, aMax, aMin)) {
             return true;
         }
     }
 
     return false;
 }
+#if defined(__GNUC__) || defined(__clang__)
+#  pragma GCC diagnostic pop
+#endif
+#endif /* SCATTI_ENABLE_EXTRA_SOLVERS */
 
-CRUCKIG_HOT
-bool cruckig_pos3_step2_get_profile(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile)
+SCATTI_HOT
+bool scatti_pos3_step2_get_profile(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile)
 {
     /* Test all cases to get ones that match */
     const bool up_first = (s->pd > s->tf * s->v0);

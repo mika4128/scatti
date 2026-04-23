@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <time.h>
-#include <cruckig/cruckig.h>
+#include <scatti/scatti.h>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846264338327950288
@@ -96,18 +96,18 @@ static void fill_min_limit_with_offset(double *arr, size_t n, const double *offs
 
 static size_t check_calculation(CRuckig *otg, CRuckigInputParameter *inp,
                                 CRuckigOutputParameter *out) {
-    CRuckigResult result = cruckig_update(otg, inp, out);
+    CRuckigResult result = scatti_update(otg, inp, out);
     if (result == CRuckigErrorTrajectoryDuration) return 0;
 
     n_assertions++;
     if (result != CRuckigWorking &&
-        !(result == CRuckigFinished && cruckig_trajectory_get_duration(out->trajectory) < 0.005)) {
+        !(result == CRuckigFinished && scatti_trajectory_get_duration(out->trajectory) < 0.005)) {
         n_assertion_failures++;
         return 1; /* error */
     }
 
     n_assertions++;
-    if (cruckig_trajectory_get_duration(out->trajectory) < -1e-10) {
+    if (scatti_trajectory_get_duration(out->trajectory) < -1e-10) {
         n_assertion_failures++;
         return 1;
     }
@@ -120,12 +120,12 @@ static size_t check_calculation(CRuckig *otg, CRuckigInputParameter *inp,
         }
     }
 
-    double duration = cruckig_trajectory_get_duration(out->trajectory);
+    double duration = scatti_trajectory_get_duration(out->trajectory);
     size_t ndofs = otg->degrees_of_freedom;
     double pos[8], vel[8], acc[8];
 
     /* Initial state verification: sample at t=0 */
-    cruckig_trajectory_at_time_simple(out->trajectory, 0.0, pos, vel, acc);
+    scatti_trajectory_at_time_simple(out->trajectory, 0.0, pos, vel, acc);
     for (size_t dof = 0; dof < ndofs; dof++) {
         /* Position check only for Position control mode */
         if (inp->control_interface == CRuckigPosition) {
@@ -151,7 +151,7 @@ static size_t check_calculation(CRuckig *otg, CRuckigInputParameter *inp,
 
     /* Final state verification: sample at t=duration */
     if (duration > 0.01) {
-        cruckig_trajectory_at_time_simple(out->trajectory, duration, pos, vel, acc);
+        scatti_trajectory_at_time_simple(out->trajectory, duration, pos, vel, acc);
         for (size_t dof = 0; dof < ndofs; dof++) {
             if (inp->control_interface == CRuckigPosition) {
                 n_assertions++;
@@ -176,30 +176,30 @@ static size_t check_calculation(CRuckig *otg, CRuckigInputParameter *inp,
 /* Step-through: run update loop, recalculating with a second otg at each step */
 static size_t step_through_check(CRuckig *otg, CRuckigInputParameter *inp,
                                  CRuckigOutputParameter *out, size_t max_checks) {
-    CRuckig *otg2 = cruckig_create(otg->degrees_of_freedom, 0.001);
-    CRuckigInputParameter *inp2 = cruckig_input_create(otg->degrees_of_freedom);
-    CRuckigOutputParameter *out2 = cruckig_output_create(otg->degrees_of_freedom);
+    CRuckig *otg2 = scatti_create(otg->degrees_of_freedom, 0.001);
+    CRuckigInputParameter *inp2 = scatti_input_create(otg->degrees_of_freedom);
+    CRuckigOutputParameter *out2 = scatti_output_create(otg->degrees_of_freedom);
 
     /* First check */
     size_t errs = check_calculation(otg, inp, out);
     size_t checks = 1;
 
     CRuckigResult result;
-    while ((result = cruckig_update(otg, inp, out)) == CRuckigWorking) {
-        cruckig_output_pass_to_input(out, inp);
+    while ((result = scatti_update(otg, inp, out)) == CRuckigWorking) {
+        scatti_output_pass_to_input(out, inp);
 
         /* Re-check from current state with different timestep */
-        cruckig_input_copy(inp2, inp);
-        cruckig_reset(otg2);
+        scatti_input_copy(inp2, inp);
+        scatti_reset(otg2);
         errs += check_calculation(otg2, inp2, out2);
         checks++;
 
         if (checks >= max_checks) break;
     }
 
-    cruckig_output_destroy(out2);
-    cruckig_input_destroy(inp2);
-    cruckig_destroy(otg2);
+    scatti_output_destroy(out2);
+    scatti_input_destroy(inp2);
+    scatti_destroy(otg2);
     return checks;
 }
 
@@ -231,7 +231,7 @@ int main(int argc, char **argv) {
     size_t position_random_3 = (size_t)(remainder * 95 / 100);
     size_t random_3_high = (size_t)(remainder * 5 / 100);
 
-    printf("=== cruckig Random Test Suite ===\n");
+    printf("=== scatti Random Test Suite ===\n");
     printf("<number_trajectories>\n");
     printf("\tPosition (1 DoF): %zu\n", position_random_1);
     printf("\tPosition (3 DoF): %zu\n", position_random_3);
@@ -249,9 +249,9 @@ int main(int argc, char **argv) {
     size_t tested = 0;
     const size_t dofs = 3;
 
-    CRuckig *otg = cruckig_create(dofs, 0.005);
-    CRuckigInputParameter *inp = cruckig_input_create(dofs);
-    CRuckigOutputParameter *out = cruckig_output_create(dofs);
+    CRuckig *otg = scatti_create(dofs, 0.005);
+    CRuckigInputParameter *inp = scatti_input_create(dofs);
+    CRuckigOutputParameter *out = scatti_output_create(dofs);
 
     struct timespec start, end_ts;
     clock_gettime(CLOCK_MONOTONIC, &start);
@@ -260,7 +260,7 @@ int main(int argc, char **argv) {
     printf("Position random 3-DOF (%zu)...\n", position_random_3);
     rng_state = 42;
     for (size_t i = 0; i < position_random_3; i++) {
-        cruckig_reset(otg);
+        scatti_reset(otg);
 
         /* Alternate Phase/Time sync (matching C++) */
         if (i < position_random_3 / 2) {
@@ -286,7 +286,7 @@ int main(int argc, char **argv) {
         fill_limit_with_offset(inp->max_acceleration, dofs, inp->target_acceleration);
         fill_limit(inp->max_jerk, dofs);
 
-        if (!cruckig_input_validate(inp, false, true)) continue;
+        if (!scatti_input_validate(inp, false, true)) continue;
 
         errors += check_calculation(otg, inp, out);
         tested++;
@@ -295,13 +295,13 @@ int main(int argc, char **argv) {
     inp->duration_discretization = CRuckigContinuous;
 
     /* ==================== Position random 1-DOF ==================== */
-    CRuckig *otg1 = cruckig_create(1, 0.005);
-    CRuckigInputParameter *inp1 = cruckig_input_create(1);
-    CRuckigOutputParameter *out1 = cruckig_output_create(1);
+    CRuckig *otg1 = scatti_create(1, 0.005);
+    CRuckigInputParameter *inp1 = scatti_input_create(1);
+    CRuckigOutputParameter *out1 = scatti_output_create(1);
 
     printf("Position random 1-DOF (%zu)...\n", position_random_1);
     for (size_t i = 0; i < position_random_1; i++) {
-        cruckig_reset(otg1);
+        scatti_reset(otg1);
         fill_position(inp1->current_position, 1);
         fill_dynamic_or_zero(inp1->current_velocity, 1, 0.9);
         fill_dynamic_or_zero(inp1->current_acceleration, 1, 0.8);
@@ -312,20 +312,20 @@ int main(int argc, char **argv) {
         fill_limit_with_offset(inp1->max_acceleration, 1, inp1->target_acceleration);
         fill_limit(inp1->max_jerk, 1);
 
-        if (!cruckig_input_validate(inp1, false, true)) continue;
+        if (!scatti_input_validate(inp1, false, true)) continue;
 
         errors += check_calculation(otg1, inp1, out1);
         tested++;
     }
 
-    cruckig_output_destroy(out1);
-    cruckig_input_destroy(inp1);
-    cruckig_destroy(otg1);
+    scatti_output_destroy(out1);
+    scatti_input_destroy(inp1);
+    scatti_destroy(otg1);
 
     /* ==================== Position discrete 3-DOF ==================== */
     printf("Position discrete 3-DOF (%zu)...\n", random_discrete_3);
     for (size_t i = 0; i < random_discrete_3; i++) {
-        cruckig_reset(otg);
+        scatti_reset(otg);
 
         if (i < random_discrete_3 / 2) {
             inp->synchronization = CRuckigSyncPhase;
@@ -343,7 +343,7 @@ int main(int argc, char **argv) {
         fill_discrete_limit_with_offset(inp->max_acceleration, dofs, inp->target_acceleration);
         fill_discrete_limit(inp->max_jerk, dofs);
 
-        if (!cruckig_input_validate(inp, false, true)) {
+        if (!scatti_input_validate(inp, false, true)) {
             continue;
         }
 
@@ -355,7 +355,7 @@ int main(int argc, char **argv) {
     /* ==================== Position high limits 3-DOF ==================== */
     printf("Position high limits 3-DOF (%zu)...\n", random_3_high);
     for (size_t i = 0; i < random_3_high; i++) {
-        cruckig_reset(otg);
+        scatti_reset(otg);
 
         fill_position(inp->current_position, dofs);
         fill_dynamic_or_zero(inp->current_velocity, dofs, 0.1);
@@ -367,7 +367,7 @@ int main(int argc, char **argv) {
         fill_limit_high_with_offset(inp->max_acceleration, dofs, inp->target_acceleration);
         fill_limit_high(inp->max_jerk, dofs);
 
-        if (!cruckig_input_validate(inp, false, true)) {
+        if (!scatti_input_validate(inp, false, true)) {
             continue;
         }
 
@@ -380,7 +380,7 @@ int main(int argc, char **argv) {
     /* Reset max_jerk to INFINITY for second-order mode */
     for (size_t d = 0; d < dofs; d++) inp->max_jerk[d] = INFINITY;
     for (size_t i = 0; i < position_second_random_3; i++) {
-        cruckig_reset(otg);
+        scatti_reset(otg);
 
         if (i < position_second_random_3 / 2) {
             inp->synchronization = CRuckigSyncPhase;
@@ -404,7 +404,7 @@ int main(int argc, char **argv) {
         fill_limit_with_offset(inp->max_acceleration, dofs, inp->target_acceleration);
         /* max_jerk stays INFINITY -> second order */
 
-        if (!cruckig_input_validate(inp, false, true)) {
+        if (!scatti_input_validate(inp, false, true)) {
             continue;
         }
 
@@ -418,13 +418,13 @@ int main(int argc, char **argv) {
 
     /* ==================== Step-through 3-DOF ==================== */
     if (step_through_3_count > 0) {
-        CRuckig *otg_st = cruckig_create(dofs, 0.01);
-        CRuckigInputParameter *inp_st = cruckig_input_create(dofs);
-        CRuckigOutputParameter *out_st = cruckig_output_create(dofs);
+        CRuckig *otg_st = scatti_create(dofs, 0.01);
+        CRuckigInputParameter *inp_st = scatti_input_create(dofs);
+        CRuckigOutputParameter *out_st = scatti_output_create(dofs);
 
         printf("Step-through 3-DOF (%zu)...\n", step_through_3_count);
         for (size_t i = 0; i < step_through_3_count; ) {
-            cruckig_reset(otg_st);
+            scatti_reset(otg_st);
 
             fill_position(inp_st->current_position, dofs);
             fill_dynamic_or_zero(inp_st->current_velocity, dofs, 0.9);
@@ -436,7 +436,7 @@ int main(int argc, char **argv) {
             fill_limit_with_offset(inp_st->max_acceleration, dofs, inp_st->target_acceleration);
             fill_limit(inp_st->max_jerk, dofs);
 
-            if (!cruckig_input_validate(inp_st, false, true)) {
+            if (!scatti_input_validate(inp_st, false, true)) {
                 continue;
             }
 
@@ -444,9 +444,9 @@ int main(int argc, char **argv) {
             tested++;
         }
 
-        cruckig_output_destroy(out_st);
-        cruckig_input_destroy(inp_st);
-        cruckig_destroy(otg_st);
+        scatti_output_destroy(out_st);
+        scatti_input_destroy(inp_st);
+        scatti_destroy(otg_st);
     }
 
     /* ==================== Velocity random 3-DOF ==================== */
@@ -454,7 +454,7 @@ int main(int argc, char **argv) {
     inp->control_interface = CRuckigVelocity;
     inp->current_position[0] = 0.0; inp->current_position[1] = 0.0; inp->current_position[2] = 0.0;
     for (size_t i = 0; i < velocity_random_3; i++) {
-        cruckig_reset(otg);
+        scatti_reset(otg);
 
         fill_dynamic_or_zero(inp->current_velocity, dofs, 0.9);
         fill_dynamic_or_zero(inp->current_acceleration, dofs, 0.8);
@@ -471,7 +471,7 @@ int main(int argc, char **argv) {
     printf("Velocity discrete 3-DOF (%zu)...\n", velocity_random_discrete_3);
     inp->control_interface = CRuckigVelocity;
     for (size_t i = 0; i < velocity_random_discrete_3; i++) {
-        cruckig_reset(otg);
+        scatti_reset(otg);
 
         if (i < velocity_random_discrete_3 / 2) {
             inp->synchronization = CRuckigSyncPhase;
@@ -489,7 +489,7 @@ int main(int argc, char **argv) {
         fill_discrete_limit_with_offset(inp->max_acceleration, dofs, inp->target_acceleration);
         fill_discrete_limit(inp->max_jerk, dofs);
 
-        if (!cruckig_input_validate(inp, false, true)) {
+        if (!scatti_input_validate(inp, false, true)) {
             continue;
         }
 
@@ -505,7 +505,7 @@ int main(int argc, char **argv) {
     /* Reset max_jerk to INFINITY for second-order mode */
     for (size_t d = 0; d < dofs; d++) inp->max_jerk[d] = INFINITY;
     for (size_t i = 0; i < velocity_second_random_3; i++) {
-        cruckig_reset(otg);
+        scatti_reset(otg);
 
         fill_dynamic_or_zero(inp->current_velocity, dofs, 0.9);
         fill_dynamic_or_zero(inp->current_acceleration, dofs, 0.8);
@@ -527,7 +527,7 @@ int main(int argc, char **argv) {
     inp->min_acceleration = (double*)calloc(dofs, sizeof(double));
 
     for (size_t i = 0; i < random_direction_3; i++) {
-        cruckig_reset(otg);
+        scatti_reset(otg);
 
         fill_position(inp->current_position, dofs);
         fill_dynamic_or_zero(inp->current_velocity, dofs, 0.9);
@@ -541,7 +541,7 @@ int main(int argc, char **argv) {
         fill_min_limit_with_offset(inp->min_velocity, dofs, inp->target_velocity);
         fill_min_limit_with_offset(inp->min_acceleration, dofs, inp->target_acceleration);
 
-        if (!cruckig_input_validate(inp, false, true)) {
+        if (!scatti_input_validate(inp, false, true)) {
             continue;
         }
 
@@ -564,9 +564,9 @@ int main(int argc, char **argv) {
     printf("Assertions: %zu (%zu failures)\n", n_assertions, n_assertion_failures);
     printf("Time:   %.3f seconds\n", elapsed);
 
-    cruckig_output_destroy(out);
-    cruckig_input_destroy(inp);
-    cruckig_destroy(otg);
+    scatti_output_destroy(out);
+    scatti_input_destroy(inp);
+    scatti_destroy(otg);
 
     return errors > 0 ? 1 : 0;
 }

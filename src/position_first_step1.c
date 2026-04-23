@@ -1,12 +1,12 @@
-#include <cruckig/cruckig_config.h>
+#include <scatti/scatti_config.h>
 #include <math.h>
 #include <float.h>
 
-#include <cruckig/position.h>
-#include <cruckig/block.h>
-#include <cruckig/profile.h>
+#include <scatti/position.h>
+#include <scatti/block.h>
+#include <scatti/profile.h>
 
-void cruckig_pos1_step1_init(CRuckigPositionFirstOrderStep1 *s,
+void scatti_pos1_step1_init(CRuckigPositionFirstOrderStep1 *s,
                      double p0, double pf, double vMax, double vMin)
 {
     s->_vMax = vMax;
@@ -14,11 +14,11 @@ void cruckig_pos1_step1_init(CRuckigPositionFirstOrderStep1 *s,
     s->pd = pf - p0;
 }
 
-bool cruckig_pos1_step1_get_profile(CRuckigPositionFirstOrderStep1 *s,
+bool scatti_pos1_step1_get_profile(CRuckigPositionFirstOrderStep1 *s,
                             const CRuckigProfile *input, CRuckigBlock *block)
 {
     CRuckigProfile *p = &block->p_min;
-    cruckig_profile_set_boundary_from_profile(p, input);
+    scatti_profile_set_boundary_from_profile(p, input);
 
     const double vf = (s->pd > 0) ? s->_vMax : s->_vMin;
     p->t[0] = 0;
@@ -29,7 +29,7 @@ bool cruckig_pos1_step1_get_profile(CRuckigPositionFirstOrderStep1 *s,
     p->t[5] = 0;
     p->t[6] = 0;
 
-    if (cruckig_profile_check_for_first_order(p, ControlSignsUDDU, ReachedLimitsVEL, vf)) {
+    if (scatti_profile_check_for_first_order(p, ControlSignsUDDU, ReachedLimitsVEL, vf)) {
         block->t_min = p->t_sum[6] + p->brake.duration + p->accel.duration;
         return true;
     }

@@ -1,8 +1,8 @@
-#include <cruckig/cruckig_config.h>
-#include <cruckig/calculator.h>
-#include <cruckig/position.h>
-#include <cruckig/velocity.h>
-#include <cruckig/utils.h>
+#include <scatti/scatti_config.h>
+#include <scatti/calculator.h>
+#include <scatti/position.h>
+#include <scatti/velocity.h>
+#include <scatti/utils.h>
 
 #include <math.h>
 #include <stdlib.h>
@@ -12,51 +12,51 @@
 
 static const double eps = DBL_EPSILON;
 
-CRuckigCalculator* cruckig_calculator_create(size_t dofs) {
-    CRuckigCalculator *calc = (CRuckigCalculator*)calloc(1, sizeof(CRuckigCalculator));
+CRuckigCalculator* scatti_calculator_create(size_t dofs) {
+    CRuckigCalculator *calc = (CRuckigCalculator*)SCATTI_CALLOC(1, sizeof(CRuckigCalculator));
     if (!calc) return NULL;
 
     calc->degrees_of_freedom = dofs;
 
-    calc->new_phase_control = (double*)calloc(dofs, sizeof(double));
-    calc->pd = (double*)calloc(dofs, sizeof(double));
-    calc->possible_t_syncs = (double*)calloc(3 * dofs + 1, sizeof(double));
-    calc->idx = (size_t*)calloc(3 * dofs + 1, sizeof(size_t));
-    calc->blocks = (CRuckigBlock*)calloc(dofs, sizeof(CRuckigBlock));
-    calc->inp_min_velocity = (double*)calloc(dofs, sizeof(double));
-    calc->inp_min_acceleration = (double*)calloc(dofs, sizeof(double));
-    calc->inp_per_dof_control_interface = (CRuckigControlInterface*)calloc(dofs, sizeof(CRuckigControlInterface));
-    calc->inp_per_dof_synchronization = (CRuckigSynchronization*)calloc(dofs, sizeof(CRuckigSynchronization));
+    calc->new_phase_control = (double*)SCATTI_CALLOC(dofs, sizeof(double));
+    calc->pd = (double*)SCATTI_CALLOC(dofs, sizeof(double));
+    calc->possible_t_syncs = (double*)SCATTI_CALLOC(3 * dofs + 1, sizeof(double));
+    calc->idx = (size_t*)SCATTI_CALLOC(3 * dofs + 1, sizeof(size_t));
+    calc->blocks = (CRuckigBlock*)SCATTI_CALLOC(dofs, sizeof(CRuckigBlock));
+    calc->inp_min_velocity = (double*)SCATTI_CALLOC(dofs, sizeof(double));
+    calc->inp_min_acceleration = (double*)SCATTI_CALLOC(dofs, sizeof(double));
+    calc->inp_per_dof_control_interface = (CRuckigControlInterface*)SCATTI_CALLOC(dofs, sizeof(CRuckigControlInterface));
+    calc->inp_per_dof_synchronization = (CRuckigSynchronization*)SCATTI_CALLOC(dofs, sizeof(CRuckigSynchronization));
     calc->segment_input = NULL; /* Created on demand for waypoint calculation */
 
     if (!calc->new_phase_control || !calc->pd || !calc->possible_t_syncs ||
         !calc->idx || !calc->blocks || !calc->inp_min_velocity ||
         !calc->inp_min_acceleration || !calc->inp_per_dof_control_interface ||
         !calc->inp_per_dof_synchronization) {
-        cruckig_calculator_destroy(calc);
+        scatti_calculator_destroy(calc);
         return NULL;
     }
 
     for (size_t i = 0; i < dofs; ++i) {
-        cruckig_block_init(&calc->blocks[i]);
+        scatti_block_init(&calc->blocks[i]);
     }
 
     return calc;
 }
 
-void cruckig_calculator_destroy(CRuckigCalculator *calc) {
+void scatti_calculator_destroy(CRuckigCalculator *calc) {
     if (!calc) return;
-    free(calc->new_phase_control);
-    free(calc->pd);
-    free(calc->possible_t_syncs);
-    free(calc->idx);
-    free(calc->blocks);
-    free(calc->inp_min_velocity);
-    free(calc->inp_min_acceleration);
-    free(calc->inp_per_dof_control_interface);
-    free(calc->inp_per_dof_synchronization);
-    cruckig_input_destroy(calc->segment_input);
-    free(calc);
+    SCATTI_FREE(calc->new_phase_control);
+    SCATTI_FREE(calc->pd);
+    SCATTI_FREE(calc->possible_t_syncs);
+    SCATTI_FREE(calc->idx);
+    SCATTI_FREE(calc->blocks);
+    SCATTI_FREE(calc->inp_min_velocity);
+    SCATTI_FREE(calc->inp_min_acceleration);
+    SCATTI_FREE(calc->inp_per_dof_control_interface);
+    SCATTI_FREE(calc->inp_per_dof_synchronization);
+    scatti_input_destroy(calc->segment_input);
+    SCATTI_FREE(calc);
 }
 
 /* Is the trajectory (in principle) phase synchronizable? */
@@ -237,7 +237,7 @@ static bool synchronize(CRuckigCalculator *calc,
             if (calc->inp_per_dof_synchronization[dof] == CRuckigSyncNone) {
                 continue;
             }
-            if (cruckig_block_is_blocked(&calc->blocks[dof], possible_t_sync)) {
+            if (scatti_block_is_blocked(&calc->blocks[dof], possible_t_sync)) {
                 is_blocked = true;
                 break;
             }
@@ -279,8 +279,8 @@ static bool synchronize(CRuckigCalculator *calc,
     return false;
 }
 
-CRUCKIG_HOT
-CRuckigResult cruckig_calculator_calculate(CRuckigCalculator *calc,
+SCATTI_HOT
+CRuckigResult scatti_calculator_calculate(CRuckigCalculator *calc,
                                            const CRuckigInputParameter *inp,
                                            CRuckigTrajectory *traj,
                                            double delta_time,
@@ -316,18 +316,18 @@ CRuckigResult cruckig_calculator_calculate(CRuckigCalculator *calc,
         switch (calc->inp_per_dof_control_interface[dof]) {
             case CRuckigPosition: {
                 if (!isinf(inp->max_jerk[dof])) {
-                    cruckig_brake_get_position_brake_trajectory(&p->brake,
+                    scatti_brake_get_position_brake_trajectory(&p->brake,
                         inp->current_velocity[dof], inp->current_acceleration[dof],
                         inp->max_velocity[dof], calc->inp_min_velocity[dof],
                         inp->max_acceleration[dof], calc->inp_min_acceleration[dof],
                         inp->max_jerk[dof]);
                 } else if (!isinf(inp->max_acceleration[dof])) {
-                    cruckig_brake_get_second_order_position_brake_trajectory(&p->brake,
+                    scatti_brake_get_second_order_position_brake_trajectory(&p->brake,
                         inp->current_velocity[dof],
                         inp->max_velocity[dof], calc->inp_min_velocity[dof],
                         inp->max_acceleration[dof], calc->inp_min_acceleration[dof]);
                 }
-                cruckig_profile_set_boundary(p,
+                scatti_profile_set_boundary(p,
                     inp->current_position[dof], inp->current_velocity[dof],
                     inp->current_acceleration[dof],
                     inp->target_position[dof], inp->target_velocity[dof],
@@ -335,14 +335,14 @@ CRuckigResult cruckig_calculator_calculate(CRuckigCalculator *calc,
             } break;
             case CRuckigVelocity: {
                 if (!isinf(inp->max_jerk[dof])) {
-                    cruckig_brake_get_velocity_brake_trajectory(&p->brake,
+                    scatti_brake_get_velocity_brake_trajectory(&p->brake,
                         inp->current_acceleration[dof],
                         inp->max_acceleration[dof], calc->inp_min_acceleration[dof],
                         inp->max_jerk[dof]);
                 } else {
-                    cruckig_brake_get_second_order_velocity_brake_trajectory(&p->brake);
+                    scatti_brake_get_second_order_velocity_brake_trajectory(&p->brake);
                 }
-                cruckig_profile_set_boundary_for_velocity(p,
+                scatti_profile_set_boundary_for_velocity(p,
                     inp->current_position[dof], inp->current_velocity[dof],
                     inp->current_acceleration[dof],
                     inp->target_velocity[dof], inp->target_acceleration[dof]);
@@ -351,9 +351,9 @@ CRuckigResult cruckig_calculator_calculate(CRuckigCalculator *calc,
 
         /* Finalize pre-trajectory */
         if (!isinf(inp->max_jerk[dof])) {
-            cruckig_brake_finalize(&p->brake, &p->p[0], &p->v[0], &p->a[0]);
+            scatti_brake_finalize(&p->brake, &p->p[0], &p->v[0], &p->a[0]);
         } else if (!isinf(inp->max_acceleration[dof])) {
-            cruckig_brake_finalize_second_order(&p->brake, &p->p[0], &p->v[0], &p->a[0]);
+            scatti_brake_finalize_second_order(&p->brake, &p->p[0], &p->v[0], &p->a[0]);
         }
 
         bool found_profile = false;
@@ -361,41 +361,41 @@ CRuckigResult cruckig_calculator_calculate(CRuckigCalculator *calc,
             case CRuckigPosition: {
                 if (!isinf(inp->max_jerk[dof])) {
                     CRuckigPositionThirdOrderStep1 step1;
-                    cruckig_pos3_step1_init(&step1,
+                    scatti_pos3_step1_init(&step1,
                         p->p[0], p->v[0], p->a[0], p->pf, p->vf, p->af,
                         inp->max_velocity[dof], calc->inp_min_velocity[dof],
                         inp->max_acceleration[dof], calc->inp_min_acceleration[dof],
                         inp->max_jerk[dof]);
-                    found_profile = cruckig_pos3_step1_get_profile(&step1, p, &calc->blocks[dof]);
+                    found_profile = scatti_pos3_step1_get_profile(&step1, p, &calc->blocks[dof]);
                 } else if (!isinf(inp->max_acceleration[dof])) {
                     CRuckigPositionSecondOrderStep1 step1;
-                    cruckig_pos2_step1_init(&step1,
+                    scatti_pos2_step1_init(&step1,
                         p->p[0], p->v[0], p->pf, p->vf,
                         inp->max_velocity[dof], calc->inp_min_velocity[dof],
                         inp->max_acceleration[dof], calc->inp_min_acceleration[dof]);
-                    found_profile = cruckig_pos2_step1_get_profile(&step1, p, &calc->blocks[dof]);
+                    found_profile = scatti_pos2_step1_get_profile(&step1, p, &calc->blocks[dof]);
                 } else {
                     CRuckigPositionFirstOrderStep1 step1;
-                    cruckig_pos1_step1_init(&step1,
+                    scatti_pos1_step1_init(&step1,
                         p->p[0], p->pf,
                         inp->max_velocity[dof], calc->inp_min_velocity[dof]);
-                    found_profile = cruckig_pos1_step1_get_profile(&step1, p, &calc->blocks[dof]);
+                    found_profile = scatti_pos1_step1_get_profile(&step1, p, &calc->blocks[dof]);
                 }
             } break;
             case CRuckigVelocity: {
                 if (!isinf(inp->max_jerk[dof])) {
                     CRuckigVelocityThirdOrderStep1 step1;
-                    cruckig_vel3_step1_init(&step1,
+                    scatti_vel3_step1_init(&step1,
                         p->v[0], p->a[0], p->vf, p->af,
                         inp->max_acceleration[dof], calc->inp_min_acceleration[dof],
                         inp->max_jerk[dof]);
-                    found_profile = cruckig_vel3_step1_get_profile(&step1, p, &calc->blocks[dof]);
+                    found_profile = scatti_vel3_step1_get_profile(&step1, p, &calc->blocks[dof]);
                 } else {
                     CRuckigVelocitySecondOrderStep1 step1;
-                    cruckig_vel2_step1_init(&step1,
+                    scatti_vel2_step1_init(&step1,
                         p->v[0], p->vf,
                         inp->max_acceleration[dof], calc->inp_min_acceleration[dof]);
-                    found_profile = cruckig_vel2_step1_get_profile(&step1, p, &calc->blocks[dof]);
+                    found_profile = scatti_vel2_step1_get_profile(&step1, p, &calc->blocks[dof]);
                 }
             } break;
         }
@@ -521,21 +521,21 @@ CRuckigResult cruckig_calculator_calculate(CRuckigCalculator *calc,
                             switch (p->control_signs) {
                                 case ControlSignsUDDU: {
                                     if (!isinf(inp->max_jerk[dof])) {
-                                        found_time_synchronization &= cruckig_profile_check_with_timing_full(p,
+                                        found_time_synchronization &= scatti_profile_check_with_timing_full(p,
                                             ControlSignsUDDU, ReachedLimitsNONE,
                                             t_profile, calc->new_phase_control[dof],
                                             inp->max_velocity[dof], calc->inp_min_velocity[dof],
                                             inp->max_acceleration[dof], calc->inp_min_acceleration[dof],
                                             inp->max_jerk[dof]);
                                     } else if (!isinf(inp->max_acceleration[dof])) {
-                                        found_time_synchronization &= cruckig_profile_check_for_second_order_with_timing_full(p,
+                                        found_time_synchronization &= scatti_profile_check_for_second_order_with_timing_full(p,
                                             ControlSignsUDDU, ReachedLimitsNONE,
                                             t_profile, calc->new_phase_control[dof],
                                             -calc->new_phase_control[dof],
                                             inp->max_velocity[dof], calc->inp_min_velocity[dof],
                                             inp->max_acceleration[dof], calc->inp_min_acceleration[dof]);
                                     } else {
-                                        found_time_synchronization &= cruckig_profile_check_for_first_order_with_timing_full(p,
+                                        found_time_synchronization &= scatti_profile_check_for_first_order_with_timing_full(p,
                                             ControlSignsUDDU, ReachedLimitsNONE,
                                             t_profile, calc->new_phase_control[dof],
                                             inp->max_velocity[dof], calc->inp_min_velocity[dof]);
@@ -543,14 +543,14 @@ CRuckigResult cruckig_calculator_calculate(CRuckigCalculator *calc,
                                 } break;
                                 case ControlSignsUDUD: {
                                     if (!isinf(inp->max_jerk[dof])) {
-                                        found_time_synchronization &= cruckig_profile_check_with_timing_full(p,
+                                        found_time_synchronization &= scatti_profile_check_with_timing_full(p,
                                             ControlSignsUDUD, ReachedLimitsNONE,
                                             t_profile, calc->new_phase_control[dof],
                                             inp->max_velocity[dof], calc->inp_min_velocity[dof],
                                             inp->max_acceleration[dof], calc->inp_min_acceleration[dof],
                                             inp->max_jerk[dof]);
                                     } else {
-                                        found_time_synchronization &= cruckig_profile_check_for_second_order_with_timing_full(p,
+                                        found_time_synchronization &= scatti_profile_check_for_second_order_with_timing_full(p,
                                             ControlSignsUDUD, ReachedLimitsNONE,
                                             t_profile, calc->new_phase_control[dof],
                                             -calc->new_phase_control[dof],
@@ -564,13 +564,13 @@ CRuckigResult cruckig_calculator_calculate(CRuckigCalculator *calc,
                             switch (p->control_signs) {
                                 case ControlSignsUDDU: {
                                     if (!isinf(inp->max_jerk[dof])) {
-                                        found_time_synchronization &= cruckig_profile_check_for_velocity_with_timing_full(p,
+                                        found_time_synchronization &= scatti_profile_check_for_velocity_with_timing_full(p,
                                             ControlSignsUDDU, ReachedLimitsNONE,
                                             t_profile, calc->new_phase_control[dof],
                                             inp->max_acceleration[dof], calc->inp_min_acceleration[dof],
                                             inp->max_jerk[dof]);
                                     } else {
-                                        found_time_synchronization &= cruckig_profile_check_for_second_order_velocity_with_timing_full(p,
+                                        found_time_synchronization &= scatti_profile_check_for_second_order_velocity_with_timing_full(p,
                                             ControlSignsUDDU, ReachedLimitsNONE,
                                             t_profile, calc->new_phase_control[dof],
                                             inp->max_acceleration[dof], calc->inp_min_acceleration[dof]);
@@ -578,13 +578,13 @@ CRuckigResult cruckig_calculator_calculate(CRuckigCalculator *calc,
                                 } break;
                                 case ControlSignsUDUD: {
                                     if (!isinf(inp->max_jerk[dof])) {
-                                        found_time_synchronization &= cruckig_profile_check_for_velocity_with_timing_full(p,
+                                        found_time_synchronization &= scatti_profile_check_for_velocity_with_timing_full(p,
                                             ControlSignsUDUD, ReachedLimitsNONE,
                                             t_profile, calc->new_phase_control[dof],
                                             inp->max_acceleration[dof], calc->inp_min_acceleration[dof],
                                             inp->max_jerk[dof]);
                                     } else {
-                                        found_time_synchronization &= cruckig_profile_check_for_second_order_velocity_with_timing_full(p,
+                                        found_time_synchronization &= scatti_profile_check_for_second_order_velocity_with_timing_full(p,
                                             ControlSignsUDUD, ReachedLimitsNONE,
                                             t_profile, calc->new_phase_control[dof],
                                             inp->max_acceleration[dof], calc->inp_min_acceleration[dof]);
@@ -650,41 +650,41 @@ CRuckigResult cruckig_calculator_calculate(CRuckigCalculator *calc,
             case CRuckigPosition: {
                 if (!isinf(inp->max_jerk[dof])) {
                     CRuckigPositionThirdOrderStep2 step2;
-                    cruckig_pos3_step2_init(&step2,
+                    scatti_pos3_step2_init(&step2,
                         t_profile, p->p[0], p->v[0], p->a[0], p->pf, p->vf, p->af,
                         inp->max_velocity[dof], calc->inp_min_velocity[dof],
                         inp->max_acceleration[dof], calc->inp_min_acceleration[dof],
                         inp->max_jerk[dof]);
-                    found_time_synchronization = cruckig_pos3_step2_get_profile(&step2, p);
+                    found_time_synchronization = scatti_pos3_step2_get_profile(&step2, p);
                 } else if (!isinf(inp->max_acceleration[dof])) {
                     CRuckigPositionSecondOrderStep2 step2;
-                    cruckig_pos2_step2_init(&step2,
+                    scatti_pos2_step2_init(&step2,
                         t_profile, p->p[0], p->v[0], p->pf, p->vf,
                         inp->max_velocity[dof], calc->inp_min_velocity[dof],
                         inp->max_acceleration[dof], calc->inp_min_acceleration[dof]);
-                    found_time_synchronization = cruckig_pos2_step2_get_profile(&step2, p);
+                    found_time_synchronization = scatti_pos2_step2_get_profile(&step2, p);
                 } else {
                     CRuckigPositionFirstOrderStep2 step2;
-                    cruckig_pos1_step2_init(&step2,
+                    scatti_pos1_step2_init(&step2,
                         t_profile, p->p[0], p->pf,
                         inp->max_velocity[dof], calc->inp_min_velocity[dof]);
-                    found_time_synchronization = cruckig_pos1_step2_get_profile(&step2, p);
+                    found_time_synchronization = scatti_pos1_step2_get_profile(&step2, p);
                 }
             } break;
             case CRuckigVelocity: {
                 if (!isinf(inp->max_jerk[dof])) {
                     CRuckigVelocityThirdOrderStep2 step2;
-                    cruckig_vel3_step2_init(&step2,
+                    scatti_vel3_step2_init(&step2,
                         t_profile, p->v[0], p->a[0], p->vf, p->af,
                         inp->max_acceleration[dof], calc->inp_min_acceleration[dof],
                         inp->max_jerk[dof]);
-                    found_time_synchronization = cruckig_vel3_step2_get_profile(&step2, p);
+                    found_time_synchronization = scatti_vel3_step2_get_profile(&step2, p);
                 } else {
                     CRuckigVelocitySecondOrderStep2 step2;
-                    cruckig_vel2_step2_init(&step2,
+                    scatti_vel2_step2_init(&step2,
                         t_profile, p->v[0], p->vf,
                         inp->max_acceleration[dof], calc->inp_min_acceleration[dof]);
-                    found_time_synchronization = cruckig_vel2_step2_get_profile(&step2, p);
+                    found_time_synchronization = scatti_vel2_step2_get_profile(&step2, p);
                 }
             } break;
         }
@@ -706,7 +706,7 @@ CRuckigResult cruckig_calculator_calculate(CRuckigCalculator *calc,
  * and acceleration pass through continuously (zero target velocity at waypoints
  * for robustness, with option to optimize).
  */
-CRuckigResult cruckig_calculator_calculate_waypoints(CRuckigCalculator *calc,
+CRuckigResult scatti_calculator_calculate_waypoints(CRuckigCalculator *calc,
                                                      const CRuckigInputParameter *inp,
                                                      CRuckigTrajectory *traj,
                                                      double delta_time,
@@ -717,20 +717,20 @@ CRuckigResult cruckig_calculator_calculate_waypoints(CRuckigCalculator *calc,
     const size_t nsec = nwp + 1; /* Number of sections */
 
     /* Resize trajectory for multi-section */
-    if (!cruckig_trajectory_resize(traj, nsec)) {
+    if (!scatti_trajectory_resize(traj, nsec)) {
         return CRuckigError;
     }
 
     /* Create reusable segment input if needed */
     if (!calc->segment_input) {
-        calc->segment_input = cruckig_input_create(dofs);
+        calc->segment_input = scatti_input_create(dofs);
         if (!calc->segment_input) return CRuckigError;
     }
 
     CRuckigInputParameter *seg = calc->segment_input;
 
     /* Build a temporary single-section trajectory for each segment */
-    CRuckigTrajectory *seg_traj = cruckig_trajectory_create(dofs);
+    CRuckigTrajectory *seg_traj = scatti_trajectory_create(dofs);
     if (!seg_traj) return CRuckigError;
 
     double cumulative_time = 0.0;
@@ -792,24 +792,24 @@ CRuckigResult cruckig_calculator_calculate_waypoints(CRuckigCalculator *calc,
 
         /* Optional min limits */
         if (inp->per_section_min_velocity) {
-            if (!seg->min_velocity) seg->min_velocity = (double*)malloc(dofs * sizeof(double));
+            if (!seg->min_velocity) seg->min_velocity = (double*)SCATTI_MALLOC(dofs * sizeof(double));
             memcpy(seg->min_velocity, inp->per_section_min_velocity + s * dofs, dofs * sizeof(double));
         } else if (inp->min_velocity) {
-            if (!seg->min_velocity) seg->min_velocity = (double*)malloc(dofs * sizeof(double));
+            if (!seg->min_velocity) seg->min_velocity = (double*)SCATTI_MALLOC(dofs * sizeof(double));
             memcpy(seg->min_velocity, inp->min_velocity, dofs * sizeof(double));
         } else {
-            free(seg->min_velocity);
+            SCATTI_FREE(seg->min_velocity);
             seg->min_velocity = NULL;
         }
 
         if (inp->per_section_min_acceleration) {
-            if (!seg->min_acceleration) seg->min_acceleration = (double*)malloc(dofs * sizeof(double));
+            if (!seg->min_acceleration) seg->min_acceleration = (double*)SCATTI_MALLOC(dofs * sizeof(double));
             memcpy(seg->min_acceleration, inp->per_section_min_acceleration + s * dofs, dofs * sizeof(double));
         } else if (inp->min_acceleration) {
-            if (!seg->min_acceleration) seg->min_acceleration = (double*)malloc(dofs * sizeof(double));
+            if (!seg->min_acceleration) seg->min_acceleration = (double*)SCATTI_MALLOC(dofs * sizeof(double));
             memcpy(seg->min_acceleration, inp->min_acceleration, dofs * sizeof(double));
         } else {
-            free(seg->min_acceleration);
+            SCATTI_FREE(seg->min_acceleration);
             seg->min_acceleration = NULL;
         }
 
@@ -818,16 +818,16 @@ CRuckigResult cruckig_calculator_calculate_waypoints(CRuckigCalculator *calc,
 
         /* Calculate this segment */
         bool seg_interrupted = false;
-        CRuckigResult seg_result = cruckig_calculator_calculate(calc, seg, seg_traj,
+        CRuckigResult seg_result = scatti_calculator_calculate(calc, seg, seg_traj,
                                                                  delta_time, &seg_interrupted);
         if (seg_result != CRuckigWorking) {
-            cruckig_trajectory_destroy(seg_traj);
+            scatti_trajectory_destroy(seg_traj);
             *was_interrupted = false;
             return seg_result;
         }
 
         /* Copy segment profiles into the multi-section trajectory */
-        double seg_duration = cruckig_trajectory_get_duration(seg_traj);
+        double seg_duration = scatti_trajectory_get_duration(seg_traj);
         cumulative_time += seg_duration;
         traj->cumulative_times[s] = cumulative_time;
 
@@ -850,23 +850,23 @@ CRuckigResult cruckig_calculator_calculate_waypoints(CRuckigCalculator *calc,
     }
 
     traj->duration = cumulative_time;
-    cruckig_trajectory_destroy(seg_traj);
+    scatti_trajectory_destroy(seg_traj);
 
     /* Position limits check */
     if (inp->max_position || inp->min_position ||
         inp->per_section_max_position || inp->per_section_min_position)
     {
         /* Sample trajectory and check bounds */
-        double *pos = (double*)malloc(dofs * sizeof(double));
-        double *vel = (double*)malloc(dofs * sizeof(double));
-        double *acc = (double*)malloc(dofs * sizeof(double));
+        double *pos = (double*)SCATTI_MALLOC(dofs * sizeof(double));
+        double *vel = (double*)SCATTI_MALLOC(dofs * sizeof(double));
+        double *acc = (double*)SCATTI_MALLOC(dofs * sizeof(double));
         size_t sec;
 
         bool violated = false;
         /* Check at fine time steps */
         double dt_check = (delta_time > 0.0) ? delta_time : 0.001;
         for (double t = 0.0; t <= cumulative_time && !violated; t += dt_check) {
-            cruckig_trajectory_at_time(traj, t, pos, vel, acc, NULL, &sec);
+            scatti_trajectory_at_time(traj, t, pos, vel, acc, NULL, &sec);
 
             for (size_t d = 0; d < dofs; ++d) {
                 double p_max = INFINITY, p_min = -INFINITY;
@@ -895,7 +895,7 @@ CRuckigResult cruckig_calculator_calculate_waypoints(CRuckigCalculator *calc,
 
         /* Also check position extrema */
         if (!violated) {
-            cruckig_trajectory_get_position_extrema(traj);
+            scatti_trajectory_get_position_extrema(traj);
             for (size_t d = 0; d < dofs; ++d) {
                 double p_max = INFINITY, p_min = -INFINITY;
                 if (inp->max_position) p_max = inp->max_position[d];
@@ -909,9 +909,9 @@ CRuckigResult cruckig_calculator_calculate_waypoints(CRuckigCalculator *calc,
             }
         }
 
-        free(pos);
-        free(vel);
-        free(acc);
+        SCATTI_FREE(pos);
+        SCATTI_FREE(vel);
+        SCATTI_FREE(acc);
 
         if (violated) {
             final_result = CRuckigErrorPositionalLimits;
@@ -922,7 +922,7 @@ CRuckigResult cruckig_calculator_calculate_waypoints(CRuckigCalculator *calc,
     return final_result;
 }
 
-CRuckigResult cruckig_calculator_continue(CRuckigCalculator *calc,
+CRuckigResult scatti_calculator_continue(CRuckigCalculator *calc,
                                           const CRuckigInputParameter *inp,
                                           CRuckigTrajectory *traj,
                                           double delta_time,
@@ -931,7 +931,7 @@ CRuckigResult cruckig_calculator_continue(CRuckigCalculator *calc,
     /* For now, continue_calculation simply re-runs the full calculation.
      * A future optimization could resume from partial state. */
     if (inp->num_intermediate_waypoints > 0 && inp->control_interface == CRuckigPosition) {
-        return cruckig_calculator_calculate_waypoints(calc, inp, traj, delta_time, was_interrupted);
+        return scatti_calculator_calculate_waypoints(calc, inp, traj, delta_time, was_interrupted);
     }
-    return cruckig_calculator_calculate(calc, inp, traj, delta_time, was_interrupted);
+    return scatti_calculator_calculate(calc, inp, traj, delta_time, was_interrupted);
 }

@@ -1,9 +1,9 @@
-#include <cruckig/cruckig_config.h>
-#include <cruckig/velocity.h>
-#include <cruckig/block.h>
-#include <cruckig/profile.h>
+#include <scatti/scatti_config.h>
+#include <scatti/velocity.h>
+#include <scatti/block.h>
+#include <scatti/profile.h>
 
-void cruckig_vel2_step2_init(CRuckigVelocitySecondOrderStep2 *s,
+void scatti_vel2_step2_init(CRuckigVelocitySecondOrderStep2 *s,
                      double tf, double v0, double vf, double aMax, double aMin)
 {
     s->tf = tf;
@@ -12,7 +12,7 @@ void cruckig_vel2_step2_init(CRuckigVelocitySecondOrderStep2 *s,
     s->vd = vf - v0;
 }
 
-bool cruckig_vel2_step2_get_profile(CRuckigVelocitySecondOrderStep2 *s, CRuckigProfile *profile)
+bool scatti_vel2_step2_get_profile(CRuckigVelocitySecondOrderStep2 *s, CRuckigProfile *profile)
 {
     const double af = s->vd / s->tf;
 
@@ -24,7 +24,7 @@ bool cruckig_vel2_step2_get_profile(CRuckigVelocitySecondOrderStep2 *s, CRuckigP
     profile->t[5] = 0;
     profile->t[6] = 0;
 
-    if (cruckig_profile_check_for_second_order_velocity_with_timing_full(profile, ControlSignsUDDU, ReachedLimitsNONE, s->tf, af, s->_aMax, s->_aMin)) {
+    if (scatti_profile_check_for_second_order_velocity_with_timing_full(profile, ControlSignsUDDU, ReachedLimitsNONE, s->tf, af, s->_aMax, s->_aMin)) {
         profile->pf = profile->p[7];
         return true;
     }

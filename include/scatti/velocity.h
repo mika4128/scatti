@@ -1,9 +1,9 @@
-#ifndef CRUCKIG_VELOCITY_H
-#define CRUCKIG_VELOCITY_H
+#ifndef SCATTI_VELOCITY_H
+#define SCATTI_VELOCITY_H
 
 #include <stdbool.h>
-#include <cruckig/profile.h>
-#include <cruckig/block.h>
+#include <scatti/profile.h>
+#include <scatti/block.h>
 
 /* ---- Third Order Step 1 ---- */
 typedef struct {
@@ -13,10 +13,10 @@ typedef struct {
     CRuckigProfile valid_profiles[3];
 } CRuckigVelocityThirdOrderStep1;
 
-void cruckig_vel3_step1_init(CRuckigVelocityThirdOrderStep1 *s,
+void scatti_vel3_step1_init(CRuckigVelocityThirdOrderStep1 *s,
                      double v0, double a0, double vf, double af,
                      double aMax, double aMin, double jMax);
-bool cruckig_vel3_step1_get_profile(CRuckigVelocityThirdOrderStep1 *s,
+bool scatti_vel3_step1_get_profile(CRuckigVelocityThirdOrderStep1 *s,
                             const CRuckigProfile *input, CRuckigBlock *block);
 
 /* ---- Third Order Step 2 ---- */
@@ -26,10 +26,10 @@ typedef struct {
     double vd, ad;
 } CRuckigVelocityThirdOrderStep2;
 
-void cruckig_vel3_step2_init(CRuckigVelocityThirdOrderStep2 *s,
+void scatti_vel3_step2_init(CRuckigVelocityThirdOrderStep2 *s,
                      double tf, double v0, double a0, double vf, double af,
                      double aMax, double aMin, double jMax);
-bool cruckig_vel3_step2_get_profile(CRuckigVelocityThirdOrderStep2 *s, CRuckigProfile *profile);
+bool scatti_vel3_step2_get_profile(CRuckigVelocityThirdOrderStep2 *s, CRuckigProfile *profile);
 
 /* ---- Second Order Step 1 ---- */
 typedef struct {
@@ -37,9 +37,9 @@ typedef struct {
     double vd;
 } CRuckigVelocitySecondOrderStep1;
 
-void cruckig_vel2_step1_init(CRuckigVelocitySecondOrderStep1 *s,
+void scatti_vel2_step1_init(CRuckigVelocitySecondOrderStep1 *s,
                      double v0, double vf, double aMax, double aMin);
-bool cruckig_vel2_step1_get_profile(CRuckigVelocitySecondOrderStep1 *s,
+bool scatti_vel2_step1_get_profile(CRuckigVelocitySecondOrderStep1 *s,
                             const CRuckigProfile *input, CRuckigBlock *block);
 
 /* ---- Second Order Step 2 ---- */
@@ -49,8 +49,8 @@ typedef struct {
     double vd;
 } CRuckigVelocitySecondOrderStep2;
 
-void cruckig_vel2_step2_init(CRuckigVelocitySecondOrderStep2 *s,
+void scatti_vel2_step2_init(CRuckigVelocitySecondOrderStep2 *s,
                      double tf, double v0, double vf, double aMax, double aMin);
-bool cruckig_vel2_step2_get_profile(CRuckigVelocitySecondOrderStep2 *s, CRuckigProfile *profile);
+bool scatti_vel2_step2_get_profile(CRuckigVelocitySecondOrderStep2 *s, CRuckigProfile *profile);
 
-#endif /* CRUCKIG_VELOCITY_H */
+#endif /* SCATTI_VELOCITY_H */

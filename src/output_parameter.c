@@ -1,28 +1,29 @@
-#include <cruckig/output_parameter.h>
+#include <scatti/scatti_config.h>
+#include <scatti/output_parameter.h>
 
 #include <stdlib.h>
 #include <string.h>
 
-CRuckigOutputParameter* cruckig_output_create(size_t dofs) {
-    CRuckigOutputParameter *out = (CRuckigOutputParameter*)calloc(1, sizeof(CRuckigOutputParameter));
+CRuckigOutputParameter* scatti_output_create(size_t dofs) {
+    CRuckigOutputParameter *out = (CRuckigOutputParameter*)SCATTI_CALLOC(1, sizeof(CRuckigOutputParameter));
     if (!out) return NULL;
 
     out->degrees_of_freedom = dofs;
 
-    out->trajectory = cruckig_trajectory_create(dofs);
+    out->trajectory = scatti_trajectory_create(dofs);
     if (!out->trajectory) {
-        free(out);
+        SCATTI_FREE(out);
         return NULL;
     }
 
-    out->new_position     = (double*)calloc(dofs, sizeof(double));
-    out->new_velocity     = (double*)calloc(dofs, sizeof(double));
-    out->new_acceleration = (double*)calloc(dofs, sizeof(double));
-    out->new_jerk         = (double*)calloc(dofs, sizeof(double));
+    out->new_position     = (double*)SCATTI_CALLOC(dofs, sizeof(double));
+    out->new_velocity     = (double*)SCATTI_CALLOC(dofs, sizeof(double));
+    out->new_acceleration = (double*)SCATTI_CALLOC(dofs, sizeof(double));
+    out->new_jerk         = (double*)SCATTI_CALLOC(dofs, sizeof(double));
 
     if (!out->new_position || !out->new_velocity ||
         !out->new_acceleration || !out->new_jerk) {
-        cruckig_output_destroy(out);
+        scatti_output_destroy(out);
         return NULL;
     }
 
@@ -36,17 +37,17 @@ CRuckigOutputParameter* cruckig_output_create(size_t dofs) {
     return out;
 }
 
-void cruckig_output_destroy(CRuckigOutputParameter *out) {
+void scatti_output_destroy(CRuckigOutputParameter *out) {
     if (!out) return;
-    cruckig_trajectory_destroy(out->trajectory);
-    free(out->new_position);
-    free(out->new_velocity);
-    free(out->new_acceleration);
-    free(out->new_jerk);
-    free(out);
+    scatti_trajectory_destroy(out->trajectory);
+    SCATTI_FREE(out->new_position);
+    SCATTI_FREE(out->new_velocity);
+    SCATTI_FREE(out->new_acceleration);
+    SCATTI_FREE(out->new_jerk);
+    SCATTI_FREE(out);
 }
 
-void cruckig_output_pass_to_input(const CRuckigOutputParameter *out, CRuckigInputParameter *inp) {
+void scatti_output_pass_to_input(const CRuckigOutputParameter *out, CRuckigInputParameter *inp) {
     if (!out || !inp) return;
 
     const size_t dofs = out->degrees_of_freedom;
@@ -60,7 +61,7 @@ void cruckig_output_pass_to_input(const CRuckigOutputParameter *out, CRuckigInpu
     if (out->did_section_change && inp->num_intermediate_waypoints > 0) {
         size_t remaining = inp->num_intermediate_waypoints - 1;
         if (remaining == 0) {
-            free(inp->intermediate_positions);
+            SCATTI_FREE(inp->intermediate_positions);
             inp->intermediate_positions = NULL;
             inp->num_intermediate_waypoints = 0;
         } else {

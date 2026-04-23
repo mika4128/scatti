@@ -1,22 +1,22 @@
 /* Mirrors README.md "使用示例" — smoke test that the documented API path works. */
 #include <math.h>
 #include <stdio.h>
-#include <cruckig/cruckig.h>
+#include <scatti/scatti.h>
 
 static int near(double a, double b, double eps) {
     return fabs(a - b) <= eps;
 }
 
 int main(void) {
-    CRuckig *otg = cruckig_create(3, 0.01);
-    CRuckigInputParameter *inp = cruckig_input_create(3);
-    CRuckigOutputParameter *out = cruckig_output_create(3);
+    CRuckig *otg = scatti_create(3, 0.01);
+    CRuckigInputParameter *inp = scatti_input_create(3);
+    CRuckigOutputParameter *out = scatti_output_create(3);
 
     if (!otg || !inp || !out) {
         fprintf(stderr, "create failed (OOM)\n");
-        cruckig_output_destroy(out);
-        cruckig_input_destroy(inp);
-        cruckig_destroy(otg);
+        scatti_output_destroy(out);
+        scatti_input_destroy(inp);
+        scatti_destroy(otg);
         return 2;
     }
 
@@ -39,17 +39,17 @@ int main(void) {
     CRuckigResult result;
     int step = 0;
     while (1) {
-        result = cruckig_update(otg, inp, out);
-        cruckig_output_pass_to_input(out, inp);
+        result = scatti_update(otg, inp, out);
+        scatti_output_pass_to_input(out, inp);
         step++;
 
         if (result == CRuckigFinished)
             break;
         if (result != CRuckigWorking) {
             fprintf(stderr, "unexpected result: %d at step %d\n", result, step);
-            cruckig_output_destroy(out);
-            cruckig_input_destroy(inp);
-            cruckig_destroy(otg);
+            scatti_output_destroy(out);
+            scatti_input_destroy(inp);
+            scatti_destroy(otg);
             return 1;
         }
     }
@@ -61,16 +61,16 @@ int main(void) {
         fprintf(stderr, "final position mismatch: got [%g,%g,%g] want [%g,%g,%g]\n",
                 out->new_position[0], out->new_position[1], out->new_position[2],
                 inp->target_position[0], inp->target_position[1], inp->target_position[2]);
-        cruckig_output_destroy(out);
-        cruckig_input_destroy(inp);
-        cruckig_destroy(otg);
+        scatti_output_destroy(out);
+        scatti_input_destroy(inp);
+        scatti_destroy(otg);
         return 3;
     }
 
     printf("readme example: ok, %d steps, t=%.3f\n", step, out->time);
 
-    cruckig_output_destroy(out);
-    cruckig_input_destroy(inp);
-    cruckig_destroy(otg);
+    scatti_output_destroy(out);
+    scatti_input_destroy(inp);
+    scatti_destroy(otg);
     return 0;
 }
