@@ -55,3 +55,18 @@ venv/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Debian packaging build artifacts (debian/ source files stay tracked)
+debian/files
+debian/*.substvars
+debian/*.debhelper
+debian/*.debhelper.log
+debian/debhelper-build-stamp
+debian/.debhelper/
+debian/autoreconf.*
+debian/tmp/
+debian/libscatti0/
+debian/libscatti-dev/
+debian/*.deb
+# CMake out-of-tree dir created by debhelper's cmake buildsystem
+obj-*-linux-gnu/
