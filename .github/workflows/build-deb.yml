@@ -1,7 +1,7 @@
 # Build CPack DEB packages (amd64 + arm64) in Docker and upload to GitHub Releases.
 #
 # 何时会上传 Release：
-# - 推送版本标签（如 v0.1.0），或
+# - 推送版本标签（如 v0.2.0），或
 # - 在 Actions 里手动运行本 workflow（workflow_dispatch），填写版本号。
 # 仅推送到 main 分支时只构建并保留 Artifact，不会创建 Release。
 #
@@ -18,7 +18,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: '发布版本号（不含 v），例如 0.1.2；将创建标签 v0.1.2 并把 deb 上传到 Release'
+        description: '发布版本号（不含 v），例如 0.2.0；将创建标签 v0.2.0 并把 deb 上传到 Release'
         required: true
         type: string
 
