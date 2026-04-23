@@ -318,7 +318,7 @@ set(CPACK_DEBIAN_PACKAGE_MAINTAINER "scatti maintainers")
 set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
 
 # ---------- Per-component DEB fields ----------
-# runtime  →  libscatti_0.2.0_amd64.deb
+# runtime  →  libscatti_0.1.0_amd64.deb
 set(CPACK_DEBIAN_RUNTIME_PACKAGE_NAME "libscatti")
 set(CPACK_DEBIAN_RUNTIME_FILE_NAME "libscatti_${PROJECT_VERSION}_${CMAKE_HOST_SYSTEM_PROCESSOR}.deb")
 set(CPACK_DEBIAN_RUNTIME_PACKAGE_SECTION "libs")
@@ -328,7 +328,7 @@ set(CPACK_DEBIAN_RUNTIME_PACKAGE_DESCRIPTION
  scatti generates time-optimal, jerk-limited trajectories for robots
  and machines.  This package contains the shared library.")
 
-# development  →  libscatti-dev_0.2.0_amd64.deb
+# development  →  libscatti-dev_0.1.0_amd64.deb
 set(CPACK_DEBIAN_DEVELOPMENT_PACKAGE_NAME "libscatti-dev")
 set(CPACK_DEBIAN_DEVELOPMENT_FILE_NAME "libscatti-dev_${PROJECT_VERSION}_${CMAKE_HOST_SYSTEM_PROCESSOR}.deb")
 set(CPACK_DEBIAN_DEVELOPMENT_PACKAGE_SECTION "libdevel")
