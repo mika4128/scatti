@@ -108,7 +108,7 @@ def _make_array_property(c_field, doc=None):
 # ---------------------------------------------------------------------------
 
 class Trajectory:
-    """Read-only wrapper around a CRuckigTrajectory."""
+    """Read-only wrapper around a SCattiTrajectory."""
 
     def __init__(self, ptr, dofs):
         self._ptr = ptr
@@ -163,13 +163,13 @@ class Trajectory:
 # ---------------------------------------------------------------------------
 
 class InputParameter:
-    """Wraps CRuckigInputParameter with Pythonic access."""
+    """Wraps SCattiInputParameter with Pythonic access."""
 
     def __init__(self, dofs):
         self._dofs = dofs
         self._ptr = lib.scatti_input_create(dofs)
         if self._ptr == ffi.NULL:
-            raise MemoryError("Failed to create CRuckigInputParameter")
+            raise MemoryError("Failed to create SCattiInputParameter")
         self._owned = {}  # field_name -> cdata ref (prevent GC of ffi.new buffers)
 
     def __del__(self):
@@ -361,13 +361,13 @@ class InputParameter:
 # ---------------------------------------------------------------------------
 
 class OutputParameter:
-    """Wraps CRuckigOutputParameter with Pythonic access."""
+    """Wraps SCattiOutputParameter with Pythonic access."""
 
     def __init__(self, dofs):
         self._dofs = dofs
         self._ptr = lib.scatti_output_create(dofs)
         if self._ptr == ffi.NULL:
-            raise MemoryError("Failed to create CRuckigOutputParameter")
+            raise MemoryError("Failed to create SCattiOutputParameter")
         self._trajectory = Trajectory(self._ptr.trajectory, dofs)
 
     def __del__(self):
@@ -453,7 +453,7 @@ class OutputParameter:
 # ---------------------------------------------------------------------------
 
 class Ruckig:
-    """Main trajectory generator — wraps CRuckig."""
+    """Main trajectory generator — wraps SCatti."""
 
     def __init__(self, dofs, delta_time, max_waypoints=0):
         self._dofs = dofs
@@ -462,7 +462,7 @@ class Ruckig:
         else:
             self._ptr = lib.scatti_create(dofs, delta_time)
         if self._ptr == ffi.NULL:
-            raise MemoryError("Failed to create CRuckig")
+            raise MemoryError("Failed to create SCatti")
 
     def __del__(self):
         if hasattr(self, "_ptr") and self._ptr != ffi.NULL:

@@ -6,8 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-CRuckigTrajectory* scatti_trajectory_create(size_t dofs) {
-    CRuckigTrajectory *traj = (CRuckigTrajectory*)SCATTI_CALLOC(1, sizeof(CRuckigTrajectory));
+SCattiTrajectory* scatti_trajectory_create(size_t dofs) {
+    SCattiTrajectory *traj = (SCattiTrajectory*)SCATTI_CALLOC(1, sizeof(SCattiTrajectory));
     if (!traj) return NULL;
 
     traj->degrees_of_freedom = dofs;
@@ -15,10 +15,10 @@ CRuckigTrajectory* scatti_trajectory_create(size_t dofs) {
     traj->section_capacity = 1;
     traj->duration = 0.0;
 
-    traj->profiles = (CRuckigProfile*)SCATTI_CALLOC(dofs, sizeof(CRuckigProfile));
+    traj->profiles = (SCattiProfile*)SCATTI_CALLOC(dofs, sizeof(SCattiProfile));
     traj->cumulative_times = (double*)SCATTI_CALLOC(1, sizeof(double));
     traj->independent_min_durations = (double*)SCATTI_CALLOC(dofs, sizeof(double));
-    traj->position_extrema = (CRuckigBound*)SCATTI_CALLOC(dofs, sizeof(CRuckigBound));
+    traj->position_extrema = (SCattiBound*)SCATTI_CALLOC(dofs, sizeof(SCattiBound));
 
     if (!traj->profiles || !traj->cumulative_times ||
         !traj->independent_min_durations || !traj->position_extrema) {
@@ -33,7 +33,7 @@ CRuckigTrajectory* scatti_trajectory_create(size_t dofs) {
     return traj;
 }
 
-void scatti_trajectory_destroy(CRuckigTrajectory *traj) {
+void scatti_trajectory_destroy(SCattiTrajectory *traj) {
     if (!traj) return;
     SCATTI_FREE(traj->profiles);
     SCATTI_FREE(traj->cumulative_times);
@@ -42,14 +42,14 @@ void scatti_trajectory_destroy(CRuckigTrajectory *traj) {
     SCATTI_FREE(traj);
 }
 
-bool scatti_trajectory_resize(CRuckigTrajectory *traj, size_t num_sections) {
+bool scatti_trajectory_resize(SCattiTrajectory *traj, size_t num_sections) {
     if (!traj || num_sections == 0) return false;
 
     const size_t dofs = traj->degrees_of_freedom;
 
     if (num_sections > traj->section_capacity) {
-        CRuckigProfile *new_profiles = (CRuckigProfile*)SCATTI_REALLOC(
-            traj->profiles, num_sections * dofs * sizeof(CRuckigProfile));
+        SCattiProfile *new_profiles = (SCattiProfile*)SCATTI_REALLOC(
+            traj->profiles, num_sections * dofs * sizeof(SCattiProfile));
         double *new_times = (double*)SCATTI_REALLOC(
             traj->cumulative_times, num_sections * sizeof(double));
 
@@ -81,7 +81,7 @@ bool scatti_trajectory_resize(CRuckigTrajectory *traj, size_t num_sections) {
  * state_to_integrate_from: Determine the integration base state at a given time.
  * Supports multi-section trajectories via binary search on cumulative_times.
  */
-static void state_to_integrate_from(const CRuckigTrajectory *traj, double time,
+static void state_to_integrate_from(const SCattiTrajectory *traj, double time,
                                     size_t *new_section,
                                     double *t_out, double *p_out, double *v_out,
                                     double *a_out, double *j_out)
@@ -94,7 +94,7 @@ static void state_to_integrate_from(const CRuckigTrajectory *traj, double time,
         *new_section = nsec;
         size_t last = nsec - 1;
         for (size_t dof = 0; dof < dofs; ++dof) {
-            const CRuckigProfile *prof = &traj->profiles[last * dofs + dof];
+            const SCattiProfile *prof = &traj->profiles[last * dofs + dof];
             double t_pre = prof->brake.duration;
             double t_diff = time - (traj->duration - (t_pre + prof->t_sum[6]) + t_pre + prof->t_sum[6]);
             /* Simplify: time past the end of last section's profile */
@@ -132,7 +132,7 @@ static void state_to_integrate_from(const CRuckigTrajectory *traj, double time,
     double t_diff = time - section_start;
 
     for (size_t dof = 0; dof < dofs; ++dof) {
-        const CRuckigProfile *prof = &traj->profiles[section * dofs + dof];
+        const SCattiProfile *prof = &traj->profiles[section * dofs + dof];
         double t_diff_dof = t_diff;
 
         /* Brake pre-trajectory (only in first section, or in each section for waypoints) */
@@ -191,7 +191,7 @@ static void state_to_integrate_from(const CRuckigTrajectory *traj, double time,
 }
 
 SCATTI_HOT
-void scatti_trajectory_at_time(const CRuckigTrajectory *traj, double time,
+void scatti_trajectory_at_time(const SCattiTrajectory *traj, double time,
                                 double * SCATTI_RESTRICT new_position,
                                 double * SCATTI_RESTRICT new_velocity,
                                 double * SCATTI_RESTRICT new_acceleration,
@@ -237,7 +237,7 @@ void scatti_trajectory_at_time(const CRuckigTrajectory *traj, double time,
     }
 }
 
-void scatti_trajectory_at_time_simple(const CRuckigTrajectory *traj, double time,
+void scatti_trajectory_at_time_simple(const SCattiTrajectory *traj, double time,
                                        double *new_position, double *new_velocity,
                                        double *new_acceleration)
 {
@@ -246,11 +246,11 @@ void scatti_trajectory_at_time_simple(const CRuckigTrajectory *traj, double time
                                new_acceleration, NULL, &new_section);
 }
 
-double scatti_trajectory_get_duration(const CRuckigTrajectory *traj) {
+double scatti_trajectory_get_duration(const SCattiTrajectory *traj) {
     return traj->duration;
 }
 
-size_t scatti_trajectory_get_intermediate_durations(const CRuckigTrajectory *traj,
+size_t scatti_trajectory_get_intermediate_durations(const SCattiTrajectory *traj,
                                                      double *out_durations)
 {
     for (size_t s = 0; s < traj->num_sections; ++s) {
@@ -259,16 +259,16 @@ size_t scatti_trajectory_get_intermediate_durations(const CRuckigTrajectory *tra
     return traj->num_sections;
 }
 
-void scatti_trajectory_get_position_extrema(CRuckigTrajectory *traj) {
+void scatti_trajectory_get_position_extrema(SCattiTrajectory *traj) {
     const size_t dofs = traj->degrees_of_freedom;
     for (size_t dof = 0; dof < dofs; ++dof) {
         /* Initialize from first section */
-        CRuckigBound bound = scatti_profile_get_position_extrema(&traj->profiles[dof]);
+        SCattiBound bound = scatti_profile_get_position_extrema(&traj->profiles[dof]);
 
         /* Merge across all sections */
         for (size_t s = 1; s < traj->num_sections; ++s) {
             double section_start = traj->cumulative_times[s - 1];
-            CRuckigBound sb = scatti_profile_get_position_extrema(
+            SCattiBound sb = scatti_profile_get_position_extrema(
                 &traj->profiles[s * dofs + dof]);
             if (sb.min < bound.min) {
                 bound.min = sb.min;
@@ -284,7 +284,7 @@ void scatti_trajectory_get_position_extrema(CRuckigTrajectory *traj) {
     }
 }
 
-bool scatti_trajectory_get_first_time_at_position(const CRuckigTrajectory *traj,
+bool scatti_trajectory_get_first_time_at_position(const SCattiTrajectory *traj,
                                                    size_t dof, double position,
                                                    double *time, double time_after)
 {
@@ -308,7 +308,7 @@ bool scatti_trajectory_get_first_time_at_position(const CRuckigTrajectory *traj,
     return false;
 }
 
-void scatti_trajectory_get_independent_min_durations(const CRuckigTrajectory *traj,
+void scatti_trajectory_get_independent_min_durations(const SCattiTrajectory *traj,
                                                       double *out_durations)
 {
     for (size_t dof = 0; dof < traj->degrees_of_freedom; ++dof) {
@@ -316,13 +316,13 @@ void scatti_trajectory_get_independent_min_durations(const CRuckigTrajectory *tr
     }
 }
 
-const CRuckigProfile* scatti_trajectory_get_profile(const CRuckigTrajectory *traj, size_t dof)
+const SCattiProfile* scatti_trajectory_get_profile(const SCattiTrajectory *traj, size_t dof)
 {
     if (dof >= traj->degrees_of_freedom) return NULL;
     return &traj->profiles[dof];
 }
 
-const CRuckigProfile* scatti_trajectory_get_section_profile(const CRuckigTrajectory *traj,
+const SCattiProfile* scatti_trajectory_get_section_profile(const SCattiTrajectory *traj,
                                                               size_t section, size_t dof)
 {
     if (section >= traj->num_sections || dof >= traj->degrees_of_freedom) return NULL;

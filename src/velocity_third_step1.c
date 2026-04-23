@@ -9,13 +9,13 @@
 
 /* ---- Internal helper functions ---- */
 
-static void time_acc0(const CRuckigVelocityThirdOrderStep1 *s,
-                      CRuckigProfile *valid_profiles, size_t *counter,
+static void time_acc0(const SCattiVelocityThirdOrderStep1 *s,
+                      SCattiProfile *valid_profiles, size_t *counter,
                       double aMax, double aMin, double jMax, bool return_after_found)
 {
     (void)return_after_found;
 
-    CRuckigProfile *profile = &valid_profiles[*counter];
+    SCattiProfile *profile = &valid_profiles[*counter];
 
     profile->t[0] = (-s->a0 + aMax) / jMax;
     profile->t[1] = (s->a0 * s->a0 + s->af * s->af) / (2 * aMax * jMax) - aMax / jMax + s->vd / aMax;
@@ -33,8 +33,8 @@ static void time_acc0(const CRuckigVelocityThirdOrderStep1 *s,
     }
 }
 
-static void time_none(const CRuckigVelocityThirdOrderStep1 *s,
-                      CRuckigProfile *valid_profiles, size_t *counter,
+static void time_none(const SCattiVelocityThirdOrderStep1 *s,
+                      SCattiProfile *valid_profiles, size_t *counter,
                       double aMax, double aMin, double jMax, bool return_after_found)
 {
     double h1 = (s->a0 * s->a0 + s->af * s->af) / 2 + jMax * s->vd;
@@ -43,7 +43,7 @@ static void time_none(const CRuckigVelocityThirdOrderStep1 *s,
 
         /* Solution 1 */
         {
-            CRuckigProfile *profile = &valid_profiles[*counter];
+            SCattiProfile *profile = &valid_profiles[*counter];
 
             profile->t[0] = -(s->a0 + h1) / jMax;
             profile->t[1] = 0;
@@ -66,7 +66,7 @@ static void time_none(const CRuckigVelocityThirdOrderStep1 *s,
 
         /* Solution 2 */
         {
-            CRuckigProfile *profile = &valid_profiles[*counter];
+            SCattiProfile *profile = &valid_profiles[*counter];
 
             profile->t[0] = (-s->a0 + h1) / jMax;
             profile->t[1] = 0;
@@ -86,8 +86,8 @@ static void time_none(const CRuckigVelocityThirdOrderStep1 *s,
     }
 }
 
-static bool time_all_single_step(const CRuckigVelocityThirdOrderStep1 *s,
-                                 CRuckigProfile *profile,
+static bool time_all_single_step(const SCattiVelocityThirdOrderStep1 *s,
+                                 SCattiProfile *profile,
                                  double aMax, double aMin, double jMax)
 {
     (void)jMax;
@@ -122,7 +122,7 @@ static bool time_all_single_step(const CRuckigVelocityThirdOrderStep1 *s,
 
 /* ---- Public interface ---- */
 
-void scatti_vel3_step1_init(CRuckigVelocityThirdOrderStep1 *s,
+void scatti_vel3_step1_init(SCattiVelocityThirdOrderStep1 *s,
                      double v0, double a0, double vf, double af,
                      double aMax, double aMin, double jMax)
 {
@@ -134,12 +134,12 @@ void scatti_vel3_step1_init(CRuckigVelocityThirdOrderStep1 *s,
     s->vd = vf - v0;
 }
 
-bool scatti_vel3_step1_get_profile(CRuckigVelocityThirdOrderStep1 *s,
-                            const CRuckigProfile *input, CRuckigBlock *block)
+bool scatti_vel3_step1_get_profile(SCattiVelocityThirdOrderStep1 *s,
+                            const SCattiProfile *input, SCattiBlock *block)
 {
     /* Zero-limits special case */
     if (s->_jMax == 0.0) {
-        CRuckigProfile *p = &block->p_min;
+        SCattiProfile *p = &block->p_min;
         scatti_profile_set_boundary_from_profile(p, input);
 
         if (time_all_single_step(s, p, s->_aMax, s->_aMin, s->_jMax)) {

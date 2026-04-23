@@ -14,15 +14,15 @@ typedef struct {
     double a0_a0, a0_p3, a0_p4;
     double af_af, af_p3, af_p4;
     double jMax_jMax;
-    CRuckigProfile valid_profiles[6];
-} CRuckigPositionThirdOrderStep1;
+    SCattiProfile valid_profiles[6];
+} SCattiPositionThirdOrderStep1;
 
-void scatti_pos3_step1_init(CRuckigPositionThirdOrderStep1 *s,
+void scatti_pos3_step1_init(SCattiPositionThirdOrderStep1 *s,
                      double p0, double v0, double a0,
                      double pf, double vf, double af,
                      double vMax, double vMin, double aMax, double aMin, double jMax);
-bool scatti_pos3_step1_get_profile(CRuckigPositionThirdOrderStep1 *s,
-                            const CRuckigProfile *input, CRuckigBlock *block);
+bool scatti_pos3_step1_get_profile(SCattiPositionThirdOrderStep1 *s,
+                            const SCattiProfile *input, SCattiBlock *block);
 
 /* ---- Third Order Step 2 ---- */
 typedef struct {
@@ -37,60 +37,60 @@ typedef struct {
     double af_af, af_p3, af_p4, af_p5, af_p6;
     double jMax_jMax;
     double g1, g2;
-} CRuckigPositionThirdOrderStep2;
+} SCattiPositionThirdOrderStep2;
 
-void scatti_pos3_step2_init(CRuckigPositionThirdOrderStep2 *s,
+void scatti_pos3_step2_init(SCattiPositionThirdOrderStep2 *s,
                      double tf, double p0, double v0, double a0,
                      double pf, double vf, double af,
                      double vMax, double vMin, double aMax, double aMin, double jMax);
-bool scatti_pos3_step2_get_profile(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile);
+bool scatti_pos3_step2_get_profile(SCattiPositionThirdOrderStep2 *s, SCattiProfile *profile);
 
 /* ---- Second Order Step 1 ---- */
 typedef struct {
     double v0, vf;
     double _vMax, _vMin, _aMax, _aMin;
     double pd;
-    CRuckigProfile valid_profiles[4];
-} CRuckigPositionSecondOrderStep1;
+    SCattiProfile valid_profiles[4];
+} SCattiPositionSecondOrderStep1;
 
-void scatti_pos2_step1_init(CRuckigPositionSecondOrderStep1 *s,
+void scatti_pos2_step1_init(SCattiPositionSecondOrderStep1 *s,
                      double p0, double v0, double pf, double vf,
                      double vMax, double vMin, double aMax, double aMin);
-bool scatti_pos2_step1_get_profile(CRuckigPositionSecondOrderStep1 *s,
-                            const CRuckigProfile *input, CRuckigBlock *block);
+bool scatti_pos2_step1_get_profile(SCattiPositionSecondOrderStep1 *s,
+                            const SCattiProfile *input, SCattiBlock *block);
 
 /* ---- Second Order Step 2 ---- */
 typedef struct {
     double v0, tf, vf;
     double _vMax, _vMin, _aMax, _aMin;
     double pd, vd;
-} CRuckigPositionSecondOrderStep2;
+} SCattiPositionSecondOrderStep2;
 
-void scatti_pos2_step2_init(CRuckigPositionSecondOrderStep2 *s,
+void scatti_pos2_step2_init(SCattiPositionSecondOrderStep2 *s,
                      double tf, double p0, double v0, double pf, double vf,
                      double vMax, double vMin, double aMax, double aMin);
-bool scatti_pos2_step2_get_profile(CRuckigPositionSecondOrderStep2 *s, CRuckigProfile *profile);
+bool scatti_pos2_step2_get_profile(SCattiPositionSecondOrderStep2 *s, SCattiProfile *profile);
 
 /* ---- First Order Step 1 ---- */
 typedef struct {
     double _vMax, _vMin;
     double pd;
-} CRuckigPositionFirstOrderStep1;
+} SCattiPositionFirstOrderStep1;
 
-void scatti_pos1_step1_init(CRuckigPositionFirstOrderStep1 *s,
+void scatti_pos1_step1_init(SCattiPositionFirstOrderStep1 *s,
                      double p0, double pf, double vMax, double vMin);
-bool scatti_pos1_step1_get_profile(CRuckigPositionFirstOrderStep1 *s,
-                            const CRuckigProfile *input, CRuckigBlock *block);
+bool scatti_pos1_step1_get_profile(SCattiPositionFirstOrderStep1 *s,
+                            const SCattiProfile *input, SCattiBlock *block);
 
 /* ---- First Order Step 2 ---- */
 typedef struct {
     double tf;
     double _vMax, _vMin;
     double pd;
-} CRuckigPositionFirstOrderStep2;
+} SCattiPositionFirstOrderStep2;
 
-void scatti_pos1_step2_init(CRuckigPositionFirstOrderStep2 *s,
+void scatti_pos1_step2_init(SCattiPositionFirstOrderStep2 *s,
                      double tf, double p0, double pf, double vMax, double vMin);
-bool scatti_pos1_step2_get_profile(CRuckigPositionFirstOrderStep2 *s, CRuckigProfile *profile);
+bool scatti_pos1_step2_get_profile(SCattiPositionFirstOrderStep2 *s, SCattiProfile *profile);
 
 #endif /* SCATTI_POSITION_H */

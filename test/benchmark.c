@@ -60,9 +60,9 @@ int main(int argc, char **argv) {
     printf("=== scatti Benchmark ===\n");
     printf("DOFs: %zu, Trajectories per iteration: %zu, Iterations: %zu\n\n", dofs, n_traj, n_iters);
 
-    CRuckig *otg = scatti_create(dofs, 0.005);
-    CRuckigInputParameter *inp = scatti_input_create(dofs);
-    CRuckigTrajectory *traj = scatti_trajectory_create(dofs);
+    SCatti *otg = scatti_create(dofs, 0.005);
+    SCattiInputParameter *inp = scatti_input_create(dofs);
+    SCattiTrajectory *traj = scatti_trajectory_create(dofs);
 
     double *avg_arr = calloc(n_iters, sizeof(double));
     double *worst_arr = calloc(n_iters, sizeof(double));

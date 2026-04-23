@@ -16,37 +16,37 @@ typedef struct {
     double *possible_t_syncs;
     size_t *idx;
 
-    CRuckigBlock *blocks;
+    SCattiBlock *blocks;
     double *inp_min_velocity;
     double *inp_min_acceleration;
-    CRuckigControlInterface *inp_per_dof_control_interface;
-    CRuckigSynchronization *inp_per_dof_synchronization;
+    SCattiControlInterface *inp_per_dof_control_interface;
+    SCattiSynchronization *inp_per_dof_synchronization;
 
     /* Scratch space for waypoint calculation */
-    CRuckigInputParameter *segment_input;  /* Reusable per-segment input */
-} CRuckigCalculator;
+    SCattiInputParameter *segment_input;  /* Reusable per-segment input */
+} SCattiCalculator;
 
-CRuckigCalculator* scatti_calculator_create(size_t dofs);
-void scatti_calculator_destroy(CRuckigCalculator *calc);
+SCattiCalculator* scatti_calculator_create(size_t dofs);
+void scatti_calculator_destroy(SCattiCalculator *calc);
 
 /* Single-segment calculation (existing, backward compatible) */
-CRuckigResult scatti_calculator_calculate(CRuckigCalculator *calc,
-                                           const CRuckigInputParameter *inp,
-                                           CRuckigTrajectory *traj,
+SCattiResult scatti_calculator_calculate(SCattiCalculator *calc,
+                                           const SCattiInputParameter *inp,
+                                           SCattiTrajectory *traj,
                                            double delta_time,
                                            bool *was_interrupted);
 
 /* Multi-segment waypoint calculation */
-CRuckigResult scatti_calculator_calculate_waypoints(CRuckigCalculator *calc,
-                                                     const CRuckigInputParameter *inp,
-                                                     CRuckigTrajectory *traj,
+SCattiResult scatti_calculator_calculate_waypoints(SCattiCalculator *calc,
+                                                     const SCattiInputParameter *inp,
+                                                     SCattiTrajectory *traj,
                                                      double delta_time,
                                                      bool *was_interrupted);
 
 /* Continue an interrupted calculation */
-CRuckigResult scatti_calculator_continue(CRuckigCalculator *calc,
-                                          const CRuckigInputParameter *inp,
-                                          CRuckigTrajectory *traj,
+SCattiResult scatti_calculator_continue(SCattiCalculator *calc,
+                                          const SCattiInputParameter *inp,
+                                          SCattiTrajectory *traj,
                                           double delta_time,
                                           bool *was_interrupted);
 

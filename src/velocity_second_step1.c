@@ -3,7 +3,7 @@
 #include <scatti/block.h>
 #include <scatti/profile.h>
 
-void scatti_vel2_step1_init(CRuckigVelocitySecondOrderStep1 *s,
+void scatti_vel2_step1_init(SCattiVelocitySecondOrderStep1 *s,
                      double v0, double vf, double aMax, double aMin)
 {
     s->_aMax = aMax;
@@ -11,10 +11,10 @@ void scatti_vel2_step1_init(CRuckigVelocitySecondOrderStep1 *s,
     s->vd = vf - v0;
 }
 
-bool scatti_vel2_step1_get_profile(CRuckigVelocitySecondOrderStep1 *s,
-                            const CRuckigProfile *input, CRuckigBlock *block)
+bool scatti_vel2_step1_get_profile(SCattiVelocitySecondOrderStep1 *s,
+                            const SCattiProfile *input, SCattiBlock *block)
 {
-    CRuckigProfile *p = &block->p_min;
+    SCattiProfile *p = &block->p_min;
     scatti_profile_set_boundary_from_profile(p, input);
 
     const double af = (s->vd > 0) ? s->_aMax : s->_aMin;

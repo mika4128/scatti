@@ -2,32 +2,32 @@
 #define SCATTI_RESULT_H
 
 typedef enum {
-    CRuckigWorking = 0,
-    CRuckigFinished = 1,
-    CRuckigError = -1,
-    CRuckigErrorInvalidInput = -100,
-    CRuckigErrorTrajectoryDuration = -101,
-    CRuckigErrorPositionalLimits = -102,
-    CRuckigErrorZeroLimits = -104,
-    CRuckigErrorExecutionTimeCalculation = -110,
-    CRuckigErrorSynchronizationCalculation = -111
-} CRuckigResult;
+    SCattiWorking = 0,
+    SCattiFinished = 1,
+    SCattiError = -1,
+    SCattiErrorInvalidInput = -100,
+    SCattiErrorTrajectoryDuration = -101,
+    SCattiErrorPositionalLimits = -102,
+    SCattiErrorZeroLimits = -104,
+    SCattiErrorExecutionTimeCalculation = -110,
+    SCattiErrorSynchronizationCalculation = -111
+} SCattiResult;
 
 typedef enum {
-    CRuckigPosition = 0,
-    CRuckigVelocity = 1
-} CRuckigControlInterface;
+    SCattiPosition = 0,
+    SCattiVelocity = 1
+} SCattiControlInterface;
 
 typedef enum {
-    CRuckigSyncTime = 0,
-    CRuckigSyncTimeIfNecessary = 1,
-    CRuckigSyncPhase = 2,
-    CRuckigSyncNone = 3
-} CRuckigSynchronization;
+    SCattiSyncTime = 0,
+    SCattiSyncTimeIfNecessary = 1,
+    SCattiSyncPhase = 2,
+    SCattiSyncNone = 3
+} SCattiSynchronization;
 
 typedef enum {
-    CRuckigContinuous = 0,
-    CRuckigDiscrete = 1
-} CRuckigDurationDiscretization;
+    SCattiContinuous = 0,
+    SCattiDiscrete = 1
+} SCattiDurationDiscretization;
 
 #endif /* SCATTI_RESULT_H */

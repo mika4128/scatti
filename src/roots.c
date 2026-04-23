@@ -11,7 +11,7 @@
 #define M_PI 3.14159265358979323846264338327950288
 #endif
 
-void scatti_root_set_sort(CRuckigRootSet *s) {
+void scatti_root_set_sort(SCattiRootSet *s) {
     /* Insertion sort for small arrays (max 4 elements) */
     for (size_t i = 1; i < s->size; ++i) {
         double key = s->data[i];
@@ -25,8 +25,8 @@ void scatti_root_set_sort(CRuckigRootSet *s) {
 }
 
 SCATTI_HOT
-CRuckigRootSet scatti_roots_solve_cubic(double a, double b, double c, double d) {
-    CRuckigRootSet roots;
+SCattiRootSet scatti_roots_solve_cubic(double a, double b, double c, double d) {
+    SCattiRootSet roots;
     scatti_root_set_init(&roots);
 
     if (fabs(d) < DBL_EPSILON) {
@@ -160,8 +160,8 @@ int scatti_roots_solve_resolvent(double x[3], double a, double b, double c) {
 }
 
 SCATTI_HOT
-CRuckigRootSet scatti_roots_solve_quart_monic(double a, double b, double c, double d) {
-    CRuckigRootSet roots;
+SCattiRootSet scatti_roots_solve_quart_monic(double a, double b, double c, double d) {
+    SCattiRootSet roots;
     scatti_root_set_init(&roots);
 
     if (fabs(d) < DBL_EPSILON) {

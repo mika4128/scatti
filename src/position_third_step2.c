@@ -25,7 +25,7 @@ static void poly_monic_derivative(const double *coeffs, size_t n, double *deriv)
     }
 }
 
-void scatti_pos3_step2_init(CRuckigPositionThirdOrderStep2 *s,
+void scatti_pos3_step2_init(SCattiPositionThirdOrderStep2 *s,
                      double tf, double p0, double v0, double a0,
                      double pf, double vf, double af,
                      double vMax, double vMin, double aMax, double aMin, double jMax)
@@ -71,7 +71,7 @@ void scatti_pos3_step2_init(CRuckigPositionThirdOrderStep2 *s,
     s->g2 = -2 * s->pd + tf * (v0 + vf);
 }
 
-static bool time_acc0_acc1_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
+static bool time_acc0_acc1_vel(SCattiPositionThirdOrderStep2 *s, SCattiProfile *profile,
                                double vMax, double vMin, double aMax, double aMin, double jMax)
 {
     const double a0 = s->a0, vf = s->vf, af = s->af;
@@ -120,7 +120,7 @@ static bool time_acc0_acc1_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile
     return false;
 }
 
-static bool time_acc1_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
+static bool time_acc1_vel(SCattiPositionThirdOrderStep2 *s, SCattiProfile *profile,
                           double vMax, double vMin, double aMax, double aMin, double jMax)
 {
     const double v0 = s->v0, a0 = s->a0, af = s->af;
@@ -151,7 +151,7 @@ static bool time_acc1_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *pro
         double t_max_b = (aMax - a0) / jMax;
         const double t_max = (t_max_a < t_max_b) ? t_max_a : t_max_b;
 
-        CRuckigRootSet roots = scatti_roots_solve_quart_monic(polynom[0], polynom[1], polynom[2], polynom[3]);
+        SCattiRootSet roots = scatti_roots_solve_quart_monic(polynom[0], polynom[1], polynom[2], polynom[3]);
         scatti_root_set_sort(&roots);
         for (size_t i = 0; i < roots.size; ++i) {
             double t = roots.data[i];
@@ -204,7 +204,7 @@ static bool time_acc1_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *pro
         double t_max_b = (aMax - a0) / jMax;
         const double t_max = (t_max_a < t_max_b) ? t_max_a : t_max_b;
 
-        CRuckigRootSet roots = scatti_roots_solve_quart_monic(polynom[0], polynom[1], polynom[2], polynom[3]);
+        SCattiRootSet roots = scatti_roots_solve_quart_monic(polynom[0], polynom[1], polynom[2], polynom[3]);
         scatti_root_set_sort(&roots);
         for (size_t i = 0; i < roots.size; ++i) {
             double t = roots.data[i];
@@ -233,7 +233,7 @@ static bool time_acc1_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *pro
     return false;
 }
 
-static bool time_acc0_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
+static bool time_acc0_vel(SCattiPositionThirdOrderStep2 *s, SCattiProfile *profile,
                           double vMax, double vMin, double aMax, double aMin, double jMax)
 {
     const double a0 = s->a0, vf = s->vf, af = s->af;
@@ -271,7 +271,7 @@ static bool time_acc0_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *pro
         double t_max_b = -aMin / jMax;
         const double t_max = (t_max_a < t_max_b) ? t_max_a : t_max_b;
 
-        CRuckigRootSet roots = scatti_roots_solve_quart_monic(polynom[0], polynom[1], polynom[2], polynom[3]);
+        SCattiRootSet roots = scatti_roots_solve_quart_monic(polynom[0], polynom[1], polynom[2], polynom[3]);
         scatti_root_set_sort(&roots);
         for (size_t i = 0; i < roots.size; ++i) {
             double t = roots.data[i];
@@ -319,7 +319,7 @@ static bool time_acc0_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *pro
         double t_max_b = aMax / jMax;
         const double t_max = (t_max_a < t_max_b) ? t_max_a : t_max_b;
 
-        CRuckigRootSet roots = scatti_roots_solve_quart_monic(polynom[0], polynom[1], polynom[2], polynom[3]);
+        SCattiRootSet roots = scatti_roots_solve_quart_monic(polynom[0], polynom[1], polynom[2], polynom[3]);
         scatti_root_set_sort(&roots);
         for (size_t i = 0; i < roots.size; ++i) {
             double t = roots.data[i];
@@ -357,7 +357,7 @@ static bool time_acc0_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *pro
     return false;
 }
 
-static bool time_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
+static bool time_vel(SCattiPositionThirdOrderStep2 *s, SCattiProfile *profile,
                      double vMax, double vMin, double aMax, double aMin, double jMax)
 {
     const double v0 = s->v0, a0 = s->a0, vf = s->vf, af = s->af;
@@ -387,7 +387,7 @@ static bool time_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
         polynom[2] = 0;
         polynom[3] = pd / (2 * jMax);
 
-        CRuckigRootSet roots = scatti_roots_solve_cubic(polynom[0], polynom[1], polynom[2], polynom[3]);
+        SCattiRootSet roots = scatti_roots_solve_cubic(polynom[0], polynom[1], polynom[2], polynom[3]);
         scatti_root_set_sort(&roots);
         for (size_t i = 0; i < roots.size; ++i) {
             double t = roots.data[i];
@@ -437,7 +437,7 @@ static bool time_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
         scatti_roots_poly_derivative(deriv, 5, dderiv);
 
         /* Solve 4th order derivative analytically */
-        CRuckigRootSet d_extremas = scatti_roots_solve_quart_monic(dderiv[1] / dderiv[0], dderiv[2] / dderiv[0], dderiv[3] / dderiv[0], 0.0);
+        SCattiRootSet d_extremas = scatti_roots_solve_quart_monic(dderiv[1] / dderiv[0], dderiv[2] / dderiv[0], dderiv[3] / dderiv[0], 0.0);
         /* Correct: dderiv has 4 coeffs, the quartic monic needs a,b,c,d where leading is 1 */
         /* Actually dderiv[0] is leading coefficient. Let me recompute correctly */
         /* dderiv = derivative of deriv (which has 5 coefficients, monic). So dderiv has 4 coefficients, not monic. */
@@ -631,7 +631,7 @@ static bool time_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
         scatti_roots_poly_derivative(dderiv6, 5, ddderiv6);
 
         /* Solve the 4th order dderiv6 (monic quartic): find zeros of dderiv6 */
-        CRuckigRootSet dd_extremas = scatti_roots_solve_quart_monic(dderiv6[1], dderiv6[2], dderiv6[3], dderiv6[4]);
+        SCattiRootSet dd_extremas = scatti_roots_solve_quart_monic(dderiv6[1], dderiv6[2], dderiv6[3], dderiv6[4]);
         scatti_root_set_sort(&dd_extremas);
 
         /* Build intervals where deriv6 changes sign */
@@ -784,7 +784,7 @@ static bool time_vel(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
     return false;
 }
 
-static bool time_acc0_acc1(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
+static bool time_acc0_acc1(SCattiPositionThirdOrderStep2 *s, SCattiProfile *profile,
                            double vMax, double vMin, double aMax, double aMin, double jMax)
 {
     const double v0 = s->v0, a0 = s->a0, vf = s->vf, af = s->af;
@@ -833,7 +833,7 @@ static bool time_acc0_acc1(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *pr
     return false;
 }
 
-static bool time_acc1(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
+static bool time_acc1(SCattiPositionThirdOrderStep2 *s, SCattiProfile *profile,
                       double vMax, double vMin, double aMax, double aMin, double jMax)
 {
     const double a0 = s->a0, vf = s->vf, af = s->af;
@@ -927,7 +927,7 @@ static bool time_acc1(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
     return false;
 }
 
-static bool time_acc0(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
+static bool time_acc0(SCattiPositionThirdOrderStep2 *s, SCattiProfile *profile,
                       double vMax, double vMin, double aMax, double aMin, double jMax)
 {
     const double v0 = s->v0, a0 = s->a0, af = s->af;
@@ -1001,7 +1001,7 @@ static bool time_acc0(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
     return false;
 }
 
-static bool time_none(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
+static bool time_none(SCattiPositionThirdOrderStep2 *s, SCattiProfile *profile,
                       double vMax, double vMin, double aMax, double aMin, double jMax)
 {
     const double v0 = s->v0, a0 = s->a0, vf = s->vf, af = s->af;
@@ -1046,7 +1046,7 @@ static bool time_none(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
                 polynom[2] = 4 * (pd - tf * vf) / jMax;
                 polynom[3] = (vd_vd + jMax * tf * g2) / (jMax_jMax);
 
-                CRuckigRootSet roots = scatti_roots_solve_quart_monic(polynom[0], polynom[1], polynom[2], polynom[3]);
+                SCattiRootSet roots = scatti_roots_solve_quart_monic(polynom[0], polynom[1], polynom[2], polynom[3]);
                 scatti_root_set_sort(&roots);
                 for (size_t i = 0; i < roots.size; ++i) {
                     double t = roots.data[i];
@@ -1117,7 +1117,7 @@ static bool time_none(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
             double t_max_b = (ad / jMax + tf) / 2;
             const double t_max = (t_max_a < t_max_b) ? t_max_a : t_max_b;
 
-            CRuckigRootSet roots = scatti_roots_solve_quart_monic(polynom[0], polynom[1], polynom[2], polynom[3]);
+            SCattiRootSet roots = scatti_roots_solve_quart_monic(polynom[0], polynom[1], polynom[2], polynom[3]);
             scatti_root_set_sort(&roots);
             for (size_t i = 0; i < roots.size; ++i) {
                 double t = roots.data[i];
@@ -1186,7 +1186,7 @@ static bool time_none(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
 
             const double t_max_v = (a0 - aMin) / jMax;
 
-            CRuckigRootSet roots = scatti_roots_solve_quart_monic(polynom[0], polynom[1], polynom[2], polynom[3]);
+            SCattiRootSet roots = scatti_roots_solve_quart_monic(polynom[0], polynom[1], polynom[2], polynom[3]);
             scatti_root_set_sort(&roots);
             for (size_t i = 0; i < roots.size; ++i) {
                 double t = roots.data[i];
@@ -1244,7 +1244,7 @@ static bool time_none(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
             polynom[2] = (-a0_p5 + af_p5 - af_p4 * jMax * tf + 5 * a0_p4 * (af - jMax * tf) - 2 * a0_p3 * ph3 - 4 * af_p3 * jMax * (jMax * tf_tf + vd) + 12 * af_af * jMax_jMax * g2 - 12 * af * jMax_jMax * ph6 + 2 * a0_a0 * (5 * af_p3 - 9 * af_af * jMax * tf - 6 * af * jMax * vd + 6 * jMax_jMax * ph0) + 12 * jMax_jMax * jMax * ph2 + a0 * (-5 * af_p4 + 8 * af_p3 * jMax * tf + 12 * af_af * jMax * (jMax * tf_tf + vd) - 24 * af * jMax_jMax * (-2 * pd + jMax * tf_p3 + 2 * tf * vf) + 6 * jMax_jMax * ph4)) / (jMax * ph7);
             polynom[3] = -(a0_p6 + af_p6 - 6 * a0_p5 * (af - jMax * tf) + 48 * af_p3 * jMax_jMax * g1 - 72 * jMax_jMax * jMax * (jMax * g1 * g1 + vd_vd * vd + 2 * af * g1 * vd) + 3 * a0_p4 * ph3 - 6 * af_p4 * jMax * vd + 36 * af_af * jMax_jMax * vd_vd - 4 * a0_p3 * (5 * af_p3 - 9 * af_af * jMax * tf - 6 * af * jMax * vd + 6 * jMax_jMax * ph0) + 3 * a0_a0 * ph5 - 6 * a0 * (af_p5 - af_p4 * jMax * tf - 4 * af_p3 * jMax * (jMax * tf_tf + vd) + 12 * jMax_jMax * (af_af * g2 - af * ph6 + jMax * ph2))) / (6 * jMax_jMax * ph7);
 
-            CRuckigRootSet roots = scatti_roots_solve_quart_monic(polynom[0], polynom[1], polynom[2], polynom[3]);
+            SCattiRootSet roots = scatti_roots_solve_quart_monic(polynom[0], polynom[1], polynom[2], polynom[3]);
             scatti_root_set_sort(&roots);
             for (size_t i = 0; i < roots.size; ++i) {
                 double t = roots.data[i];
@@ -1296,7 +1296,7 @@ static bool time_none(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
         polynom[2] = (a0_a0 + af_af + 10 * a0 * af) * tf_tf + 24 * (tf * (af * v0 - a0 * vf) - pd * ad) + 12 * vd_vd;
         polynom[3] = -3 * tf * ((a0_a0 + af_af + 2 * a0 * af) * tf_tf - 4 * vd * (a0 + af) * tf + 4 * vd_vd);
 
-        CRuckigRootSet roots = scatti_roots_solve_cubic(polynom[0], polynom[1], polynom[2], polynom[3]);
+        SCattiRootSet roots = scatti_roots_solve_cubic(polynom[0], polynom[1], polynom[2], polynom[3]);
         scatti_root_set_sort(&roots);
         for (size_t i = 0; i < roots.size; ++i) {
             double t = roots.data[i];
@@ -1353,7 +1353,7 @@ static bool time_none(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile
 #  pragma GCC diagnostic ignored "-Wunused-function"
 #  pragma GCC diagnostic ignored "-Wunused-variable"
 #endif
-static bool time_none_smooth(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile,
+static bool time_none_smooth(SCattiPositionThirdOrderStep2 *s, SCattiProfile *profile,
                              double vMax, double vMin, double aMax, double aMin, double jMax)
 {
     const double v0 = s->v0, a0 = s->a0, vf = s->vf, af = s->af;
@@ -1470,7 +1470,7 @@ static bool time_none_smooth(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *
 #endif /* SCATTI_ENABLE_EXTRA_SOLVERS */
 
 SCATTI_HOT
-bool scatti_pos3_step2_get_profile(CRuckigPositionThirdOrderStep2 *s, CRuckigProfile *profile)
+bool scatti_pos3_step2_get_profile(SCattiPositionThirdOrderStep2 *s, SCattiProfile *profile)
 {
     /* Test all cases to get ones that match */
     const bool up_first = (s->pd > s->tf * s->v0);

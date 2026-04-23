@@ -54,8 +54,8 @@ fn main() {
     println!("cargo:rustc-link-lib=m");
 
     // Generate bindings from the umbrella header
-    // Only allowlist functions; pulling in `allowlist_type("CRuckig.*")` was emitting a
-    // truncated `CRuckigInputParameter` (missing Pro fields) on some bindgen/libclang combos.
+    // Only allowlist functions; pulling in `allowlist_type("SCatti.*")` was emitting a
+    // truncated `SCattiInputParameter` (missing Pro fields) on some bindgen/libclang combos.
     let bindings = bindgen::Builder::default()
         .header(include_dir.join("scatti").join("scatti.h").to_str().unwrap())
         .clang_arg(format!("-I{}", include_dir.display()))

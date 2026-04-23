@@ -11,38 +11,38 @@ ffi = cffi.FFI()
 ffi.cdef("""
 /* ---- enums ---- */
 typedef enum {
-    CRuckigWorking = 0,
-    CRuckigFinished = 1,
-    CRuckigError = -1,
-    CRuckigErrorInvalidInput = -100,
-    CRuckigErrorTrajectoryDuration = -101,
-    CRuckigErrorPositionalLimits = -102,
-    CRuckigErrorZeroLimits = -104,
-    CRuckigErrorExecutionTimeCalculation = -110,
-    CRuckigErrorSynchronizationCalculation = -111
-} CRuckigResult;
+    SCattiWorking = 0,
+    SCattiFinished = 1,
+    SCattiError = -1,
+    SCattiErrorInvalidInput = -100,
+    SCattiErrorTrajectoryDuration = -101,
+    SCattiErrorPositionalLimits = -102,
+    SCattiErrorZeroLimits = -104,
+    SCattiErrorExecutionTimeCalculation = -110,
+    SCattiErrorSynchronizationCalculation = -111
+} SCattiResult;
 
 typedef enum {
-    CRuckigPosition = 0,
-    CRuckigVelocity = 1
-} CRuckigControlInterface;
+    SCattiPosition = 0,
+    SCattiVelocity = 1
+} SCattiControlInterface;
 
 typedef enum {
-    CRuckigSyncTime = 0,
-    CRuckigSyncTimeIfNecessary = 1,
-    CRuckigSyncPhase = 2,
-    CRuckigSyncNone = 3
-} CRuckigSynchronization;
+    SCattiSyncTime = 0,
+    SCattiSyncTimeIfNecessary = 1,
+    SCattiSyncPhase = 2,
+    SCattiSyncNone = 3
+} SCattiSynchronization;
 
 typedef enum {
-    CRuckigContinuous = 0,
-    CRuckigDiscrete = 1
-} CRuckigDurationDiscretization;
+    SCattiContinuous = 0,
+    SCattiDiscrete = 1
+} SCattiDurationDiscretization;
 
 /* ---- opaque forward declarations ---- */
-typedef struct CRuckig CRuckig;
-typedef struct CRuckigTrajectory CRuckigTrajectory;
-typedef struct CRuckigProfile CRuckigProfile;
+typedef struct SCatti SCatti;
+typedef struct SCattiTrajectory SCattiTrajectory;
+typedef struct SCattiProfile SCattiProfile;
 
 /* ---- structs ---- */
 typedef struct {
@@ -50,14 +50,14 @@ typedef struct {
     double max;
     double t_min;
     double t_max;
-} CRuckigBound;
+} SCattiBound;
 
 typedef struct {
     size_t degrees_of_freedom;
 
-    CRuckigControlInterface control_interface;
-    CRuckigSynchronization synchronization;
-    CRuckigDurationDiscretization duration_discretization;
+    SCattiControlInterface control_interface;
+    SCattiSynchronization synchronization;
+    SCattiDurationDiscretization duration_discretization;
 
     double *current_position;
     double *current_velocity;
@@ -71,8 +71,8 @@ typedef struct {
     double *min_velocity;
     double *min_acceleration;
     bool   *enabled;
-    CRuckigControlInterface *per_dof_control_interface;
-    CRuckigSynchronization  *per_dof_synchronization;
+    SCattiControlInterface *per_dof_control_interface;
+    SCattiSynchronization  *per_dof_synchronization;
     double minimum_duration;
     bool   has_minimum_duration;
 
@@ -90,11 +90,11 @@ typedef struct {
     double *min_position;
     double *per_section_minimum_duration;
     double interrupt_calculation_duration;
-} CRuckigInputParameter;
+} SCattiInputParameter;
 
 typedef struct {
     size_t degrees_of_freedom;
-    CRuckigTrajectory *trajectory;
+    SCattiTrajectory *trajectory;
     double *new_position;
     double *new_velocity;
     double *new_acceleration;
@@ -105,59 +105,59 @@ typedef struct {
     bool   new_calculation;
     bool   was_calculation_interrupted;
     double calculation_duration;
-} CRuckigOutputParameter;
+} SCattiOutputParameter;
 
 /* ---- main API ---- */
-CRuckig* scatti_create(size_t dofs, double delta_time);
-CRuckig* scatti_create_waypoints(size_t dofs, double delta_time, size_t max_waypoints);
-void     scatti_destroy(CRuckig *r);
-void     scatti_reset(CRuckig *r);
-bool     scatti_validate_input(const CRuckig *r,
-                                const CRuckigInputParameter *input,
+SCatti* scatti_create(size_t dofs, double delta_time);
+SCatti* scatti_create_waypoints(size_t dofs, double delta_time, size_t max_waypoints);
+void     scatti_destroy(SCatti *r);
+void     scatti_reset(SCatti *r);
+bool     scatti_validate_input(const SCatti *r,
+                                const SCattiInputParameter *input,
                                 bool check_current_within_limits,
                                 bool check_target_within_limits);
-CRuckigResult scatti_calculate(CRuckig *r,
-                                const CRuckigInputParameter *input,
-                                CRuckigTrajectory *trajectory);
-CRuckigResult scatti_update(CRuckig *r,
-                             const CRuckigInputParameter *input,
-                             CRuckigOutputParameter *output);
+SCattiResult scatti_calculate(SCatti *r,
+                                const SCattiInputParameter *input,
+                                SCattiTrajectory *trajectory);
+SCattiResult scatti_update(SCatti *r,
+                             const SCattiInputParameter *input,
+                             SCattiOutputParameter *output);
 
 /* ---- input ---- */
-CRuckigInputParameter* scatti_input_create(size_t dofs);
-void scatti_input_destroy(CRuckigInputParameter *inp);
-bool scatti_input_validate(const CRuckigInputParameter *inp,
+SCattiInputParameter* scatti_input_create(size_t dofs);
+void scatti_input_destroy(SCattiInputParameter *inp);
+bool scatti_input_validate(const SCattiInputParameter *inp,
                             bool check_current_within_limits,
                             bool check_target_within_limits);
-void scatti_input_copy(CRuckigInputParameter *dst,
-                        const CRuckigInputParameter *src);
-void scatti_input_set_intermediate_positions(CRuckigInputParameter *inp,
+void scatti_input_copy(SCattiInputParameter *dst,
+                        const SCattiInputParameter *src);
+void scatti_input_set_intermediate_positions(SCattiInputParameter *inp,
                                                const double *positions,
                                                size_t num_waypoints);
 
 /* ---- output ---- */
-CRuckigOutputParameter* scatti_output_create(size_t dofs);
-void scatti_output_destroy(CRuckigOutputParameter *out);
-void scatti_output_pass_to_input(const CRuckigOutputParameter *out,
-                                  CRuckigInputParameter *inp);
+SCattiOutputParameter* scatti_output_create(size_t dofs);
+void scatti_output_destroy(SCattiOutputParameter *out);
+void scatti_output_pass_to_input(const SCattiOutputParameter *out,
+                                  SCattiInputParameter *inp);
 
 /* ---- trajectory ---- */
-CRuckigTrajectory* scatti_trajectory_create(size_t dofs);
-void scatti_trajectory_destroy(CRuckigTrajectory *traj);
-bool scatti_trajectory_resize(CRuckigTrajectory *traj, size_t num_sections);
-double scatti_trajectory_get_duration(const CRuckigTrajectory *traj);
-size_t scatti_trajectory_get_intermediate_durations(const CRuckigTrajectory *traj,
+SCattiTrajectory* scatti_trajectory_create(size_t dofs);
+void scatti_trajectory_destroy(SCattiTrajectory *traj);
+bool scatti_trajectory_resize(SCattiTrajectory *traj, size_t num_sections);
+double scatti_trajectory_get_duration(const SCattiTrajectory *traj);
+size_t scatti_trajectory_get_intermediate_durations(const SCattiTrajectory *traj,
                                                       double *out_durations);
-void scatti_trajectory_at_time(const CRuckigTrajectory *traj, double time,
+void scatti_trajectory_at_time(const SCattiTrajectory *traj, double time,
                                 double *new_position, double *new_velocity,
                                 double *new_acceleration, double *new_jerk,
                                 size_t *new_section);
-void scatti_trajectory_get_position_extrema(CRuckigTrajectory *traj);
+void scatti_trajectory_get_position_extrema(SCattiTrajectory *traj);
 bool scatti_trajectory_get_first_time_at_position(
-        const CRuckigTrajectory *traj, size_t dof,
+        const SCattiTrajectory *traj, size_t dof,
         double position, double *time, double time_after);
 void scatti_trajectory_get_independent_min_durations(
-        const CRuckigTrajectory *traj, double *out_durations);
+        const SCattiTrajectory *traj, double *out_durations);
 """)
 
 

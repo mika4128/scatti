@@ -7,7 +7,7 @@
 #include <scatti/profile.h>
 #include <scatti/roots.h>
 
-void scatti_pos1_step2_init(CRuckigPositionFirstOrderStep2 *s,
+void scatti_pos1_step2_init(SCattiPositionFirstOrderStep2 *s,
                      double tf, double p0, double pf, double vMax, double vMin)
 {
     s->tf = tf;
@@ -16,7 +16,7 @@ void scatti_pos1_step2_init(CRuckigPositionFirstOrderStep2 *s,
     s->pd = pf - p0;
 }
 
-bool scatti_pos1_step2_get_profile(CRuckigPositionFirstOrderStep2 *s, CRuckigProfile *profile)
+bool scatti_pos1_step2_get_profile(SCattiPositionFirstOrderStep2 *s, SCattiProfile *profile)
 {
     const double vf = s->pd / s->tf;
 

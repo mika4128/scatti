@@ -7,7 +7,7 @@
 
 static const double brake_eps = 2.2e-14;
 
-void scatti_brake_init(CRuckigBrakeProfile *bp) {
+void scatti_brake_init(SCattiBrakeProfile *bp) {
     bp->duration = 0.0;
     bp->t[0] = 0.0;
     bp->t[1] = 0.0;
@@ -29,12 +29,12 @@ static inline double brake_v_at_a_zero(double v0, double a0, double j) {
     return v0 + (a0 * a0) / (2 * j);
 }
 
-static void acceleration_brake(CRuckigBrakeProfile *bp, double v0, double a0,
+static void acceleration_brake(SCattiBrakeProfile *bp, double v0, double a0,
                                 double vMax, double vMin, double aMax, double aMin, double jMax);
-static void velocity_brake(CRuckigBrakeProfile *bp, double v0, double a0,
+static void velocity_brake(SCattiBrakeProfile *bp, double v0, double a0,
                             double vMax, double vMin, double aMax, double aMin, double jMax);
 
-static void acceleration_brake(CRuckigBrakeProfile *bp, double v0, double a0,
+static void acceleration_brake(SCattiBrakeProfile *bp, double v0, double a0,
                                 double vMax, double vMin, double aMax, double aMin, double jMax) {
     bp->j[0] = -jMax;
 
@@ -62,7 +62,7 @@ static void acceleration_brake(CRuckigBrakeProfile *bp, double v0, double a0,
     }
 }
 
-static void velocity_brake(CRuckigBrakeProfile *bp, double v0, double a0,
+static void velocity_brake(SCattiBrakeProfile *bp, double v0, double a0,
                             double vMax, double vMin, double aMax, double aMin, double jMax) {
     (void)aMax;
     bp->j[0] = -jMax;
@@ -87,7 +87,7 @@ static void velocity_brake(CRuckigBrakeProfile *bp, double v0, double a0,
     }
 }
 
-void scatti_brake_get_position_brake_trajectory(CRuckigBrakeProfile *bp, double v0, double a0,
+void scatti_brake_get_position_brake_trajectory(SCattiBrakeProfile *bp, double v0, double a0,
                                          double vMax, double vMin, double aMax, double aMin, double jMax) {
     bp->t[0] = 0.0;
     bp->t[1] = 0.0;
@@ -112,7 +112,7 @@ void scatti_brake_get_position_brake_trajectory(CRuckigBrakeProfile *bp, double 
     }
 }
 
-void scatti_brake_get_second_order_position_brake_trajectory(CRuckigBrakeProfile *bp, double v0,
+void scatti_brake_get_second_order_position_brake_trajectory(SCattiBrakeProfile *bp, double v0,
                                                       double vMax, double vMin, double aMax, double aMin) {
     bp->t[0] = 0.0;
     bp->t[1] = 0.0;
@@ -135,7 +135,7 @@ void scatti_brake_get_second_order_position_brake_trajectory(CRuckigBrakeProfile
     }
 }
 
-void scatti_brake_get_velocity_brake_trajectory(CRuckigBrakeProfile *bp, double a0,
+void scatti_brake_get_velocity_brake_trajectory(SCattiBrakeProfile *bp, double a0,
                                          double aMax, double aMin, double jMax) {
     bp->t[0] = 0.0;
     bp->t[1] = 0.0;
@@ -156,14 +156,14 @@ void scatti_brake_get_velocity_brake_trajectory(CRuckigBrakeProfile *bp, double 
     }
 }
 
-void scatti_brake_get_second_order_velocity_brake_trajectory(CRuckigBrakeProfile *bp) {
+void scatti_brake_get_second_order_velocity_brake_trajectory(SCattiBrakeProfile *bp) {
     bp->t[0] = 0.0;
     bp->t[1] = 0.0;
     bp->j[0] = 0.0;
     bp->j[1] = 0.0;
 }
 
-void scatti_brake_finalize(CRuckigBrakeProfile *bp, double *ps, double *vs, double *as) {
+void scatti_brake_finalize(SCattiBrakeProfile *bp, double *ps, double *vs, double *as) {
     if (bp->t[0] <= 0.0 && bp->t[1] <= 0.0) {
         bp->duration = 0.0;
         return;
@@ -184,7 +184,7 @@ void scatti_brake_finalize(CRuckigBrakeProfile *bp, double *ps, double *vs, doub
     }
 }
 
-void scatti_brake_finalize_second_order(CRuckigBrakeProfile *bp, double *ps, double *vs, double *as) {
+void scatti_brake_finalize_second_order(SCattiBrakeProfile *bp, double *ps, double *vs, double *as) {
     if (bp->t[0] <= 0.0) {
         bp->duration = 0.0;
         return;

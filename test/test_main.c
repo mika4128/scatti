@@ -47,21 +47,21 @@ static bool arrays_approx_equal7(const double *a, const double *b) {
 }
 
 /* Helper: run update loop until finished, return duration */
-static double run_to_finish(CRuckig *otg, CRuckigInputParameter *inp, CRuckigOutputParameter *out) {
-    CRuckigResult result;
+static double run_to_finish(SCatti *otg, SCattiInputParameter *inp, SCattiOutputParameter *out) {
+    SCattiResult result;
     int max_iter = 200000;
     while (max_iter-- > 0) {
         result = scatti_update(otg, inp, out);
-        if (result != CRuckigWorking) break;
+        if (result != SCattiWorking) break;
         scatti_output_pass_to_input(out, inp);
     }
     return scatti_trajectory_get_duration(out->trajectory);
 }
 
 /* Helper: allocate and set per-DOF synchronization */
-static void set_per_dof_sync3(CRuckigInputParameter *inp, CRuckigSynchronization s0, CRuckigSynchronization s1, CRuckigSynchronization s2) {
+static void set_per_dof_sync3(SCattiInputParameter *inp, SCattiSynchronization s0, SCattiSynchronization s1, SCattiSynchronization s2) {
     if (!inp->per_dof_synchronization) {
-        inp->per_dof_synchronization = (CRuckigSynchronization*)malloc(3 * sizeof(CRuckigSynchronization));
+        inp->per_dof_synchronization = (SCattiSynchronization*)malloc(3 * sizeof(SCattiSynchronization));
     }
     inp->per_dof_synchronization[0] = s0;
     inp->per_dof_synchronization[1] = s1;
@@ -69,16 +69,16 @@ static void set_per_dof_sync3(CRuckigInputParameter *inp, CRuckigSynchronization
 }
 
 /* Helper: allocate and set per-DOF control interface */
-static void set_per_dof_ci3(CRuckigInputParameter *inp, CRuckigControlInterface c0, CRuckigControlInterface c1, CRuckigControlInterface c2) {
+static void set_per_dof_ci3(SCattiInputParameter *inp, SCattiControlInterface c0, SCattiControlInterface c1, SCattiControlInterface c2) {
     if (!inp->per_dof_control_interface) {
-        inp->per_dof_control_interface = (CRuckigControlInterface*)malloc(3 * sizeof(CRuckigControlInterface));
+        inp->per_dof_control_interface = (SCattiControlInterface*)malloc(3 * sizeof(SCattiControlInterface));
     }
     inp->per_dof_control_interface[0] = c0;
     inp->per_dof_control_interface[1] = c1;
     inp->per_dof_control_interface[2] = c2;
 }
 
-static void set_enabled3(CRuckigInputParameter *inp, bool e0, bool e1, bool e2) {
+static void set_enabled3(SCattiInputParameter *inp, bool e0, bool e1, bool e2) {
     inp->enabled[0] = e0;
     inp->enabled[1] = e1;
     inp->enabled[2] = e2;
@@ -89,9 +89,9 @@ static void set_enabled3(CRuckigInputParameter *inp, bool e0, bool e1, bool e2) 
 static void test_trajectory_basic(void) {
     printf("Test: trajectory basic...\n");
 
-    CRuckig *otg = scatti_create(3, 0.005);
-    CRuckigInputParameter *inp = scatti_input_create(3);
-    CRuckigOutputParameter *out = scatti_output_create(3);
+    SCatti *otg = scatti_create(3, 0.005);
+    SCattiInputParameter *inp = scatti_input_create(3);
+    SCattiOutputParameter *out = scatti_output_create(3);
 
     set_arr3(inp->current_position, 0.0, -2.0, 0.0);
     set_arr3(inp->current_velocity, 0.0, 0.0, 0.0);
@@ -104,14 +104,14 @@ static void test_trajectory_basic(void) {
     set_arr3(inp->max_jerk, 1.0, 1.0, 1.0);
 
     /* Calculate offline */
-    CRuckigTrajectory *traj = scatti_trajectory_create(3);
-    CRuckigResult result = scatti_calculate(otg, inp, traj);
-    CHECK(result == CRuckigWorking, "calculate returns Working");
+    SCattiTrajectory *traj = scatti_trajectory_create(3);
+    SCattiResult result = scatti_calculate(otg, inp, traj);
+    CHECK(result == SCattiWorking, "calculate returns Working");
     CHECK_APPROX(scatti_trajectory_get_duration(traj), 4.0, "duration == 4.0");
 
     /* Update online */
     result = scatti_update(otg, inp, out);
-    CHECK(result == CRuckigWorking, "update returns Working");
+    CHECK(result == SCattiWorking, "update returns Working");
     CHECK_APPROX(scatti_trajectory_get_duration(out->trajectory), 4.0, "update duration == 4.0");
 
     /* at_time(0.0) == current state */
@@ -157,7 +157,7 @@ static void test_trajectory_basic(void) {
 
     /* Position extrema - full check */
     scatti_trajectory_get_position_extrema(out->trajectory);
-    CRuckigBound *ext = out->trajectory->position_extrema;
+    SCattiBound *ext = out->trajectory->position_extrema;
     CHECK_APPROX(ext[0].max, 1.0, "ext[0].max");
     CHECK_APPROX(ext[0].t_max, 4.0, "ext[0].t_max");
     CHECK_APPROX(ext[0].min, 0.0, "ext[0].min");
@@ -216,8 +216,8 @@ static void test_trajectory_basic(void) {
 static void test_single_dof(void) {
     printf("Test: single DOF...\n");
 
-    CRuckig *otg = scatti_create(1, 0.005);
-    CRuckigInputParameter *inp = scatti_input_create(1);
+    SCatti *otg = scatti_create(1, 0.005);
+    SCattiInputParameter *inp = scatti_input_create(1);
 
     inp->current_position[0] = 0.0;
     inp->target_position[0] = 1.0;
@@ -225,9 +225,9 @@ static void test_single_dof(void) {
     inp->max_acceleration[0] = 1.0;
     inp->max_jerk[0] = 1.0;
 
-    CRuckigTrajectory *traj = scatti_trajectory_create(1);
-    CRuckigResult result = scatti_calculate(otg, inp, traj);
-    CHECK(result == CRuckigWorking, "single DOF calculate");
+    SCattiTrajectory *traj = scatti_trajectory_create(1);
+    SCattiResult result = scatti_calculate(otg, inp, traj);
+    CHECK(result == SCattiWorking, "single DOF calculate");
     CHECK_APPROX(scatti_trajectory_get_duration(traj), 3.1748, "single DOF duration");
 
     /* at_time(0.0) should equal current_position */
@@ -247,11 +247,11 @@ static void test_single_dof(void) {
 static void test_velocity_interface(void) {
     printf("Test: velocity interface...\n");
 
-    CRuckig *otg = scatti_create(3, 0.005);
-    CRuckigInputParameter *inp = scatti_input_create(3);
-    CRuckigOutputParameter *out = scatti_output_create(3);
+    SCatti *otg = scatti_create(3, 0.005);
+    SCattiInputParameter *inp = scatti_input_create(3);
+    SCattiOutputParameter *out = scatti_output_create(3);
 
-    inp->control_interface = CRuckigVelocity;
+    inp->control_interface = SCattiVelocity;
     set_arr3(inp->current_position, 0.0, 0.0, 0.0);
     set_arr3(inp->current_velocity, 0.0, -1.0, 0.0);
     set_arr3(inp->current_acceleration, 0.0, 0.0, 0.0);
@@ -260,8 +260,8 @@ static void test_velocity_interface(void) {
     set_arr3(inp->max_acceleration, 1.0, 1.0, 1.0);
     set_arr3(inp->max_jerk, 1.0, 1.0, 1.0);
 
-    CRuckigResult result = scatti_update(otg, inp, out);
-    CHECK(result == CRuckigWorking, "velocity interface update");
+    SCattiResult result = scatti_update(otg, inp, out);
+    CHECK(result == SCattiWorking, "velocity interface update");
     double dur = scatti_trajectory_get_duration(out->trajectory);
     CHECK(dur > 0.0, "velocity duration > 0");
 
@@ -273,9 +273,9 @@ static void test_velocity_interface(void) {
 static void test_minimum_duration(void) {
     printf("Test: minimum duration...\n");
 
-    CRuckig *otg = scatti_create(3, 0.005);
-    CRuckigInputParameter *inp = scatti_input_create(3);
-    CRuckigOutputParameter *out = scatti_output_create(3);
+    SCatti *otg = scatti_create(3, 0.005);
+    SCattiInputParameter *inp = scatti_input_create(3);
+    SCattiOutputParameter *out = scatti_output_create(3);
 
     set_arr3(inp->current_position, 0.0, -2.0, 0.0);
     set_arr3(inp->current_velocity, 0.0, 0.0, 0.0);
@@ -289,8 +289,8 @@ static void test_minimum_duration(void) {
     inp->has_minimum_duration = true;
     inp->minimum_duration = 12.0;
 
-    CRuckigResult result = scatti_update(otg, inp, out);
-    CHECK(result == CRuckigWorking, "min duration update");
+    SCattiResult result = scatti_update(otg, inp, out);
+    CHECK(result == SCattiWorking, "min duration update");
     CHECK_APPROX(scatti_trajectory_get_duration(out->trajectory), 12.0, "min duration == 12.0");
 
     scatti_output_destroy(out);
@@ -301,9 +301,9 @@ static void test_minimum_duration(void) {
 static void test_high_speed(void) {
     printf("Test: high speed trajectory...\n");
 
-    CRuckig *otg = scatti_create(3, 0.005);
-    CRuckigInputParameter *inp = scatti_input_create(3);
-    CRuckigOutputParameter *out = scatti_output_create(3);
+    SCatti *otg = scatti_create(3, 0.005);
+    SCattiInputParameter *inp = scatti_input_create(3);
+    SCattiOutputParameter *out = scatti_output_create(3);
 
     set_arr3(inp->current_position, 1300.0, 0.0, 0.02);
     set_arr3(inp->current_velocity, 1200.0, 0.0, 0.0);
@@ -315,8 +315,8 @@ static void test_high_speed(void) {
     set_arr3(inp->max_acceleration, 40000.0, 1.0, 1.0);
     set_arr3(inp->max_jerk, 200000.0, 1.0, 1.0);
 
-    CRuckigResult result = scatti_update(otg, inp, out);
-    CHECK(result == CRuckigWorking, "high speed update");
+    SCattiResult result = scatti_update(otg, inp, out);
+    CHECK(result == SCattiWorking, "high speed update");
     CHECK_APPROX(scatti_trajectory_get_duration(out->trajectory), 0.167347, "high speed duration");
 
     /* Independent min durations after high-speed */
@@ -333,9 +333,9 @@ static void test_high_speed(void) {
 static void test_step_through(void) {
     printf("Test: step through trajectory...\n");
 
-    CRuckig *otg = scatti_create(3, 0.005);
-    CRuckigInputParameter *inp = scatti_input_create(3);
-    CRuckigOutputParameter *out = scatti_output_create(3);
+    SCatti *otg = scatti_create(3, 0.005);
+    SCattiInputParameter *inp = scatti_input_create(3);
+    SCattiOutputParameter *out = scatti_output_create(3);
 
     set_arr3(inp->current_position, 0.0, -2.0, 0.0);
     set_arr3(inp->current_velocity, 0.0, 0.0, 0.0);
@@ -362,9 +362,9 @@ static void test_step_through(void) {
 static void test_second_order(void) {
     printf("Test: second order (infinite jerk)...\n");
 
-    CRuckig *otg = scatti_create(1, 0.005);
-    CRuckigInputParameter *inp = scatti_input_create(1);
-    CRuckigOutputParameter *out = scatti_output_create(1);
+    SCatti *otg = scatti_create(1, 0.005);
+    SCattiInputParameter *inp = scatti_input_create(1);
+    SCattiOutputParameter *out = scatti_output_create(1);
 
     inp->current_position[0] = 0.0;
     inp->target_position[0] = 1.0;
@@ -372,8 +372,8 @@ static void test_second_order(void) {
     inp->max_acceleration[0] = 1.0;
     inp->max_jerk[0] = INFINITY;
 
-    CRuckigResult result = scatti_update(otg, inp, out);
-    CHECK(result == CRuckigWorking, "second order update");
+    SCattiResult result = scatti_update(otg, inp, out);
+    CHECK(result == SCattiWorking, "second order update");
     double dur = scatti_trajectory_get_duration(out->trajectory);
     CHECK(dur > 0.0, "second order duration > 0");
 
@@ -385,9 +385,9 @@ static void test_second_order(void) {
 static void test_first_order(void) {
     printf("Test: first order (infinite jerk+accel)...\n");
 
-    CRuckig *otg = scatti_create(1, 0.005);
-    CRuckigInputParameter *inp = scatti_input_create(1);
-    CRuckigOutputParameter *out = scatti_output_create(1);
+    SCatti *otg = scatti_create(1, 0.005);
+    SCattiInputParameter *inp = scatti_input_create(1);
+    SCattiOutputParameter *out = scatti_output_create(1);
 
     inp->current_position[0] = 0.0;
     inp->target_position[0] = 1.0;
@@ -395,8 +395,8 @@ static void test_first_order(void) {
     inp->max_acceleration[0] = INFINITY;
     inp->max_jerk[0] = INFINITY;
 
-    CRuckigResult result = scatti_update(otg, inp, out);
-    CHECK(result == CRuckigWorking, "first order update");
+    SCattiResult result = scatti_update(otg, inp, out);
+    CHECK(result == SCattiWorking, "first order update");
     double dur = scatti_trajectory_get_duration(out->trajectory);
     CHECK_APPROX(dur, 1.0, "first order duration == 1.0");
 
@@ -410,9 +410,9 @@ static void test_first_order(void) {
 static void test_error_and_new_calculation(void) {
     printf("Test: error handling and new_calculation flag...\n");
 
-    CRuckig *otg = scatti_create(3, 0.005);
-    CRuckigInputParameter *inp = scatti_input_create(3);
-    CRuckigOutputParameter *out = scatti_output_create(3);
+    SCatti *otg = scatti_create(3, 0.005);
+    SCattiInputParameter *inp = scatti_input_create(3);
+    SCattiOutputParameter *out = scatti_output_create(3);
 
     set_arr3(inp->current_position, 0.0, -2.0, 0.0);
     set_arr3(inp->current_velocity, 0.0, 0.0, 0.0);
@@ -424,14 +424,14 @@ static void test_error_and_new_calculation(void) {
     set_arr3(inp->max_acceleration, 1.0, 1.0, 1.0);
     set_arr3(inp->max_jerk, 1.0, 1.0, 1.0);
 
-    CRuckigResult result = scatti_update(otg, inp, out);
-    CHECK(result == CRuckigErrorInvalidInput, "target vel exceeds max -> error");
+    SCattiResult result = scatti_update(otg, inp, out);
+    CHECK(result == SCattiErrorInvalidInput, "target vel exceeds max -> error");
     CHECK(!out->new_calculation, "new_calculation false after error");
 
     /* Fix input and try again */
     set_arr3(inp->target_velocity, 0.2, -0.3, 0.8);
     result = scatti_update(otg, inp, out);
-    CHECK(result == CRuckigWorking, "valid input -> working");
+    CHECK(result == SCattiWorking, "valid input -> working");
     CHECK(out->new_calculation, "new_calculation true after valid update");
 
     scatti_output_destroy(out);
@@ -444,7 +444,7 @@ static void test_error_and_new_calculation(void) {
 static void test_input_validation(void) {
     printf("Test: input validation...\n");
 
-    CRuckigInputParameter *inp = scatti_input_create(2);
+    SCattiInputParameter *inp = scatti_input_create(2);
     set_arr2(inp->current_position, 0.0, -2.0);
     set_arr2(inp->current_velocity, 0.0, 0.0);
     set_arr2(inp->current_acceleration, 0.0, 0.0);
@@ -531,9 +531,9 @@ static void test_input_validation(void) {
 static void test_enabled(void) {
     printf("Test: enabled DOF flag...\n");
 
-    CRuckig *otg = scatti_create(3, 0.005);
-    CRuckigInputParameter *inp = scatti_input_create(3);
-    CRuckigOutputParameter *out = scatti_output_create(3);
+    SCatti *otg = scatti_create(3, 0.005);
+    SCattiInputParameter *inp = scatti_input_create(3);
+    SCattiOutputParameter *out = scatti_output_create(3);
 
     set_enabled3(inp, true, false, false);
     set_arr3(inp->current_position, 0.0, -2.0, 0.0);
@@ -546,8 +546,8 @@ static void test_enabled(void) {
     set_arr3(inp->max_acceleration, 1.0, 1.0, 1.0);
     set_arr3(inp->max_jerk, 1.0, 1.0, 1.0);
 
-    CRuckigResult result = scatti_update(otg, inp, out);
-    CHECK(result == CRuckigWorking, "enabled update");
+    SCattiResult result = scatti_update(otg, inp, out);
+    CHECK(result == SCattiWorking, "enabled update");
     CHECK_APPROX(scatti_trajectory_get_duration(out->trajectory), 3.1748021039, "enabled duration");
 
     double pos[3], vel[3], acc[3];
@@ -581,7 +581,7 @@ static void test_enabled(void) {
 
     scatti_reset(otg);
     result = scatti_update(otg, inp, out);
-    CHECK(result == CRuckigWorking, "enabled overwrite update");
+    CHECK(result == SCattiWorking, "enabled overwrite update");
     CHECK_APPROX(scatti_trajectory_get_duration(out->trajectory), 3.6578610221, "enabled overwrite duration");
 
     scatti_output_destroy(out);
@@ -594,10 +594,10 @@ static void test_enabled(void) {
 static void test_phase_synchronization(void) {
     printf("Test: phase synchronization...\n");
 
-    CRuckig *otg = scatti_create(3, 0.005);
-    CRuckigInputParameter *inp = scatti_input_create(3);
-    CRuckigOutputParameter *out = scatti_output_create(3);
-    CRuckigTrajectory *traj = scatti_trajectory_create(3);
+    SCatti *otg = scatti_create(3, 0.005);
+    SCattiInputParameter *inp = scatti_input_create(3);
+    SCattiOutputParameter *out = scatti_output_create(3);
+    SCattiTrajectory *traj = scatti_trajectory_create(3);
 
     set_arr3(inp->current_position, 0.0, -2.0, 0.0);
     set_arr3(inp->current_velocity, 0.0, 0.0, 0.0);
@@ -608,15 +608,15 @@ static void test_phase_synchronization(void) {
     set_arr3(inp->max_velocity, 1.0, 1.0, 1.0);
     set_arr3(inp->max_acceleration, 1.0, 1.0, 1.0);
     set_arr3(inp->max_jerk, 1.0, 1.0, 1.0);
-    inp->synchronization = CRuckigSyncPhase;
+    inp->synchronization = SCattiSyncPhase;
 
     /* Basic equal limits */
-    CRuckigResult result = scatti_calculate(otg, inp, traj);
-    CHECK(result == CRuckigWorking, "phase sync calculate");
+    SCattiResult result = scatti_calculate(otg, inp, traj);
+    CHECK(result == SCattiWorking, "phase sync calculate");
     CHECK_APPROX(scatti_trajectory_get_duration(traj), 4.0, "phase sync duration");
-    const CRuckigProfile *p0 = scatti_trajectory_get_profile(traj, 0);
-    const CRuckigProfile *p1 = scatti_trajectory_get_profile(traj, 1);
-    const CRuckigProfile *p2 = scatti_trajectory_get_profile(traj, 2);
+    const SCattiProfile *p0 = scatti_trajectory_get_profile(traj, 0);
+    const SCattiProfile *p1 = scatti_trajectory_get_profile(traj, 1);
+    const SCattiProfile *p2 = scatti_trajectory_get_profile(traj, 2);
     CHECK(arrays_approx_equal7(p0->t, p1->t), "phase sync: p0.t == p1.t");
     CHECK(arrays_approx_equal7(p0->t, p2->t), "phase sync: p0.t == p2.t");
 
@@ -654,7 +654,7 @@ static void test_phase_synchronization(void) {
     set_arr3(inp->max_jerk, 1.0, 1.0, 1.0);
     scatti_reset(otg);
     result = scatti_update(otg, inp, out);
-    CHECK(result == CRuckigFinished, "phase sync equal -> finished");
+    CHECK(result == SCattiFinished, "phase sync equal -> finished");
     CHECK_APPROX(scatti_trajectory_get_duration(out->trajectory), 0.0, "phase sync equal dur=0");
 
     /* Target velocity only */
@@ -665,7 +665,7 @@ static void test_phase_synchronization(void) {
     set_arr3(inp->target_velocity, 0.2, 0.3, 0.4);
     set_arr3(inp->target_acceleration, 0.0, 0.0, 0.0);
     result = scatti_calculate(otg, inp, traj);
-    CHECK(result == CRuckigWorking, "phase sync target_vel only");
+    CHECK(result == SCattiWorking, "phase sync target_vel only");
     p0 = scatti_trajectory_get_profile(traj, 0);
     p1 = scatti_trajectory_get_profile(traj, 1);
     p2 = scatti_trajectory_get_profile(traj, 2);
@@ -709,7 +709,7 @@ static void test_phase_synchronization(void) {
     set_arr3(inp->max_velocity, 1.0, 1.0, 1.0);
     set_arr3(inp->max_acceleration, 1.0, 1.0, 1.0);
     set_arr3(inp->max_jerk, 1.0, 1.0, 1.0);
-    inp->control_interface = CRuckigVelocity;
+    inp->control_interface = SCattiVelocity;
     result = scatti_calculate(otg, inp, traj);
     p0 = scatti_trajectory_get_profile(traj, 0);
     p1 = scatti_trajectory_get_profile(traj, 1);
@@ -732,10 +732,10 @@ static void test_phase_synchronization(void) {
     set_arr3(inp->target_velocity, 0.0, 0.0, 0.0);
     set_arr3(inp->target_acceleration, 0.0, 0.0, 0.0);
     result = scatti_calculate(otg, inp, traj);
-    CHECK(result == CRuckigWorking, "phase sync vel all-zero");
+    CHECK(result == SCattiWorking, "phase sync vel all-zero");
 
-    inp->control_interface = CRuckigPosition;
-    inp->synchronization = CRuckigSyncTime;
+    inp->control_interface = SCattiPosition;
+    inp->synchronization = SCattiSyncTime;
 
     scatti_trajectory_destroy(traj);
     scatti_output_destroy(out);
@@ -748,10 +748,10 @@ static void test_phase_synchronization(void) {
 static void test_discretization(void) {
     printf("Test: duration discretization...\n");
 
-    CRuckig *otg = scatti_create(3, 0.01);
-    CRuckigInputParameter *inp = scatti_input_create(3);
-    CRuckigOutputParameter *out = scatti_output_create(3);
-    CRuckigTrajectory *traj = scatti_trajectory_create(3);
+    SCatti *otg = scatti_create(3, 0.01);
+    SCattiInputParameter *inp = scatti_input_create(3);
+    SCattiOutputParameter *out = scatti_output_create(3);
+    SCattiTrajectory *traj = scatti_trajectory_create(3);
 
     set_arr3(inp->current_position, 0.0, 0.0, 0.0);
     set_arr3(inp->current_velocity, 0.0, 0.0, 0.0);
@@ -762,10 +762,10 @@ static void test_discretization(void) {
     set_arr3(inp->max_velocity, 1.0, 1.0, 1.0);
     set_arr3(inp->max_acceleration, 2.0, 2.0, 2.0);
     set_arr3(inp->max_jerk, 1.8, 2.4, 2.0);
-    inp->duration_discretization = CRuckigDiscrete;
+    inp->duration_discretization = SCattiDiscrete;
 
-    CRuckigResult result = scatti_calculate(otg, inp, traj);
-    CHECK(result == CRuckigWorking, "discrete calculate");
+    SCattiResult result = scatti_calculate(otg, inp, traj);
+    CHECK(result == SCattiWorking, "discrete calculate");
     CHECK_APPROX(scatti_trajectory_get_duration(traj), 4.5, "discrete duration == 4.5");
 
     result = scatti_update(otg, inp, out);
@@ -786,9 +786,9 @@ static void test_discretization(void) {
 static void test_per_dof_setting(void) {
     printf("Test: per-DOF settings...\n");
 
-    CRuckig *otg = scatti_create(3, 0.005);
-    CRuckigInputParameter *inp = scatti_input_create(3);
-    CRuckigTrajectory *traj = scatti_trajectory_create(3);
+    SCatti *otg = scatti_create(3, 0.005);
+    SCattiInputParameter *inp = scatti_input_create(3);
+    SCattiTrajectory *traj = scatti_trajectory_create(3);
     double pos[3], vel[3], acc[3];
 
     set_arr3(inp->current_position, 0.0, -2.0, 0.0);
@@ -802,24 +802,24 @@ static void test_per_dof_setting(void) {
     set_arr3(inp->max_jerk, 1.0, 1.0, 1.0);
 
     /* Baseline position control */
-    CRuckigResult result = scatti_calculate(otg, inp, traj);
-    CHECK(result == CRuckigWorking, "per-dof baseline");
+    SCattiResult result = scatti_calculate(otg, inp, traj);
+    CHECK(result == SCattiWorking, "per-dof baseline");
     CHECK_APPROX(scatti_trajectory_get_duration(traj), 4.0, "per-dof baseline dur");
     scatti_trajectory_at_time_simple(traj, 2.0, pos, vel, acc);
     CHECK_APPROX(pos[0], 0.5, "per-dof baseline pos[0]");
 
     /* Global velocity control */
-    inp->control_interface = CRuckigVelocity;
+    inp->control_interface = SCattiVelocity;
     result = scatti_calculate(otg, inp, traj);
-    CHECK(result == CRuckigWorking, "per-dof global vel");
+    CHECK(result == SCattiWorking, "per-dof global vel");
     CHECK_APPROX(scatti_trajectory_get_duration(traj), 1.095445115, "per-dof global vel dur");
     scatti_trajectory_at_time_simple(traj, 1.0, pos, vel, acc);
     CHECK_APPROX(pos[1], -1.8641718534, "per-dof global vel pos[1]");
 
     /* Per-DOF CI: Position/Velocity/Position */
-    set_per_dof_ci3(inp, CRuckigPosition, CRuckigVelocity, CRuckigPosition);
+    set_per_dof_ci3(inp, SCattiPosition, SCattiVelocity, SCattiPosition);
     result = scatti_calculate(otg, inp, traj);
-    CHECK(result == CRuckigWorking, "per-dof mixed CI");
+    CHECK(result == SCattiWorking, "per-dof mixed CI");
     CHECK_APPROX(scatti_trajectory_get_duration(traj), 4.0, "per-dof mixed CI dur");
     scatti_trajectory_at_time_simple(traj, 2.0, pos, vel, acc);
     CHECK_APPROX(pos[0], 0.5, "per-dof mixed CI pos[0]");
@@ -827,21 +827,21 @@ static void test_per_dof_setting(void) {
     CHECK_APPROX(pos[2], 1.0, "per-dof mixed CI pos[2]");
 
     /* Per-DOF sync: Time/None/Time */
-    set_per_dof_sync3(inp, CRuckigSyncTime, CRuckigSyncNone, CRuckigSyncTime);
+    set_per_dof_sync3(inp, SCattiSyncTime, SCattiSyncNone, SCattiSyncTime);
     result = scatti_calculate(otg, inp, traj);
-    CHECK(result == CRuckigWorking, "per-dof T/N/T");
+    CHECK(result == SCattiWorking, "per-dof T/N/T");
     CHECK_APPROX(scatti_trajectory_get_duration(traj), 4.0, "per-dof T/N/T dur");
     scatti_trajectory_at_time_simple(traj, 2.0, pos, vel, acc);
     CHECK_APPROX(pos[0], 0.5, "per-dof T/N/T pos[0]");
     CHECK_APPROX(pos[1], -1.5643167673, "per-dof T/N/T pos[1]");
 
     /* Position mode, sync None/Time/Time */
-    inp->control_interface = CRuckigPosition;
+    inp->control_interface = SCattiPosition;
     free(inp->per_dof_control_interface);
     inp->per_dof_control_interface = NULL;
-    set_per_dof_sync3(inp, CRuckigSyncNone, CRuckigSyncTime, CRuckigSyncTime);
+    set_per_dof_sync3(inp, SCattiSyncNone, SCattiSyncTime, SCattiSyncTime);
     result = scatti_calculate(otg, inp, traj);
-    CHECK(result == CRuckigWorking, "per-dof N/T/T");
+    CHECK(result == SCattiWorking, "per-dof N/T/T");
     CHECK_APPROX(scatti_trajectory_get_duration(traj), 4.0, "per-dof N/T/T dur");
     scatti_trajectory_at_time_simple(traj, 2.0, pos, vel, acc);
     CHECK_APPROX(pos[0], 0.7482143874, "per-dof N/T/T pos[0]");
@@ -867,9 +867,9 @@ static void test_per_dof_setting(void) {
     set_arr3(inp->max_velocity, 125.0, 125.0, 100.0);
     set_arr3(inp->max_acceleration, 2000.0, 2000.0, 2000.0);
     set_arr3(inp->max_jerk, 20000.0, 20000.0, 20000.0);
-    set_per_dof_sync3(inp, CRuckigSyncTime, CRuckigSyncTime, CRuckigSyncNone);
+    set_per_dof_sync3(inp, SCattiSyncTime, SCattiSyncTime, SCattiSyncNone);
     result = scatti_calculate(otg, inp, traj);
-    CHECK(result == CRuckigWorking, "per-dof T/T/N high vel");
+    CHECK(result == SCattiWorking, "per-dof T/T/N high vel");
     CHECK_APPROX(scatti_trajectory_get_duration(traj), 0.4207106781, "per-dof T/T/N dur");
 
     /* None/None/Time */
@@ -882,21 +882,21 @@ static void test_per_dof_setting(void) {
     set_arr3(inp->max_velocity, 1.0, 1.0, 1.0);
     set_arr3(inp->max_acceleration, 1.0, 1.0, 1.0);
     set_arr3(inp->max_jerk, 1.0, 1.0, 1.0);
-    set_per_dof_sync3(inp, CRuckigSyncNone, CRuckigSyncNone, CRuckigSyncTime);
+    set_per_dof_sync3(inp, SCattiSyncNone, SCattiSyncNone, SCattiSyncTime);
     result = scatti_calculate(otg, inp, traj);
-    CHECK(result == CRuckigWorking, "per-dof N/N/T");
+    CHECK(result == SCattiWorking, "per-dof N/N/T");
     CHECK_APPROX(scatti_trajectory_get_duration(traj), 3.7885667284, "per-dof N/N/T dur");
 
     /* None/Time/None */
-    set_per_dof_sync3(inp, CRuckigSyncNone, CRuckigSyncTime, CRuckigSyncNone);
+    set_per_dof_sync3(inp, SCattiSyncNone, SCattiSyncTime, SCattiSyncNone);
     result = scatti_calculate(otg, inp, traj);
-    CHECK(result == CRuckigWorking, "per-dof N/T/N");
+    CHECK(result == SCattiWorking, "per-dof N/T/N");
     CHECK_APPROX(scatti_trajectory_get_duration(traj), 3.7885667284, "per-dof N/T/N dur");
 
     /* Combined with enabled {true, false, true} */
     set_enabled3(inp, true, false, true);
     result = scatti_calculate(otg, inp, traj);
-    CHECK(result == CRuckigWorking, "per-dof with enabled");
+    CHECK(result == SCattiWorking, "per-dof with enabled");
     CHECK_APPROX(scatti_trajectory_get_duration(traj), 3.6578610221, "per-dof enabled dur");
 
     /* Phase/None/Phase */
@@ -909,14 +909,14 @@ static void test_per_dof_setting(void) {
     set_arr3(inp->max_velocity, 1.0, 1.0, 1.0);
     set_arr3(inp->max_acceleration, 1.0, 1.0, 1.0);
     set_arr3(inp->max_jerk, 1.0, 1.0, 1.0);
-    set_per_dof_sync3(inp, CRuckigSyncPhase, CRuckigSyncNone, CRuckigSyncPhase);
+    set_per_dof_sync3(inp, SCattiSyncPhase, SCattiSyncNone, SCattiSyncPhase);
     set_enabled3(inp, true, true, true);
     result = scatti_calculate(otg, inp, traj);
-    CHECK(result == CRuckigWorking, "per-dof Phase/None/Phase");
+    CHECK(result == SCattiWorking, "per-dof Phase/None/Phase");
     CHECK_APPROX(scatti_trajectory_get_duration(traj), 2.848387279, "Phase/None/Phase dur");
-    const CRuckigProfile *pp0 = scatti_trajectory_get_profile(traj, 0);
-    const CRuckigProfile *pp1 = scatti_trajectory_get_profile(traj, 1);
-    const CRuckigProfile *pp2 = scatti_trajectory_get_profile(traj, 2);
+    const SCattiProfile *pp0 = scatti_trajectory_get_profile(traj, 0);
+    const SCattiProfile *pp1 = scatti_trajectory_get_profile(traj, 1);
+    const SCattiProfile *pp2 = scatti_trajectory_get_profile(traj, 2);
     CHECK(!arrays_approx_equal7(pp0->t, pp1->t), "Phase/None/Phase: p0 != p1");
     CHECK(arrays_approx_equal7(pp0->t, pp2->t), "Phase/None/Phase: p0 == p2");
 
@@ -930,9 +930,9 @@ static void test_per_dof_setting(void) {
 static void test_zero_limits(void) {
     printf("Test: zero limits...\n");
 
-    CRuckig *otg = scatti_create(3, 0.005);
-    CRuckigInputParameter *inp = scatti_input_create(3);
-    CRuckigOutputParameter *out = scatti_output_create(3);
+    SCatti *otg = scatti_create(3, 0.005);
+    SCattiInputParameter *inp = scatti_input_create(3);
+    SCattiOutputParameter *out = scatti_output_create(3);
 
     /* Constant velocity coasting */
     set_arr3(inp->current_position, 0.0, -2.0, 0.0);
@@ -945,8 +945,8 @@ static void test_zero_limits(void) {
     set_arr3(inp->max_acceleration, 0.0, 1.0, 0.0);
     set_arr3(inp->max_jerk, 0.0, 1.0, 0.0);
 
-    CRuckigResult result = scatti_update(otg, inp, out);
-    CHECK(result == CRuckigWorking, "zero limits coasting");
+    SCattiResult result = scatti_update(otg, inp, out);
+    CHECK(result == SCattiWorking, "zero limits coasting");
     CHECK_APPROX(scatti_trajectory_get_duration(out->trajectory), 5.0, "zero limits dur=5.0");
 
     /* Zero jerk conflict in step 1 */
@@ -961,7 +961,7 @@ static void test_zero_limits(void) {
     set_arr3(inp->max_jerk, 0.0, 200.0, 0.0);
     scatti_reset(otg);
     result = scatti_update(otg, inp, out);
-    CHECK(result == CRuckigErrorZeroLimits, "zero limits conflict step 1");
+    CHECK(result == SCattiErrorZeroLimits, "zero limits conflict step 1");
 
     /* Zero jerk conflict with other DOFs */
     set_arr3(inp->target_position, 0.3, -3.0, 0.0);
@@ -970,10 +970,10 @@ static void test_zero_limits(void) {
     set_arr3(inp->max_jerk, 0.0, 2.0, 0.0);
     scatti_reset(otg);
     result = scatti_update(otg, inp, out);
-    CHECK(result == CRuckigErrorZeroLimits, "zero limits conflict other");
+    CHECK(result == SCattiErrorZeroLimits, "zero limits conflict other");
 
     /* Velocity interface: zero jerk conflict */
-    inp->control_interface = CRuckigVelocity;
+    inp->control_interface = SCattiVelocity;
     set_arr3(inp->current_position, 0.0, -2.0, 0.0);
     set_arr3(inp->current_velocity, -0.2, 0.0, 0.0);
     set_arr3(inp->current_acceleration, 1.0, 0.0, 0.2);
@@ -985,23 +985,23 @@ static void test_zero_limits(void) {
     set_arr3(inp->max_jerk, 0.0, 2.0, 0.0);
     scatti_reset(otg);
     result = scatti_update(otg, inp, out);
-    CHECK(result == CRuckigErrorZeroLimits, "zero limits vel conflict");
+    CHECK(result == SCattiErrorZeroLimits, "zero limits vel conflict");
 
     /* Partial zero jerk: {1, 2, 0} */
     set_arr3(inp->max_jerk, 1.0, 2.0, 0.0);
     scatti_reset(otg);
     result = scatti_update(otg, inp, out);
-    CHECK(result == CRuckigWorking, "zero limits vel partial (1,2,0)");
+    CHECK(result == SCattiWorking, "zero limits vel partial (1,2,0)");
     CHECK_APPROX(scatti_trajectory_get_duration(out->trajectory), 2.0, "zero limits vel dur=2.0");
 
     /* Different pattern: {0, 2, 20} */
     set_arr3(inp->max_jerk, 0.0, 2.0, 20.0);
     scatti_reset(otg);
     result = scatti_update(otg, inp, out);
-    CHECK(result == CRuckigWorking, "zero limits vel partial (0,2,20)");
+    CHECK(result == SCattiWorking, "zero limits vel partial (0,2,20)");
     CHECK_APPROX(scatti_trajectory_get_duration(out->trajectory), 1.1, "zero limits vel dur=1.1");
 
-    inp->control_interface = CRuckigPosition;
+    inp->control_interface = SCattiPosition;
     scatti_output_destroy(out);
     scatti_input_destroy(inp);
     scatti_destroy(otg);
@@ -1013,9 +1013,9 @@ static void test_intermediate_waypoints(void) {
     printf("Test: intermediate waypoints...\n");
     const size_t dofs = 3;
 
-    CRuckig *otg = scatti_create_waypoints(dofs, 0.01, 10);
-    CRuckigInputParameter *inp = scatti_input_create(dofs);
-    CRuckigOutputParameter *out = scatti_output_create(dofs);
+    SCatti *otg = scatti_create_waypoints(dofs, 0.01, 10);
+    SCattiInputParameter *inp = scatti_input_create(dofs);
+    SCattiOutputParameter *out = scatti_output_create(dofs);
 
     /* Start at origin */
     for (size_t d = 0; d < dofs; ++d) {
@@ -1042,17 +1042,17 @@ static void test_intermediate_waypoints(void) {
     inp->target_acceleration[2] = 0.0;
 
     /* Run update loop */
-    CRuckigResult result;
+    SCattiResult result;
     int steps = 0;
     bool section_changed = false;
-    while ((result = scatti_update(otg, inp, out)) == CRuckigWorking) {
+    while ((result = scatti_update(otg, inp, out)) == SCattiWorking) {
         steps++;
         if (out->did_section_change) section_changed = true;
         scatti_output_pass_to_input(out, inp);
         if (steps > 100000) break; /* safety */
     }
 
-    CHECK(result == CRuckigFinished, "waypoints: trajectory finished");
+    CHECK(result == SCattiFinished, "waypoints: trajectory finished");
     CHECK(section_changed, "waypoints: section change detected");
     CHECK(out->trajectory->num_sections == 2, "waypoints: 2 sections");
 
@@ -1088,9 +1088,9 @@ static void test_multiple_waypoints(void) {
     printf("Test: multiple waypoints...\n");
     const size_t dofs = 1;
 
-    CRuckig *otg = scatti_create_waypoints(dofs, 0.01, 10);
-    CRuckigInputParameter *inp = scatti_input_create(dofs);
-    CRuckigOutputParameter *out = scatti_output_create(dofs);
+    SCatti *otg = scatti_create_waypoints(dofs, 0.01, 10);
+    SCattiInputParameter *inp = scatti_input_create(dofs);
+    SCattiOutputParameter *out = scatti_output_create(dofs);
 
     inp->current_position[0] = 0.0;
     inp->max_velocity[0] = 5.0;
@@ -1103,11 +1103,11 @@ static void test_multiple_waypoints(void) {
 
     inp->target_position[0] = 5.0;
 
-    CRuckigResult result;
+    SCattiResult result;
     int steps = 0;
     int section_changes = 0;
     size_t last_section = 0;
-    while ((result = scatti_update(otg, inp, out)) == CRuckigWorking) {
+    while ((result = scatti_update(otg, inp, out)) == SCattiWorking) {
         steps++;
         if (out->new_section > last_section) {
             section_changes++;
@@ -1117,7 +1117,7 @@ static void test_multiple_waypoints(void) {
         if (steps > 100000) break;
     }
 
-    CHECK(result == CRuckigFinished, "multi-wp: finished");
+    CHECK(result == SCattiFinished, "multi-wp: finished");
     CHECK(out->trajectory->num_sections == 4, "multi-wp: 4 sections");
     CHECK(section_changes >= 3, "multi-wp: at least 3 section transitions");
 
@@ -1156,9 +1156,9 @@ static void test_per_section_constraints(void) {
     printf("Test: per-section constraints...\n");
     const size_t dofs = 1;
 
-    CRuckig *otg = scatti_create_waypoints(dofs, 0.01, 10);
-    CRuckigInputParameter *inp = scatti_input_create(dofs);
-    CRuckigOutputParameter *out = scatti_output_create(dofs);
+    SCatti *otg = scatti_create_waypoints(dofs, 0.01, 10);
+    SCattiInputParameter *inp = scatti_input_create(dofs);
+    SCattiOutputParameter *out = scatti_output_create(dofs);
 
     inp->current_position[0] = 0.0;
     inp->max_velocity[0] = 5.0;
@@ -1175,15 +1175,15 @@ static void test_per_section_constraints(void) {
     inp->per_section_max_velocity[0] = 1.0; /* slow first segment */
     inp->per_section_max_velocity[1] = 5.0; /* fast second segment */
 
-    CRuckigResult result;
+    SCattiResult result;
     int steps = 0;
-    while ((result = scatti_update(otg, inp, out)) == CRuckigWorking) {
+    while ((result = scatti_update(otg, inp, out)) == SCattiWorking) {
         steps++;
         scatti_output_pass_to_input(out, inp);
         if (steps > 100000) break;
     }
 
-    CHECK(result == CRuckigFinished, "per-section: finished");
+    CHECK(result == SCattiFinished, "per-section: finished");
     CHECK(out->trajectory->num_sections == 2, "per-section: 2 sections");
 
     /* The first section should take longer due to lower velocity limit */
@@ -1221,9 +1221,9 @@ static void test_position_limits(void) {
     printf("Test: position limits...\n");
     const size_t dofs = 1;
 
-    CRuckig *otg = scatti_create_waypoints(dofs, 0.01, 10);
-    CRuckigInputParameter *inp = scatti_input_create(dofs);
-    CRuckigOutputParameter *out = scatti_output_create(dofs);
+    SCatti *otg = scatti_create_waypoints(dofs, 0.01, 10);
+    SCattiInputParameter *inp = scatti_input_create(dofs);
+    SCattiOutputParameter *out = scatti_output_create(dofs);
 
     inp->current_position[0] = 0.0;
     inp->max_velocity[0] = 5.0;
@@ -1238,14 +1238,14 @@ static void test_position_limits(void) {
     inp->min_position[0] = -0.5;
 
     /* This should succeed - trajectory stays within bounds */
-    CRuckigResult result;
+    SCattiResult result;
     int steps = 0;
-    while ((result = scatti_update(otg, inp, out)) == CRuckigWorking) {
+    while ((result = scatti_update(otg, inp, out)) == SCattiWorking) {
         steps++;
         scatti_output_pass_to_input(out, inp);
         if (steps > 100000) break;
     }
-    CHECK(result == CRuckigFinished, "pos-limits: valid trajectory finishes");
+    CHECK(result == SCattiFinished, "pos-limits: valid trajectory finishes");
 
     /* Sample trajectory at 100 evenly-spaced points and verify position bounds */
     {
@@ -1283,8 +1283,8 @@ static void test_calculate_offline_waypoints(void) {
     printf("Test: offline waypoint calculation...\n");
     const size_t dofs = 2;
 
-    CRuckig *otg = scatti_create_waypoints(dofs, 0.01, 10);
-    CRuckigInputParameter *inp = scatti_input_create(dofs);
+    SCatti *otg = scatti_create_waypoints(dofs, 0.01, 10);
+    SCattiInputParameter *inp = scatti_input_create(dofs);
 
     for (size_t d = 0; d < dofs; ++d) {
         inp->current_position[d] = 0.0;
@@ -1300,11 +1300,11 @@ static void test_calculate_offline_waypoints(void) {
     inp->target_position[0] = 3.0;
     inp->target_position[1] = 3.0;
 
-    CRuckigTrajectory *traj = scatti_trajectory_create(dofs);
+    SCattiTrajectory *traj = scatti_trajectory_create(dofs);
     scatti_trajectory_resize(traj, 3);
 
-    CRuckigResult result = scatti_calculate(otg, inp, traj);
-    CHECK(result == CRuckigWorking, "offline-wp: calculation succeeds");
+    SCattiResult result = scatti_calculate(otg, inp, traj);
+    CHECK(result == SCattiWorking, "offline-wp: calculation succeeds");
     CHECK(traj->num_sections == 3, "offline-wp: 3 sections");
     CHECK(traj->duration > 0.0, "offline-wp: positive duration");
 
@@ -1340,9 +1340,9 @@ static void test_backward_compat_no_waypoints(void) {
     const size_t dofs = 1;
 
     /* Create with waypoint support but don't use waypoints */
-    CRuckig *otg = scatti_create_waypoints(dofs, 0.01, 10);
-    CRuckigInputParameter *inp = scatti_input_create(dofs);
-    CRuckigOutputParameter *out = scatti_output_create(dofs);
+    SCatti *otg = scatti_create_waypoints(dofs, 0.01, 10);
+    SCattiInputParameter *inp = scatti_input_create(dofs);
+    SCattiOutputParameter *out = scatti_output_create(dofs);
 
     inp->current_position[0] = 0.0;
     inp->target_position[0] = 5.0;
@@ -1350,15 +1350,15 @@ static void test_backward_compat_no_waypoints(void) {
     inp->max_acceleration[0] = 3.0;
     inp->max_jerk[0] = 4.0;
 
-    CRuckigResult result;
+    SCattiResult result;
     int steps = 0;
-    while ((result = scatti_update(otg, inp, out)) == CRuckigWorking) {
+    while ((result = scatti_update(otg, inp, out)) == SCattiWorking) {
         steps++;
         scatti_output_pass_to_input(out, inp);
         if (steps > 100000) break;
     }
 
-    CHECK(result == CRuckigFinished, "compat: finished without waypoints");
+    CHECK(result == SCattiFinished, "compat: finished without waypoints");
     CHECK(out->trajectory->num_sections == 1, "compat: single section");
 
     /* Verify final position and positive duration */

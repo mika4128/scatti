@@ -9,7 +9,7 @@
 
 /* ---- Internal helper functions ---- */
 
-static bool time_acc0(CRuckigVelocityThirdOrderStep2 *s, CRuckigProfile *profile,
+static bool time_acc0(SCattiVelocityThirdOrderStep2 *s, SCattiProfile *profile,
                       double aMax, double aMin, double jMax)
 {
     /* UD Solution 1/2 */
@@ -67,7 +67,7 @@ static bool time_acc0(CRuckigVelocityThirdOrderStep2 *s, CRuckigProfile *profile
     return false;
 }
 
-static bool time_none(CRuckigVelocityThirdOrderStep2 *s, CRuckigProfile *profile,
+static bool time_none(SCattiVelocityThirdOrderStep2 *s, SCattiProfile *profile,
                       double aMax, double aMin, double jMax)
 {
     if (fabs(s->a0) < DBL_EPSILON && fabs(s->af) < DBL_EPSILON && fabs(s->vd) < DBL_EPSILON) {
@@ -108,7 +108,7 @@ static bool time_none(CRuckigVelocityThirdOrderStep2 *s, CRuckigProfile *profile
     return false;
 }
 
-static bool check_all(CRuckigVelocityThirdOrderStep2 *s, CRuckigProfile *profile,
+static bool check_all(SCattiVelocityThirdOrderStep2 *s, SCattiProfile *profile,
                       double aMax, double aMin, double jMax)
 {
     return time_acc0(s, profile, aMax, aMin, jMax) || time_none(s, profile, aMax, aMin, jMax);
@@ -117,7 +117,7 @@ static bool check_all(CRuckigVelocityThirdOrderStep2 *s, CRuckigProfile *profile
 
 /* ---- Public interface ---- */
 
-void scatti_vel3_step2_init(CRuckigVelocityThirdOrderStep2 *s,
+void scatti_vel3_step2_init(SCattiVelocityThirdOrderStep2 *s,
                      double tf, double v0, double a0, double vf, double af,
                      double aMax, double aMin, double jMax)
 {
@@ -131,7 +131,7 @@ void scatti_vel3_step2_init(CRuckigVelocityThirdOrderStep2 *s,
     s->ad = af - a0;
 }
 
-bool scatti_vel3_step2_get_profile(CRuckigVelocityThirdOrderStep2 *s, CRuckigProfile *profile)
+bool scatti_vel3_step2_get_profile(SCattiVelocityThirdOrderStep2 *s, SCattiProfile *profile)
 {
     /* Test all cases to get ones that match */
     /* However we should guess which one is correct and try them first... */

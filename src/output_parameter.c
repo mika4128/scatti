@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-CRuckigOutputParameter* scatti_output_create(size_t dofs) {
-    CRuckigOutputParameter *out = (CRuckigOutputParameter*)SCATTI_CALLOC(1, sizeof(CRuckigOutputParameter));
+SCattiOutputParameter* scatti_output_create(size_t dofs) {
+    SCattiOutputParameter *out = (SCattiOutputParameter*)SCATTI_CALLOC(1, sizeof(SCattiOutputParameter));
     if (!out) return NULL;
 
     out->degrees_of_freedom = dofs;
@@ -37,7 +37,7 @@ CRuckigOutputParameter* scatti_output_create(size_t dofs) {
     return out;
 }
 
-void scatti_output_destroy(CRuckigOutputParameter *out) {
+void scatti_output_destroy(SCattiOutputParameter *out) {
     if (!out) return;
     scatti_trajectory_destroy(out->trajectory);
     SCATTI_FREE(out->new_position);
@@ -47,7 +47,7 @@ void scatti_output_destroy(CRuckigOutputParameter *out) {
     SCATTI_FREE(out);
 }
 
-void scatti_output_pass_to_input(const CRuckigOutputParameter *out, CRuckigInputParameter *inp) {
+void scatti_output_pass_to_input(const SCattiOutputParameter *out, SCattiInputParameter *inp) {
     if (!out || !inp) return;
 
     const size_t dofs = out->degrees_of_freedom;

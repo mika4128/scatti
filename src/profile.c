@@ -7,7 +7,7 @@
 #include <scatti/roots.h>
 #include <scatti/utils.h>
 
-void scatti_profile_init(CRuckigProfile *p) {
+void scatti_profile_init(SCattiProfile *p) {
     memset(p->t, 0, sizeof(p->t));
     memset(p->t_sum, 0, sizeof(p->t_sum));
     memset(p->j, 0, sizeof(p->j));
@@ -27,7 +27,7 @@ void scatti_profile_init(CRuckigProfile *p) {
     p->control_signs = ControlSignsUDDU;
 }
 
-void scatti_profile_set_boundary(CRuckigProfile *p, double p0, double v0, double a0,
+void scatti_profile_set_boundary(SCattiProfile *p, double p0, double v0, double a0,
                           double pf, double vf, double af) {
     p->a[0] = a0;
     p->v[0] = v0;
@@ -37,7 +37,7 @@ void scatti_profile_set_boundary(CRuckigProfile *p, double p0, double v0, double
     p->pf = pf;
 }
 
-void scatti_profile_set_boundary_from_profile(CRuckigProfile *p, const CRuckigProfile *src) {
+void scatti_profile_set_boundary_from_profile(SCattiProfile *p, const SCattiProfile *src) {
     p->a[0] = src->a[0];
     p->v[0] = src->v[0];
     p->p[0] = src->p[0];
@@ -48,7 +48,7 @@ void scatti_profile_set_boundary_from_profile(CRuckigProfile *p, const CRuckigPr
     p->accel = src->accel;
 }
 
-void scatti_profile_set_boundary_for_velocity(CRuckigProfile *p, double p0, double v0, double a0,
+void scatti_profile_set_boundary_for_velocity(SCattiProfile *p, double p0, double v0, double a0,
                                        double vf, double af) {
     p->a[0] = a0;
     p->v[0] = v0;
@@ -59,7 +59,7 @@ void scatti_profile_set_boundary_for_velocity(CRuckigProfile *p, double p0, doub
 
 /* Third-order position check */
 SCATTI_HOT
-bool scatti_profile_check(CRuckigProfile *p, CRuckigControlSigns cs, CRuckigReachedLimits lim,
+bool scatti_profile_check(SCattiProfile *p, SCattiControlSigns cs, SCattiReachedLimits lim,
                    bool set_limits, double jf, double vMax, double vMin, double aMax, double aMin) {
     if (SCATTI_UNLIKELY(p->t[0] < 0)) {
         return false;
@@ -166,21 +166,21 @@ bool scatti_profile_check(CRuckigProfile *p, CRuckigControlSigns cs, CRuckigReac
         && p->v[3] >= vLowLim && p->v[4] >= vLowLim && p->v[5] >= vLowLim && p->v[6] >= vLowLim;
 }
 
-bool scatti_profile_check_with_timing(CRuckigProfile *p, CRuckigControlSigns cs, CRuckigReachedLimits lim,
+bool scatti_profile_check_with_timing(SCattiProfile *p, SCattiControlSigns cs, SCattiReachedLimits lim,
                                double tf, double jf, double vMax, double vMin, double aMax, double aMin) {
     (void)tf;
     /* Time doesn't need to be checked as every profile has a: tf - ... equation */
     return scatti_profile_check(p, cs, lim, false, jf, vMax, vMin, aMax, aMin);
 }
 
-bool scatti_profile_check_with_timing_full(CRuckigProfile *p, CRuckigControlSigns cs, CRuckigReachedLimits lim,
+bool scatti_profile_check_with_timing_full(SCattiProfile *p, SCattiControlSigns cs, SCattiReachedLimits lim,
                                     double tf, double jf, double vMax, double vMin, double aMax, double aMin, double jMax) {
     return (fabs(jf) < fabs(jMax) + PROFILE_J_EPS) && scatti_profile_check_with_timing(p, cs, lim, tf, jf, vMax, vMin, aMax, aMin);
 }
 
 /* Third-order velocity check */
 SCATTI_HOT
-bool scatti_profile_check_for_velocity(CRuckigProfile *p, CRuckigControlSigns cs, CRuckigReachedLimits lim,
+bool scatti_profile_check_for_velocity(SCattiProfile *p, SCattiControlSigns cs, SCattiReachedLimits lim,
                                 double jf, double aMax, double aMin) {
     if (SCATTI_UNLIKELY(p->t[0] < 0)) {
         return false;
@@ -240,19 +240,19 @@ bool scatti_profile_check_for_velocity(CRuckigProfile *p, CRuckigControlSigns cs
         && p->a[1] <= aUppLim && p->a[3] <= aUppLim && p->a[5] <= aUppLim;
 }
 
-bool scatti_profile_check_for_velocity_with_timing(CRuckigProfile *p, CRuckigControlSigns cs, CRuckigReachedLimits lim,
+bool scatti_profile_check_for_velocity_with_timing(SCattiProfile *p, SCattiControlSigns cs, SCattiReachedLimits lim,
                                             double tf, double jf, double aMax, double aMin) {
     (void)tf;
     return scatti_profile_check_for_velocity(p, cs, lim, jf, aMax, aMin);
 }
 
-bool scatti_profile_check_for_velocity_with_timing_full(CRuckigProfile *p, CRuckigControlSigns cs, CRuckigReachedLimits lim,
+bool scatti_profile_check_for_velocity_with_timing_full(SCattiProfile *p, SCattiControlSigns cs, SCattiReachedLimits lim,
                                                  double tf, double jf, double aMax, double aMin, double jMax) {
     return (fabs(jf) < fabs(jMax) + PROFILE_J_EPS) && scatti_profile_check_for_velocity_with_timing(p, cs, lim, tf, jf, aMax, aMin);
 }
 
 /* Second-order position check */
-bool scatti_profile_check_for_second_order(CRuckigProfile *p, CRuckigControlSigns cs, CRuckigReachedLimits lim,
+bool scatti_profile_check_for_second_order(SCattiProfile *p, SCattiControlSigns cs, SCattiReachedLimits lim,
                                     double aUp, double aDown, double vMax, double vMin) {
     if (p->t[0] < 0) {
         return false;
@@ -310,13 +310,13 @@ bool scatti_profile_check_for_second_order(CRuckigProfile *p, CRuckigControlSign
         && p->v[2] >= vLowLim && p->v[3] >= vLowLim && p->v[4] >= vLowLim && p->v[5] >= vLowLim && p->v[6] >= vLowLim;
 }
 
-bool scatti_profile_check_for_second_order_with_timing(CRuckigProfile *p, CRuckigControlSigns cs, CRuckigReachedLimits lim,
+bool scatti_profile_check_for_second_order_with_timing(SCattiProfile *p, SCattiControlSigns cs, SCattiReachedLimits lim,
                                                 double tf, double aUp, double aDown, double vMax, double vMin) {
     (void)tf;
     return scatti_profile_check_for_second_order(p, cs, lim, aUp, aDown, vMax, vMin);
 }
 
-bool scatti_profile_check_for_second_order_with_timing_full(CRuckigProfile *p, CRuckigControlSigns cs, CRuckigReachedLimits lim,
+bool scatti_profile_check_for_second_order_with_timing_full(SCattiProfile *p, SCattiControlSigns cs, SCattiReachedLimits lim,
                                                      double tf, double aUp, double aDown, double vMax, double vMin,
                                                      double aMax, double aMin) {
     return (aMin - PROFILE_A_EPS < aUp) && (aUp < aMax + PROFILE_A_EPS) && (aMin - PROFILE_A_EPS < aDown) && (aDown < aMax + PROFILE_A_EPS)
@@ -324,7 +324,7 @@ bool scatti_profile_check_for_second_order_with_timing_full(CRuckigProfile *p, C
 }
 
 /* Second-order velocity check */
-bool scatti_profile_check_for_second_order_velocity(CRuckigProfile *p, CRuckigControlSigns cs, CRuckigReachedLimits lim,
+bool scatti_profile_check_for_second_order_velocity(SCattiProfile *p, SCattiControlSigns cs, SCattiReachedLimits lim,
                                              double aUp) {
     /* ReachedLimits::ACC0 */
     if (p->t[1] < 0.0) {
@@ -364,20 +364,20 @@ bool scatti_profile_check_for_second_order_velocity(CRuckigProfile *p, CRuckigCo
     return fabs(p->v[7] - p->vf) < PROFILE_V_PREC;
 }
 
-bool scatti_profile_check_for_second_order_velocity_with_timing(CRuckigProfile *p, CRuckigControlSigns cs, CRuckigReachedLimits lim,
+bool scatti_profile_check_for_second_order_velocity_with_timing(SCattiProfile *p, SCattiControlSigns cs, SCattiReachedLimits lim,
                                                          double tf, double aUp) {
     (void)tf;
     return scatti_profile_check_for_second_order_velocity(p, cs, lim, aUp);
 }
 
-bool scatti_profile_check_for_second_order_velocity_with_timing_full(CRuckigProfile *p, CRuckigControlSigns cs, CRuckigReachedLimits lim,
+bool scatti_profile_check_for_second_order_velocity_with_timing_full(SCattiProfile *p, SCattiControlSigns cs, SCattiReachedLimits lim,
                                                               double tf, double aUp, double aMax, double aMin) {
     return (aMin - PROFILE_A_EPS < aUp) && (aUp < aMax + PROFILE_A_EPS)
         && scatti_profile_check_for_second_order_velocity_with_timing(p, cs, lim, tf, aUp);
 }
 
 /* First-order position check */
-bool scatti_profile_check_for_first_order(CRuckigProfile *p, CRuckigControlSigns cs, CRuckigReachedLimits lim,
+bool scatti_profile_check_for_first_order(SCattiProfile *p, SCattiControlSigns cs, SCattiReachedLimits lim,
                                    double vUp) {
     /* ReachedLimits::VEL */
     if (p->t[3] < 0.0) {
@@ -414,20 +414,20 @@ bool scatti_profile_check_for_first_order(CRuckigProfile *p, CRuckigControlSigns
     return fabs(p->p[7] - p->pf) < PROFILE_P_PREC;
 }
 
-bool scatti_profile_check_for_first_order_with_timing(CRuckigProfile *p, CRuckigControlSigns cs, CRuckigReachedLimits lim,
+bool scatti_profile_check_for_first_order_with_timing(SCattiProfile *p, SCattiControlSigns cs, SCattiReachedLimits lim,
                                                double tf, double vUp) {
     (void)tf;
     return scatti_profile_check_for_first_order(p, cs, lim, vUp);
 }
 
-bool scatti_profile_check_for_first_order_with_timing_full(CRuckigProfile *p, CRuckigControlSigns cs, CRuckigReachedLimits lim,
+bool scatti_profile_check_for_first_order_with_timing_full(SCattiProfile *p, SCattiControlSigns cs, SCattiReachedLimits lim,
                                                     double tf, double vUp, double vMax, double vMin) {
     return (vMin - PROFILE_V_EPS < vUp) && (vUp < vMax + PROFILE_V_EPS)
         && scatti_profile_check_for_first_order_with_timing(p, cs, lim, tf, vUp);
 }
 
 /* Position extrema helpers */
-static void check_position_extremum(double t_ext, double t_sum_val, double t_seg, double pos, double vel, double acc, double jrk, CRuckigBound *ext) {
+static void check_position_extremum(double t_ext, double t_sum_val, double t_seg, double pos, double vel, double acc, double jrk, SCattiBound *ext) {
     if (0 < t_ext && t_ext < t_seg) {
         double p_ext, v_ext, a_ext;
         scatti_integrate(t_ext, pos, vel, acc, jrk, &p_ext, &v_ext, &a_ext);
@@ -442,7 +442,7 @@ static void check_position_extremum(double t_ext, double t_sum_val, double t_seg
     }
 }
 
-static void check_step_for_position_extremum(double t_sum_val, double t_seg, double pos, double vel, double acc, double jrk, CRuckigBound *ext) {
+static void check_step_for_position_extremum(double t_sum_val, double t_seg, double pos, double vel, double acc, double jrk, SCattiBound *ext) {
     if (pos < ext->min) {
         ext->min = pos;
         ext->t_min = t_sum_val;
@@ -464,8 +464,8 @@ static void check_step_for_position_extremum(double t_sum_val, double t_seg, dou
     }
 }
 
-CRuckigBound scatti_profile_get_position_extrema(const CRuckigProfile *p) {
-    CRuckigBound extrema;
+SCattiBound scatti_profile_get_position_extrema(const SCattiProfile *p) {
+    SCattiBound extrema;
     extrema.min = INFINITY;
     extrema.max = -INFINITY;
     extrema.t_min = 0.0;
@@ -501,7 +501,7 @@ CRuckigBound scatti_profile_get_position_extrema(const CRuckigProfile *p) {
     return extrema;
 }
 
-bool scatti_profile_get_first_state_at_position(const CRuckigProfile *p, double pt, double *time, double time_after) {
+bool scatti_profile_get_first_state_at_position(const SCattiProfile *p, double pt, double *time, double time_after) {
     double t_cum = 0.0;
 
     for (size_t i = 0; i < 7; ++i) {
@@ -514,7 +514,7 @@ bool scatti_profile_get_first_state_at_position(const CRuckigProfile *p, double 
             return true;
         }
 
-        CRuckigRootSet cubic_roots = scatti_roots_solve_cubic(p->j[i] / 6, p->a[i] / 2, p->v[i], p->p[i] - pt);
+        SCattiRootSet cubic_roots = scatti_roots_solve_cubic(p->j[i] / 6, p->a[i] / 2, p->v[i], p->p[i] - pt);
         scatti_root_set_sort(&cubic_roots);
         for (size_t r = 0; r < cubic_roots.size; ++r) {
             double _t = cubic_roots.data[r];

@@ -8,9 +8,9 @@ static int near(double a, double b, double eps) {
 }
 
 int main(void) {
-    CRuckig *otg = scatti_create(3, 0.01);
-    CRuckigInputParameter *inp = scatti_input_create(3);
-    CRuckigOutputParameter *out = scatti_output_create(3);
+    SCatti *otg = scatti_create(3, 0.01);
+    SCattiInputParameter *inp = scatti_input_create(3);
+    SCattiOutputParameter *out = scatti_output_create(3);
 
     if (!otg || !inp || !out) {
         fprintf(stderr, "create failed (OOM)\n");
@@ -36,16 +36,16 @@ int main(void) {
     inp->max_jerk[1] = 3.0;
     inp->max_jerk[2] = 2.0;
 
-    CRuckigResult result;
+    SCattiResult result;
     int step = 0;
     while (1) {
         result = scatti_update(otg, inp, out);
         scatti_output_pass_to_input(out, inp);
         step++;
 
-        if (result == CRuckigFinished)
+        if (result == SCattiFinished)
             break;
-        if (result != CRuckigWorking) {
+        if (result != SCattiWorking) {
             fprintf(stderr, "unexpected result: %d at step %d\n", result, step);
             scatti_output_destroy(out);
             scatti_input_destroy(inp);

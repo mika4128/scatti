@@ -8,9 +8,9 @@
 typedef struct {
     size_t degrees_of_freedom;
 
-    CRuckigControlInterface control_interface;
-    CRuckigSynchronization synchronization;
-    CRuckigDurationDiscretization duration_discretization;
+    SCattiControlInterface control_interface;
+    SCattiSynchronization synchronization;
+    SCattiDurationDiscretization duration_discretization;
 
     /* Current state */
     double *current_position;
@@ -35,8 +35,8 @@ typedef struct {
     bool *enabled;
 
     /* Optional per-DOF control interface / synchronization (NULL = use global) */
-    CRuckigControlInterface *per_dof_control_interface; /* NULL or array of dofs */
-    CRuckigSynchronization *per_dof_synchronization;    /* NULL or array of dofs */
+    SCattiControlInterface *per_dof_control_interface; /* NULL or array of dofs */
+    SCattiSynchronization *per_dof_synchronization;    /* NULL or array of dofs */
 
     /* Optional minimum trajectory duration (-1 = not set) */
     double minimum_duration;
@@ -70,18 +70,18 @@ typedef struct {
 
     /* Calculation interruption budget in microseconds. 0 = no interruption. */
     double interrupt_calculation_duration;
-} CRuckigInputParameter;
+} SCattiInputParameter;
 
-CRuckigInputParameter* scatti_input_create(size_t dofs);
-void scatti_input_destroy(CRuckigInputParameter *inp);
-bool scatti_input_validate(const CRuckigInputParameter *inp,
+SCattiInputParameter* scatti_input_create(size_t dofs);
+void scatti_input_destroy(SCattiInputParameter *inp);
+bool scatti_input_validate(const SCattiInputParameter *inp,
                             bool check_current_within_limits,
                             bool check_target_within_limits);
-bool scatti_input_is_equal(const CRuckigInputParameter *a, const CRuckigInputParameter *b);
-void scatti_input_copy(CRuckigInputParameter *dst, const CRuckigInputParameter *src);
+bool scatti_input_is_equal(const SCattiInputParameter *a, const SCattiInputParameter *b);
+void scatti_input_copy(SCattiInputParameter *dst, const SCattiInputParameter *src);
 
 /* Set intermediate waypoints. Copies the data. positions is num_waypoints * dofs doubles. */
-void scatti_input_set_intermediate_positions(CRuckigInputParameter *inp,
+void scatti_input_set_intermediate_positions(SCattiInputParameter *inp,
                                                const double *positions,
                                                size_t num_waypoints);
 

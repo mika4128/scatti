@@ -4,18 +4,18 @@
 
 #include <scatti/block.h>
 
-static inline double scatti_profile_total_duration(const CRuckigProfile *p) {
+static inline double scatti_profile_total_duration(const SCattiProfile *p) {
     return p->t_sum[6] + p->brake.duration + p->accel.duration;
 }
 
-static void remove_profile(CRuckigProfile *valid_profiles, size_t *valid_profile_counter, size_t index) {
+static void remove_profile(SCattiProfile *valid_profiles, size_t *valid_profile_counter, size_t index) {
     for (size_t i = index; i < *valid_profile_counter - 1; ++i) {
         valid_profiles[i] = valid_profiles[i + 1];
     }
     *valid_profile_counter -= 1;
 }
 
-static void interval_from_profiles(CRuckigInterval *iv, const CRuckigProfile *profile_left, const CRuckigProfile *profile_right) {
+static void interval_from_profiles(SCattiInterval *iv, const SCattiProfile *profile_left, const SCattiProfile *profile_right) {
     const double left_duration = scatti_profile_total_duration(profile_left);
     const double right_duration = scatti_profile_total_duration(profile_right);
     if (left_duration < right_duration) {
@@ -30,21 +30,21 @@ static void interval_from_profiles(CRuckigInterval *iv, const CRuckigProfile *pr
     iv->valid = true;
 }
 
-void scatti_block_init(CRuckigBlock *block) {
+void scatti_block_init(SCattiBlock *block) {
     scatti_profile_init(&block->p_min);
     block->t_min = 0.0;
     block->a.valid = false;
     block->b.valid = false;
 }
 
-void scatti_block_set_min_profile(CRuckigBlock *block, const CRuckigProfile *profile) {
+void scatti_block_set_min_profile(SCattiBlock *block, const SCattiProfile *profile) {
     block->p_min = *profile;
     block->t_min = scatti_profile_total_duration(profile);
     block->a.valid = false;
     block->b.valid = false;
 }
 
-bool scatti_block_calculate(CRuckigBlock *block, CRuckigProfile *valid_profiles,
+bool scatti_block_calculate(SCattiBlock *block, SCattiProfile *valid_profiles,
                      size_t valid_profile_counter, size_t max_profiles) {
     (void)max_profiles;
 
@@ -123,7 +123,7 @@ bool scatti_block_calculate(CRuckigBlock *block, CRuckigProfile *valid_profiles,
 
 /* scatti_block_is_blocked is now inlined in block.h */
 
-const CRuckigProfile* scatti_block_get_profile(const CRuckigBlock *block, double t) {
+const SCattiProfile* scatti_block_get_profile(const SCattiBlock *block, double t) {
     if (block->b.valid && t >= block->b.right) {
         return &block->b.profile;
     }

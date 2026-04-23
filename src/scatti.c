@@ -7,8 +7,8 @@
 #include <string.h>
 #include <time.h>
 
-static CRuckig* scatti_create_internal(size_t dofs, double delta_time, size_t max_waypoints) {
-    CRuckig *r = (CRuckig*)SCATTI_CALLOC(1, sizeof(CRuckig));
+static SCatti* scatti_create_internal(size_t dofs, double delta_time, size_t max_waypoints) {
+    SCatti *r = (SCatti*)SCATTI_CALLOC(1, sizeof(SCatti));
     if (!r) return NULL;
 
     r->degrees_of_freedom = dofs;
@@ -33,32 +33,32 @@ static CRuckig* scatti_create_internal(size_t dofs, double delta_time, size_t ma
     return r;
 }
 
-CRuckig* scatti_create(size_t dofs, double delta_time) {
+SCatti* scatti_create(size_t dofs, double delta_time) {
     return scatti_create_internal(dofs, delta_time, 0);
 }
 
-CRuckig* scatti_create_waypoints(size_t dofs, double delta_time, size_t max_waypoints) {
+SCatti* scatti_create_waypoints(size_t dofs, double delta_time, size_t max_waypoints) {
     return scatti_create_internal(dofs, delta_time, max_waypoints);
 }
 
-void scatti_destroy(CRuckig *r) {
+void scatti_destroy(SCatti *r) {
     if (!r) return;
     scatti_calculator_destroy(r->calculator);
     scatti_input_destroy(r->current_input);
     SCATTI_FREE(r);
 }
 
-void scatti_reset(CRuckig *r) {
+void scatti_reset(SCatti *r) {
     if (!r) return;
     r->current_input_initialized = false;
 }
 
-static inline bool use_waypoints(const CRuckigInputParameter *input) {
+static inline bool use_waypoints(const SCattiInputParameter *input) {
     return input->num_intermediate_waypoints > 0 &&
-           input->control_interface == CRuckigPosition;
+           input->control_interface == SCattiPosition;
 }
 
-bool scatti_validate_input(const CRuckig *r, const CRuckigInputParameter *input,
+bool scatti_validate_input(const SCatti *r, const SCattiInputParameter *input,
                             bool check_current_within_limits,
                             bool check_target_within_limits)
 {
@@ -68,7 +68,7 @@ bool scatti_validate_input(const CRuckig *r, const CRuckigInputParameter *input,
         return false;
     }
 
-    if (r->delta_time <= 0.0 && input->duration_discretization != CRuckigContinuous) {
+    if (r->delta_time <= 0.0 && input->duration_discretization != SCattiContinuous) {
         return false;
     }
 
@@ -81,14 +81,14 @@ bool scatti_validate_input(const CRuckig *r, const CRuckigInputParameter *input,
     return true;
 }
 
-static CRuckigResult dispatch_calculate(CRuckig *r, const CRuckigInputParameter *input,
-                                        CRuckigTrajectory *trajectory, bool *was_interrupted)
+static SCattiResult dispatch_calculate(SCatti *r, const SCattiInputParameter *input,
+                                        SCattiTrajectory *trajectory, bool *was_interrupted)
 {
     if (use_waypoints(input)) {
         /* Ensure trajectory has enough capacity */
         size_t nsec = input->num_intermediate_waypoints + 1;
         if (!scatti_trajectory_resize(trajectory, nsec)) {
-            return CRuckigError;
+            return SCattiError;
         }
         return scatti_calculator_calculate_waypoints(r->calculator, input, trajectory,
                                                        r->delta_time, was_interrupted);
@@ -102,13 +102,13 @@ static CRuckigResult dispatch_calculate(CRuckig *r, const CRuckigInputParameter 
     }
 }
 
-CRuckigResult scatti_calculate(CRuckig *r, const CRuckigInputParameter *input,
-                                CRuckigTrajectory *trajectory)
+SCattiResult scatti_calculate(SCatti *r, const SCattiInputParameter *input,
+                                SCattiTrajectory *trajectory)
 {
-    if (!r || !input || !trajectory) return CRuckigError;
+    if (!r || !input || !trajectory) return SCattiError;
 
     if (!scatti_validate_input(r, input, false, true)) {
-        return CRuckigErrorInvalidInput;
+        return SCattiErrorInvalidInput;
     }
 
     bool was_interrupted = false;
@@ -122,24 +122,24 @@ static double get_time_us(void) {
 }
 
 SCATTI_HOT
-CRuckigResult scatti_update(CRuckig *r, const CRuckigInputParameter *input,
-                             CRuckigOutputParameter *output)
+SCattiResult scatti_update(SCatti *r, const SCattiInputParameter *input,
+                             SCattiOutputParameter *output)
 {
-    if (SCATTI_UNLIKELY(!r || !input || !output)) return CRuckigError;
+    if (SCATTI_UNLIKELY(!r || !input || !output)) return SCattiError;
 
     double start_us = get_time_us();
 
     output->new_calculation = false;
 
-    CRuckigResult result = CRuckigWorking;
+    SCattiResult result = SCattiWorking;
     if (!r->current_input_initialized || !scatti_input_is_equal(input, r->current_input)) {
         if (!scatti_validate_input(r, input, false, true)) {
-            return CRuckigErrorInvalidInput;
+            return SCattiErrorInvalidInput;
         }
 
         result = dispatch_calculate(r, input, output->trajectory,
                                     &output->was_calculation_interrupted);
-        if (result != CRuckigWorking && result != CRuckigErrorPositionalLimits) {
+        if (result != SCattiWorking && result != SCattiErrorPositionalLimits) {
             return result;
         }
 
@@ -164,7 +164,7 @@ CRuckigResult scatti_update(CRuckig *r, const CRuckigInputParameter *input,
     scatti_output_pass_to_input(output, r->current_input);
 
     if (output->time > scatti_trajectory_get_duration(output->trajectory)) {
-        return CRuckigFinished;
+        return SCattiFinished;
     }
 
     return result;

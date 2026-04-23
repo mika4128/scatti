@@ -55,8 +55,8 @@ pub enum Result {
     ErrorSynchronizationCalculation = -111,
 }
 
-impl From<ffi::CRuckigResult> for Result {
-    fn from(v: ffi::CRuckigResult) -> Self {
+impl From<ffi::SCattiResult> for Result {
+    fn from(v: ffi::SCattiResult) -> Self {
         match v {
             0 => Result::Working,
             1 => Result::Finished,
@@ -104,7 +104,7 @@ pub enum DurationDiscretization {
 
 /// Motion input parameters (current/target state & limits).
 pub struct InputParameter {
-    ptr: *mut ffi::CRuckigInputParameter,
+    ptr: *mut ffi::SCattiInputParameter,
     dofs: usize,
 }
 
@@ -247,7 +247,7 @@ impl InputParameter {
         unsafe { ffi::scatti_input_validate(self.ptr, check_current, check_target) }
     }
 
-    pub(crate) fn as_ptr(&self) -> *mut ffi::CRuckigInputParameter {
+    pub(crate) fn as_ptr(&self) -> *mut ffi::SCattiInputParameter {
         self.ptr
     }
 }
@@ -267,7 +267,7 @@ impl Drop for InputParameter {
 
 /// Motion output (new state after one control cycle).
 pub struct OutputParameter {
-    ptr: *mut ffi::CRuckigOutputParameter,
+    ptr: *mut ffi::SCattiOutputParameter,
     dofs: usize,
 }
 
@@ -336,7 +336,7 @@ impl OutputParameter {
         unsafe { ffi::scatti_output_pass_to_input(self.ptr, inp.as_ptr()); }
     }
 
-    pub(crate) fn as_ptr(&mut self) -> *mut ffi::CRuckigOutputParameter {
+    pub(crate) fn as_ptr(&mut self) -> *mut ffi::SCattiOutputParameter {
         self.ptr
     }
 }
@@ -356,7 +356,7 @@ impl Drop for OutputParameter {
 
 /// Read-only view into a computed trajectory.
 pub struct Trajectory<'a> {
-    ptr: *mut ffi::CRuckigTrajectory,
+    ptr: *mut ffi::SCattiTrajectory,
     dofs: usize,
     _marker: std::marker::PhantomData<&'a ()>,
 }
@@ -412,7 +412,7 @@ impl Trajectory<'_> {
 
 /// Main trajectory generator.
 pub struct Ruckig {
-    ptr: *mut ffi::CRuckig,
+    ptr: *mut ffi::SCatti,
     dofs: usize,
 }
 

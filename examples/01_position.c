@@ -3,9 +3,9 @@
 
 int main(void) {
     /* Create a 3-DOF scatti instance with 10ms control cycle */
-    CRuckig *otg = scatti_create(3, 0.01);
-    CRuckigInputParameter *inp = scatti_input_create(3);
-    CRuckigOutputParameter *out = scatti_output_create(3);
+    SCatti *otg = scatti_create(3, 0.01);
+    SCattiInputParameter *inp = scatti_input_create(3);
+    SCattiOutputParameter *out = scatti_output_create(3);
 
     /* Set current state */
     inp->current_position[0] = 0.0;
@@ -31,12 +31,12 @@ int main(void) {
     printf("scatti - C port of Ruckig trajectory generation\n\n");
 
     /* Run the trajectory */
-    CRuckigResult result;
+    SCattiResult result;
     int step = 0;
     while (1) {
         result = scatti_update(otg, inp, out);
 
-        if (step % 100 == 0 || result == CRuckigFinished) {
+        if (step % 100 == 0 || result == SCattiFinished) {
             printf("t=%.3f  pos=[%.4f, %.4f, %.4f]  vel=[%.4f, %.4f, %.4f]\n",
                    out->time,
                    out->new_position[0], out->new_position[1], out->new_position[2],
@@ -46,13 +46,13 @@ int main(void) {
         scatti_output_pass_to_input(out, inp);
         step++;
 
-        if (result == CRuckigFinished) {
+        if (result == SCattiFinished) {
             printf("\nTrajectory finished after %.4f seconds (%d steps)\n",
                    scatti_trajectory_get_duration(out->trajectory), step);
             break;
         }
 
-        if (result != CRuckigWorking) {
+        if (result != SCattiWorking) {
             printf("\nError: %d\n", result);
             break;
         }

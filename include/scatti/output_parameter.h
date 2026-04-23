@@ -9,7 +9,7 @@
 typedef struct {
     size_t degrees_of_freedom;
 
-    CRuckigTrajectory *trajectory;
+    SCattiTrajectory *trajectory;
 
     double *new_position;
     double *new_velocity;
@@ -22,10 +22,10 @@ typedef struct {
     bool new_calculation;
     bool was_calculation_interrupted;
     double calculation_duration; /* microseconds */
-} CRuckigOutputParameter;
+} SCattiOutputParameter;
 
-CRuckigOutputParameter* scatti_output_create(size_t dofs);
-void scatti_output_destroy(CRuckigOutputParameter *out);
-void scatti_output_pass_to_input(const CRuckigOutputParameter *out, CRuckigInputParameter *inp);
+SCattiOutputParameter* scatti_output_create(size_t dofs);
+void scatti_output_destroy(SCattiOutputParameter *out);
+void scatti_output_pass_to_input(const SCattiOutputParameter *out, SCattiInputParameter *inp);
 
 #endif /* SCATTI_OUTPUT_PARAMETER_H */

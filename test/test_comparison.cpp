@@ -47,9 +47,9 @@ struct Stats {
 
 static void compare_one(
     Ruckig<3>& ruckig_cpp,
-    CRuckig* ruckig_c,
+    SCatti* ruckig_c,
     InputParameter<3>& inp_cpp,
-    CRuckigInputParameter* inp_c,
+    SCattiInputParameter* inp_c,
     Stats& stats)
 {
     stats.total++;
@@ -77,15 +77,15 @@ static void compare_one(
     }
 
     /* Compute C trajectory */
-    CRuckigOutputParameter* out_c = scatti_output_create(3);
+    SCattiOutputParameter* out_c = scatti_output_create(3);
     scatti_reset(ruckig_c);
-    CRuckigResult result_c = scatti_update(ruckig_c, inp_c, out_c);
+    SCattiResult result_c = scatti_update(ruckig_c, inp_c, out_c);
 
     /* Compare results */
     int cpp_ok = (result_cpp == Result::Working ||
                   (result_cpp == Result::Finished && out_cpp.trajectory.get_duration() < 0.005));
-    int c_ok = (result_c == CRuckigWorking ||
-                (result_c == CRuckigFinished && scatti_trajectory_get_duration(out_c->trajectory) < 0.005));
+    int c_ok = (result_c == SCattiWorking ||
+                (result_c == SCattiFinished && scatti_trajectory_get_duration(out_c->trajectory) < 0.005));
 
     if (cpp_ok != c_ok) {
         stats.result_mismatch++;
@@ -167,8 +167,8 @@ int main(int argc, char** argv) {
     Ruckig<3> ruckig_cpp{0.005};
     InputParameter<3> inp_cpp;
 
-    CRuckig* ruckig_c = scatti_create(3, 0.005);
-    CRuckigInputParameter* inp_c = scatti_input_create(3);
+    SCatti* ruckig_c = scatti_create(3, 0.005);
+    SCattiInputParameter* inp_c = scatti_input_create(3);
 
     std::default_random_engine gen(seed);
     std::normal_distribution<double> position_dist(0.0, 4.0);

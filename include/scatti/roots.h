@@ -8,13 +8,13 @@
 typedef struct {
     double data[4];
     size_t size;
-} CRuckigRootSet;
+} SCattiRootSet;
 
-SCATTI_FORCE_INLINE void scatti_root_set_init(CRuckigRootSet *s) {
+SCATTI_FORCE_INLINE void scatti_root_set_init(SCattiRootSet *s) {
     s->size = 0;
 }
 
-SCATTI_FORCE_INLINE void scatti_root_set_insert(CRuckigRootSet *s, double value) {
+SCATTI_FORCE_INLINE void scatti_root_set_insert(SCattiRootSet *s, double value) {
     if (value >= 0.0) {
         s->data[s->size] = value;
         s->size++;
@@ -22,16 +22,16 @@ SCATTI_FORCE_INLINE void scatti_root_set_insert(CRuckigRootSet *s, double value)
 }
 
 /* Sort the root set (simple insertion sort for small N) */
-void scatti_root_set_sort(CRuckigRootSet *s);
+void scatti_root_set_sort(SCattiRootSet *s);
 
 /* Solve a*x^3 + b*x^2 + c*x + d = 0, returning positive roots */
-CRuckigRootSet scatti_roots_solve_cubic(double a, double b, double c, double d);
+SCattiRootSet scatti_roots_solve_cubic(double a, double b, double c, double d);
 
 /* Solve resolvent equation, returns number of zeros */
 int scatti_roots_solve_resolvent(double x[3], double a, double b, double c);
 
 /* Solve monic quartic x^4 + a*x^3 + b*x^2 + c*x + d = 0 */
-CRuckigRootSet scatti_roots_solve_quart_monic(double a, double b, double c, double d);
+SCattiRootSet scatti_roots_solve_quart_monic(double a, double b, double c, double d);
 
 /* Evaluate polynomial of order N at x. Coefficients in descending order: p[0]*x^(N-1) + ... + p[N-1] */
 double scatti_roots_poly_eval(const double *p, size_t n, double x);

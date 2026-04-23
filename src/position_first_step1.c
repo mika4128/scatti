@@ -6,7 +6,7 @@
 #include <scatti/block.h>
 #include <scatti/profile.h>
 
-void scatti_pos1_step1_init(CRuckigPositionFirstOrderStep1 *s,
+void scatti_pos1_step1_init(SCattiPositionFirstOrderStep1 *s,
                      double p0, double pf, double vMax, double vMin)
 {
     s->_vMax = vMax;
@@ -14,10 +14,10 @@ void scatti_pos1_step1_init(CRuckigPositionFirstOrderStep1 *s,
     s->pd = pf - p0;
 }
 
-bool scatti_pos1_step1_get_profile(CRuckigPositionFirstOrderStep1 *s,
-                            const CRuckigProfile *input, CRuckigBlock *block)
+bool scatti_pos1_step1_get_profile(SCattiPositionFirstOrderStep1 *s,
+                            const SCattiProfile *input, SCattiBlock *block)
 {
-    CRuckigProfile *p = &block->p_min;
+    SCattiProfile *p = &block->p_min;
     scatti_profile_set_boundary_from_profile(p, input);
 
     const double vf = (s->pd > 0) ? s->_vMax : s->_vMin;

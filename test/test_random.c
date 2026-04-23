@@ -94,14 +94,14 @@ static void fill_min_limit_with_offset(double *arr, size_t n, const double *offs
     }
 }
 
-static size_t check_calculation(CRuckig *otg, CRuckigInputParameter *inp,
-                                CRuckigOutputParameter *out) {
-    CRuckigResult result = scatti_update(otg, inp, out);
-    if (result == CRuckigErrorTrajectoryDuration) return 0;
+static size_t check_calculation(SCatti *otg, SCattiInputParameter *inp,
+                                SCattiOutputParameter *out) {
+    SCattiResult result = scatti_update(otg, inp, out);
+    if (result == SCattiErrorTrajectoryDuration) return 0;
 
     n_assertions++;
-    if (result != CRuckigWorking &&
-        !(result == CRuckigFinished && scatti_trajectory_get_duration(out->trajectory) < 0.005)) {
+    if (result != SCattiWorking &&
+        !(result == SCattiFinished && scatti_trajectory_get_duration(out->trajectory) < 0.005)) {
         n_assertion_failures++;
         return 1; /* error */
     }
@@ -128,7 +128,7 @@ static size_t check_calculation(CRuckig *otg, CRuckigInputParameter *inp,
     scatti_trajectory_at_time_simple(out->trajectory, 0.0, pos, vel, acc);
     for (size_t dof = 0; dof < ndofs; dof++) {
         /* Position check only for Position control mode */
-        if (inp->control_interface == CRuckigPosition) {
+        if (inp->control_interface == SCattiPosition) {
             n_assertions++;
             if (fabs(pos[dof] - inp->current_position[dof]) > 1e-6) {
                 n_assertion_failures++;
@@ -153,7 +153,7 @@ static size_t check_calculation(CRuckig *otg, CRuckigInputParameter *inp,
     if (duration > 0.01) {
         scatti_trajectory_at_time_simple(out->trajectory, duration, pos, vel, acc);
         for (size_t dof = 0; dof < ndofs; dof++) {
-            if (inp->control_interface == CRuckigPosition) {
+            if (inp->control_interface == SCattiPosition) {
                 n_assertions++;
                 if (fabs(pos[dof] - inp->target_position[dof]) > 1e-6) {
                     n_assertion_failures++;
@@ -174,18 +174,18 @@ static size_t check_calculation(CRuckig *otg, CRuckigInputParameter *inp,
 }
 
 /* Step-through: run update loop, recalculating with a second otg at each step */
-static size_t step_through_check(CRuckig *otg, CRuckigInputParameter *inp,
-                                 CRuckigOutputParameter *out, size_t max_checks) {
-    CRuckig *otg2 = scatti_create(otg->degrees_of_freedom, 0.001);
-    CRuckigInputParameter *inp2 = scatti_input_create(otg->degrees_of_freedom);
-    CRuckigOutputParameter *out2 = scatti_output_create(otg->degrees_of_freedom);
+static size_t step_through_check(SCatti *otg, SCattiInputParameter *inp,
+                                 SCattiOutputParameter *out, size_t max_checks) {
+    SCatti *otg2 = scatti_create(otg->degrees_of_freedom, 0.001);
+    SCattiInputParameter *inp2 = scatti_input_create(otg->degrees_of_freedom);
+    SCattiOutputParameter *out2 = scatti_output_create(otg->degrees_of_freedom);
 
     /* First check */
     size_t errs = check_calculation(otg, inp, out);
     size_t checks = 1;
 
-    CRuckigResult result;
-    while ((result = scatti_update(otg, inp, out)) == CRuckigWorking) {
+    SCattiResult result;
+    while ((result = scatti_update(otg, inp, out)) == SCattiWorking) {
         scatti_output_pass_to_input(out, inp);
 
         /* Re-check from current state with different timestep */
@@ -249,9 +249,9 @@ int main(int argc, char **argv) {
     size_t tested = 0;
     const size_t dofs = 3;
 
-    CRuckig *otg = scatti_create(dofs, 0.005);
-    CRuckigInputParameter *inp = scatti_input_create(dofs);
-    CRuckigOutputParameter *out = scatti_output_create(dofs);
+    SCatti *otg = scatti_create(dofs, 0.005);
+    SCattiInputParameter *inp = scatti_input_create(dofs);
+    SCattiOutputParameter *out = scatti_output_create(dofs);
 
     struct timespec start, end_ts;
     clock_gettime(CLOCK_MONOTONIC, &start);
@@ -264,16 +264,16 @@ int main(int argc, char **argv) {
 
         /* Alternate Phase/Time sync (matching C++) */
         if (i < position_random_3 / 2) {
-            inp->synchronization = CRuckigSyncPhase;
+            inp->synchronization = SCattiSyncPhase;
         } else {
-            inp->synchronization = CRuckigSyncTime;
+            inp->synchronization = SCattiSyncTime;
         }
 
         /* First 5% use Discrete discretization */
         if (i < position_random_3 / 20) {
-            inp->duration_discretization = CRuckigDiscrete;
+            inp->duration_discretization = SCattiDiscrete;
         } else {
-            inp->duration_discretization = CRuckigContinuous;
+            inp->duration_discretization = SCattiContinuous;
         }
 
         fill_position(inp->current_position, dofs);
@@ -291,13 +291,13 @@ int main(int argc, char **argv) {
         errors += check_calculation(otg, inp, out);
         tested++;
     }
-    inp->synchronization = CRuckigSyncTime;
-    inp->duration_discretization = CRuckigContinuous;
+    inp->synchronization = SCattiSyncTime;
+    inp->duration_discretization = SCattiContinuous;
 
     /* ==================== Position random 1-DOF ==================== */
-    CRuckig *otg1 = scatti_create(1, 0.005);
-    CRuckigInputParameter *inp1 = scatti_input_create(1);
-    CRuckigOutputParameter *out1 = scatti_output_create(1);
+    SCatti *otg1 = scatti_create(1, 0.005);
+    SCattiInputParameter *inp1 = scatti_input_create(1);
+    SCattiOutputParameter *out1 = scatti_output_create(1);
 
     printf("Position random 1-DOF (%zu)...\n", position_random_1);
     for (size_t i = 0; i < position_random_1; i++) {
@@ -328,9 +328,9 @@ int main(int argc, char **argv) {
         scatti_reset(otg);
 
         if (i < random_discrete_3 / 2) {
-            inp->synchronization = CRuckigSyncPhase;
+            inp->synchronization = SCattiSyncPhase;
         } else {
-            inp->synchronization = CRuckigSyncTime;
+            inp->synchronization = SCattiSyncTime;
         }
 
         fill_discrete(inp->current_position, dofs);
@@ -350,7 +350,7 @@ int main(int argc, char **argv) {
         errors += check_calculation(otg, inp, out);
         tested++;
     }
-    inp->synchronization = CRuckigSyncTime;
+    inp->synchronization = SCattiSyncTime;
 
     /* ==================== Position high limits 3-DOF ==================== */
     printf("Position high limits 3-DOF (%zu)...\n", random_3_high);
@@ -383,15 +383,15 @@ int main(int argc, char **argv) {
         scatti_reset(otg);
 
         if (i < position_second_random_3 / 2) {
-            inp->synchronization = CRuckigSyncPhase;
+            inp->synchronization = SCattiSyncPhase;
         } else {
-            inp->synchronization = CRuckigSyncTime;
+            inp->synchronization = SCattiSyncTime;
         }
 
         if (i < position_second_random_3 / 20) {
-            inp->duration_discretization = CRuckigDiscrete;
+            inp->duration_discretization = SCattiDiscrete;
         } else {
-            inp->duration_discretization = CRuckigContinuous;
+            inp->duration_discretization = SCattiContinuous;
         }
 
         fill_position(inp->current_position, dofs);
@@ -411,16 +411,16 @@ int main(int argc, char **argv) {
         errors += check_calculation(otg, inp, out);
         tested++;
     }
-    inp->synchronization = CRuckigSyncTime;
-    inp->duration_discretization = CRuckigContinuous;
+    inp->synchronization = SCattiSyncTime;
+    inp->duration_discretization = SCattiContinuous;
     /* Restore max_jerk for subsequent tests */
     fill_limit(inp->max_jerk, dofs);
 
     /* ==================== Step-through 3-DOF ==================== */
     if (step_through_3_count > 0) {
-        CRuckig *otg_st = scatti_create(dofs, 0.01);
-        CRuckigInputParameter *inp_st = scatti_input_create(dofs);
-        CRuckigOutputParameter *out_st = scatti_output_create(dofs);
+        SCatti *otg_st = scatti_create(dofs, 0.01);
+        SCattiInputParameter *inp_st = scatti_input_create(dofs);
+        SCattiOutputParameter *out_st = scatti_output_create(dofs);
 
         printf("Step-through 3-DOF (%zu)...\n", step_through_3_count);
         for (size_t i = 0; i < step_through_3_count; ) {
@@ -451,7 +451,7 @@ int main(int argc, char **argv) {
 
     /* ==================== Velocity random 3-DOF ==================== */
     printf("Velocity random 3-DOF (%zu)...\n", velocity_random_3);
-    inp->control_interface = CRuckigVelocity;
+    inp->control_interface = SCattiVelocity;
     inp->current_position[0] = 0.0; inp->current_position[1] = 0.0; inp->current_position[2] = 0.0;
     for (size_t i = 0; i < velocity_random_3; i++) {
         scatti_reset(otg);
@@ -469,14 +469,14 @@ int main(int argc, char **argv) {
 
     /* ==================== Velocity discrete 3-DOF ==================== */
     printf("Velocity discrete 3-DOF (%zu)...\n", velocity_random_discrete_3);
-    inp->control_interface = CRuckigVelocity;
+    inp->control_interface = SCattiVelocity;
     for (size_t i = 0; i < velocity_random_discrete_3; i++) {
         scatti_reset(otg);
 
         if (i < velocity_random_discrete_3 / 2) {
-            inp->synchronization = CRuckigSyncPhase;
+            inp->synchronization = SCattiSyncPhase;
         } else {
-            inp->synchronization = CRuckigSyncTime;
+            inp->synchronization = SCattiSyncTime;
         }
 
         fill_discrete(inp->current_position, dofs);
@@ -496,11 +496,11 @@ int main(int argc, char **argv) {
         errors += check_calculation(otg, inp, out);
         tested++;
     }
-    inp->synchronization = CRuckigSyncTime;
+    inp->synchronization = SCattiSyncTime;
 
     /* ==================== Velocity second order 3-DOF ==================== */
     printf("Velocity second order 3-DOF (%zu)...\n", velocity_second_random_3);
-    inp->control_interface = CRuckigVelocity;
+    inp->control_interface = SCattiVelocity;
     inp->current_position[0] = 0.0; inp->current_position[1] = 0.0; inp->current_position[2] = 0.0;
     /* Reset max_jerk to INFINITY for second-order mode */
     for (size_t d = 0; d < dofs; d++) inp->max_jerk[d] = INFINITY;
@@ -520,7 +520,7 @@ int main(int argc, char **argv) {
 
     /* ==================== Random direction 3-DOF (asymmetric limits) ==================== */
     printf("Random direction 3-DOF (%zu)...\n", random_direction_3);
-    inp->control_interface = CRuckigPosition;
+    inp->control_interface = SCattiPosition;
 
     /* Allocate min_velocity and min_acceleration */
     inp->min_velocity = (double*)calloc(dofs, sizeof(double));

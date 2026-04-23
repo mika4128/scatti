@@ -11,14 +11,14 @@ static double v_at_a_zero(double v0, double a0, double j) {
     return v0 + (a0 * a0) / (2.0 * j);
 }
 
-CRuckigInputParameter* scatti_input_create(size_t dofs) {
-    CRuckigInputParameter *inp = (CRuckigInputParameter*)SCATTI_CALLOC(1, sizeof(CRuckigInputParameter));
+SCattiInputParameter* scatti_input_create(size_t dofs) {
+    SCattiInputParameter *inp = (SCattiInputParameter*)SCATTI_CALLOC(1, sizeof(SCattiInputParameter));
     if (!inp) return NULL;
 
     inp->degrees_of_freedom = dofs;
-    inp->control_interface = CRuckigPosition;
-    inp->synchronization = CRuckigSyncTime;
-    inp->duration_discretization = CRuckigContinuous;
+    inp->control_interface = SCattiPosition;
+    inp->synchronization = SCattiSyncTime;
+    inp->duration_discretization = SCattiContinuous;
 
     inp->current_position    = (double*)SCATTI_CALLOC(dofs, sizeof(double));
     inp->current_velocity    = (double*)SCATTI_CALLOC(dofs, sizeof(double));
@@ -70,7 +70,7 @@ CRuckigInputParameter* scatti_input_create(size_t dofs) {
     return inp;
 }
 
-void scatti_input_destroy(CRuckigInputParameter *inp) {
+void scatti_input_destroy(SCattiInputParameter *inp) {
     if (!inp) return;
     SCATTI_FREE(inp->current_position);
     SCATTI_FREE(inp->current_velocity);
@@ -101,7 +101,7 @@ void scatti_input_destroy(CRuckigInputParameter *inp) {
     SCATTI_FREE(inp);
 }
 
-void scatti_input_set_intermediate_positions(CRuckigInputParameter *inp,
+void scatti_input_set_intermediate_positions(SCattiInputParameter *inp,
                                                const double *positions,
                                                size_t num_waypoints)
 {
@@ -121,7 +121,7 @@ void scatti_input_set_intermediate_positions(CRuckigInputParameter *inp,
     inp->num_intermediate_waypoints = num_waypoints;
 }
 
-bool scatti_input_validate(const CRuckigInputParameter *inp,
+bool scatti_input_validate(const SCattiInputParameter *inp,
                             bool check_current_within_limits,
                             bool check_target_within_limits)
 {
@@ -131,9 +131,9 @@ bool scatti_input_validate(const CRuckigInputParameter *inp,
     /* Waypoint-specific validation */
     if (inp->num_intermediate_waypoints > 0) {
         /* Waypoints require Position control interface */
-        if (inp->control_interface != CRuckigPosition) return false;
+        if (inp->control_interface != SCattiPosition) return false;
         /* Waypoints incompatible with Discrete discretization */
-        if (inp->duration_discretization == CRuckigDiscrete) return false;
+        if (inp->duration_discretization == SCattiDiscrete) return false;
         /* Waypoints incompatible with minimum_duration */
         if (inp->has_minimum_duration) return false;
 
@@ -173,11 +173,11 @@ bool scatti_input_validate(const CRuckigInputParameter *inp,
         const double vf = inp->target_velocity[dof];
         if (isnan(vf)) return false;
 
-        CRuckigControlInterface ci = inp->per_dof_control_interface
+        SCattiControlInterface ci = inp->per_dof_control_interface
             ? inp->per_dof_control_interface[dof]
             : inp->control_interface;
 
-        if (ci == CRuckigPosition) {
+        if (ci == SCattiPosition) {
             const double p0 = inp->current_position[dof];
             if (isnan(p0)) return false;
             const double pf = inp->target_position[dof];
@@ -216,7 +216,7 @@ bool scatti_input_validate(const CRuckigInputParameter *inp,
     return true;
 }
 
-bool scatti_input_is_equal(const CRuckigInputParameter *a, const CRuckigInputParameter *b) {
+bool scatti_input_is_equal(const SCattiInputParameter *a, const SCattiInputParameter *b) {
     if (!a || !b) return (a == b);
     if (a->degrees_of_freedom != b->degrees_of_freedom) return false;
 
@@ -247,13 +247,13 @@ bool scatti_input_is_equal(const CRuckigInputParameter *a, const CRuckigInputPar
     if ((a->per_dof_control_interface == NULL) != (b->per_dof_control_interface == NULL)) return false;
     if (a->per_dof_control_interface &&
         memcmp(a->per_dof_control_interface, b->per_dof_control_interface,
-               dofs * sizeof(CRuckigControlInterface)) != 0) return false;
+               dofs * sizeof(SCattiControlInterface)) != 0) return false;
 
     /* Compare optional per_dof_synchronization */
     if ((a->per_dof_synchronization == NULL) != (b->per_dof_synchronization == NULL)) return false;
     if (a->per_dof_synchronization &&
         memcmp(a->per_dof_synchronization, b->per_dof_synchronization,
-               dofs * sizeof(CRuckigSynchronization)) != 0) return false;
+               dofs * sizeof(SCattiSynchronization)) != 0) return false;
 
     if (a->control_interface != b->control_interface) return false;
     if (a->synchronization != b->synchronization) return false;
@@ -316,7 +316,7 @@ static void copy_opt_array(double **dst, const double *src, size_t count) {
     }
 }
 
-void scatti_input_copy(CRuckigInputParameter *dst, const CRuckigInputParameter *src) {
+void scatti_input_copy(SCattiInputParameter *dst, const SCattiInputParameter *src) {
     if (!dst || !src) return;
     if (dst == src) return;
 
@@ -346,10 +346,10 @@ void scatti_input_copy(CRuckigInputParameter *dst, const CRuckigInputParameter *
     /* Handle optional per_dof_control_interface */
     if (src->per_dof_control_interface) {
         if (!dst->per_dof_control_interface) {
-            dst->per_dof_control_interface = (CRuckigControlInterface*)SCATTI_MALLOC(dofs * sizeof(CRuckigControlInterface));
+            dst->per_dof_control_interface = (SCattiControlInterface*)SCATTI_MALLOC(dofs * sizeof(SCattiControlInterface));
         }
         memcpy(dst->per_dof_control_interface, src->per_dof_control_interface,
-               dofs * sizeof(CRuckigControlInterface));
+               dofs * sizeof(SCattiControlInterface));
     } else {
         SCATTI_FREE(dst->per_dof_control_interface);
         dst->per_dof_control_interface = NULL;
@@ -358,10 +358,10 @@ void scatti_input_copy(CRuckigInputParameter *dst, const CRuckigInputParameter *
     /* Handle optional per_dof_synchronization */
     if (src->per_dof_synchronization) {
         if (!dst->per_dof_synchronization) {
-            dst->per_dof_synchronization = (CRuckigSynchronization*)SCATTI_MALLOC(dofs * sizeof(CRuckigSynchronization));
+            dst->per_dof_synchronization = (SCattiSynchronization*)SCATTI_MALLOC(dofs * sizeof(SCattiSynchronization));
         }
         memcpy(dst->per_dof_synchronization, src->per_dof_synchronization,
-               dofs * sizeof(CRuckigSynchronization));
+               dofs * sizeof(SCattiSynchronization));
     } else {
         SCATTI_FREE(dst->per_dof_synchronization);
         dst->per_dof_synchronization = NULL;

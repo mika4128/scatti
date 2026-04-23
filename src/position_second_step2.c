@@ -7,7 +7,7 @@
 #include <scatti/profile.h>
 #include <scatti/roots.h>
 
-void scatti_pos2_step2_init(CRuckigPositionSecondOrderStep2 *s,
+void scatti_pos2_step2_init(SCattiPositionSecondOrderStep2 *s,
                      double tf, double p0, double v0, double pf, double vf,
                      double vMax, double vMin, double aMax, double aMin)
 {
@@ -22,7 +22,7 @@ void scatti_pos2_step2_init(CRuckigPositionSecondOrderStep2 *s,
     s->vd = vf - v0;
 }
 
-static bool time_acc0(CRuckigPositionSecondOrderStep2 *s, CRuckigProfile *profile,
+static bool time_acc0(SCattiPositionSecondOrderStep2 *s, SCattiProfile *profile,
                       double vMax, double vMin, double aMax, double aMin)
 {
     /* UD Solution 1/2 */
@@ -80,7 +80,7 @@ static bool time_acc0(CRuckigPositionSecondOrderStep2 *s, CRuckigProfile *profil
     return false;
 }
 
-static bool time_none(CRuckigPositionSecondOrderStep2 *s, CRuckigProfile *profile,
+static bool time_none(SCattiPositionSecondOrderStep2 *s, SCattiProfile *profile,
                       double vMax, double vMin, double aMax, double aMin)
 {
     if (fabs(s->v0) < DBL_EPSILON && fabs(s->vf) < DBL_EPSILON && fabs(s->pd) < DBL_EPSILON) {
@@ -122,14 +122,14 @@ static bool time_none(CRuckigPositionSecondOrderStep2 *s, CRuckigProfile *profil
     return false;
 }
 
-static bool check_all(CRuckigPositionSecondOrderStep2 *s, CRuckigProfile *profile,
+static bool check_all(SCattiPositionSecondOrderStep2 *s, SCattiProfile *profile,
                       double vMax, double vMin, double aMax, double aMin)
 {
     return time_acc0(s, profile, vMax, vMin, aMax, aMin) ||
            time_none(s, profile, vMax, vMin, aMax, aMin);
 }
 
-bool scatti_pos2_step2_get_profile(CRuckigPositionSecondOrderStep2 *s, CRuckigProfile *profile)
+bool scatti_pos2_step2_get_profile(SCattiPositionSecondOrderStep2 *s, SCattiProfile *profile)
 {
     /* Test all cases to get ones that match */
     if (s->pd > 0) {

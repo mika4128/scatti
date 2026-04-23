@@ -6,7 +6,7 @@
 #include <scatti/block.h>
 #include <scatti/profile.h>
 
-void scatti_pos2_step1_init(CRuckigPositionSecondOrderStep1 *s,
+void scatti_pos2_step1_init(SCattiPositionSecondOrderStep1 *s,
                      double p0, double v0, double pf, double vf,
                      double vMax, double vMin, double aMax, double aMin)
 {
@@ -19,11 +19,11 @@ void scatti_pos2_step1_init(CRuckigPositionSecondOrderStep1 *s,
     s->pd = pf - p0;
 }
 
-static void time_acc0(CRuckigPositionSecondOrderStep1 *s,
-                      CRuckigProfile *valid_profiles, size_t *counter,
+static void time_acc0(SCattiPositionSecondOrderStep1 *s,
+                      SCattiProfile *valid_profiles, size_t *counter,
                       double vMax, double vMin, double aMax, double aMin, bool return_after_found)
 {
-    CRuckigProfile *profile = &valid_profiles[*counter];
+    SCattiProfile *profile = &valid_profiles[*counter];
 
     profile->t[0] = (-s->v0 + vMax) / aMax;
     profile->t[1] = (aMin * s->v0 * s->v0 - aMax * s->vf * s->vf) / (2 * aMax * aMin * vMax) + vMax * (aMax - aMin) / (2 * aMax * aMin) + s->pd / vMax;
@@ -43,8 +43,8 @@ static void time_acc0(CRuckigPositionSecondOrderStep1 *s,
     (void)return_after_found;
 }
 
-static void time_none(CRuckigPositionSecondOrderStep1 *s,
-                      CRuckigProfile *valid_profiles, size_t *counter,
+static void time_none(SCattiPositionSecondOrderStep1 *s,
+                      SCattiProfile *valid_profiles, size_t *counter,
                       double vMax, double vMin, double aMax, double aMin, bool return_after_found)
 {
     double h1 = (aMax * s->vf * s->vf - aMin * s->v0 * s->v0 - 2 * aMax * aMin * s->pd) / (aMax - aMin);
@@ -53,7 +53,7 @@ static void time_none(CRuckigPositionSecondOrderStep1 *s,
 
         /* Solution 1 */
         {
-            CRuckigProfile *profile = &valid_profiles[*counter];
+            SCattiProfile *profile = &valid_profiles[*counter];
 
             profile->t[0] = -(s->v0 + h1) / aMax;
             profile->t[1] = 0;
@@ -76,7 +76,7 @@ static void time_none(CRuckigPositionSecondOrderStep1 *s,
 
         /* Solution 2 */
         {
-            CRuckigProfile *profile = &valid_profiles[*counter];
+            SCattiProfile *profile = &valid_profiles[*counter];
 
             profile->t[0] = (-s->v0 + h1) / aMax;
             profile->t[1] = 0;
@@ -96,8 +96,8 @@ static void time_none(CRuckigPositionSecondOrderStep1 *s,
     }
 }
 
-static bool time_all_single_step(CRuckigPositionSecondOrderStep1 *s,
-                                 CRuckigProfile *profile, double vMax, double vMin)
+static bool time_all_single_step(SCattiPositionSecondOrderStep1 *s,
+                                 SCattiProfile *profile, double vMax, double vMin)
 {
     if (fabs(s->vf - s->v0) > DBL_EPSILON) {
         return false;
@@ -125,12 +125,12 @@ static bool time_all_single_step(CRuckigPositionSecondOrderStep1 *s,
     return false;
 }
 
-bool scatti_pos2_step1_get_profile(CRuckigPositionSecondOrderStep1 *s,
-                            const CRuckigProfile *input, CRuckigBlock *block)
+bool scatti_pos2_step1_get_profile(SCattiPositionSecondOrderStep1 *s,
+                            const SCattiProfile *input, SCattiBlock *block)
 {
     /* Zero-limits special case */
     if (s->_vMax == 0.0 && s->_vMin == 0.0) {
-        CRuckigProfile *p = &block->p_min;
+        SCattiProfile *p = &block->p_min;
         scatti_profile_set_boundary_from_profile(p, input);
 
         if (time_all_single_step(s, p, s->_vMax, s->_vMin)) {

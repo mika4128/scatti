@@ -9,7 +9,7 @@
 #include <scatti/profile.h>
 #include <scatti/roots.h>
 
-void scatti_pos3_step1_init(CRuckigPositionThirdOrderStep1 *s,
+void scatti_pos3_step1_init(SCattiPositionThirdOrderStep1 *s,
                      double p0, double v0, double a0,
                      double pf, double vf, double af,
                      double vMax, double vMin, double aMax, double aMin, double jMax)
@@ -41,7 +41,7 @@ void scatti_pos3_step1_init(CRuckigPositionThirdOrderStep1 *s,
 }
 
 /* Helper: add_profile equivalent - increment counter, copy boundary to next */
-static inline void add_profile(CRuckigProfile *valid_profiles, size_t *counter, size_t max_profiles)
+static inline void add_profile(SCattiProfile *valid_profiles, size_t *counter, size_t max_profiles)
 {
     const size_t prev = *counter;
     ++(*counter);
@@ -50,12 +50,12 @@ static inline void add_profile(CRuckigProfile *valid_profiles, size_t *counter, 
     }
 }
 
-static void time_all_vel(CRuckigPositionThirdOrderStep1 *s,
-                         CRuckigProfile *valid_profiles, size_t *counter,
+static void time_all_vel(SCattiPositionThirdOrderStep1 *s,
+                         SCattiProfile *valid_profiles, size_t *counter,
                          double vMax, double vMin, double aMax, double aMin, double jMax,
                          bool return_after_found)
 {
-    CRuckigProfile *profile = &valid_profiles[*counter];
+    SCattiProfile *profile = &valid_profiles[*counter];
     const double v0 = s->v0, a0 = s->a0, vf = s->vf, af = s->af;
     const double v0_v0 = s->v0_v0, vf_vf = s->vf_vf;
     const double a0_a0 = s->a0_a0, af_af = s->af_af;
@@ -130,12 +130,12 @@ static void time_all_vel(CRuckigPositionThirdOrderStep1 *s,
     }
 }
 
-static void time_acc0_acc1(CRuckigPositionThirdOrderStep1 *s,
-                           CRuckigProfile *valid_profiles, size_t *counter,
+static void time_acc0_acc1(SCattiPositionThirdOrderStep1 *s,
+                           SCattiProfile *valid_profiles, size_t *counter,
                            double vMax, double vMin, double aMax, double aMin, double jMax,
                            bool return_after_found)
 {
-    CRuckigProfile *profile = &valid_profiles[*counter];
+    SCattiProfile *profile = &valid_profiles[*counter];
     const double a0 = s->a0, af = s->af;
     const double a0_a0 = s->a0_a0, af_af = s->af_af;
     const double a0_p3 = s->a0_p3, af_p3 = s->af_p3;
@@ -188,12 +188,12 @@ static void time_acc0_acc1(CRuckigPositionThirdOrderStep1 *s,
     }
 }
 
-static void time_all_none_acc0_acc1(CRuckigPositionThirdOrderStep1 *s,
-                                     CRuckigProfile *valid_profiles, size_t *counter,
+static void time_all_none_acc0_acc1(SCattiPositionThirdOrderStep1 *s,
+                                     SCattiProfile *valid_profiles, size_t *counter,
                                      double vMax, double vMin, double aMax, double aMin, double jMax,
                                      bool return_after_found)
 {
-    CRuckigProfile *profile = &valid_profiles[*counter];
+    SCattiProfile *profile = &valid_profiles[*counter];
     const double v0 = s->v0, a0 = s->a0, vf = s->vf, af = s->af;
     const double v0_v0 = s->v0_v0, vf_vf = s->vf_vf;
     const double a0_a0 = s->a0_a0, af_af = s->af_af;
@@ -242,9 +242,9 @@ static void time_all_none_acc0_acc1(CRuckigPositionThirdOrderStep1 *s,
     polynom_acc1[2] = 2 * (a0 - aMin) * h2_acc1 / (jMax_jMax * jMax);
     polynom_acc1[3] = h0_acc1 / (jMax_jMax * jMax_jMax);
 
-    CRuckigRootSet roots_none = scatti_roots_solve_quart_monic(polynom_none[0], polynom_none[1], polynom_none[2], polynom_none[3]);
-    CRuckigRootSet roots_acc0 = scatti_roots_solve_quart_monic(polynom_acc0[0], polynom_acc0[1], polynom_acc0[2], polynom_acc0[3]);
-    CRuckigRootSet roots_acc1 = scatti_roots_solve_quart_monic(polynom_acc1[0], polynom_acc1[1], polynom_acc1[2], polynom_acc1[3]);
+    SCattiRootSet roots_none = scatti_roots_solve_quart_monic(polynom_none[0], polynom_none[1], polynom_none[2], polynom_none[3]);
+    SCattiRootSet roots_acc0 = scatti_roots_solve_quart_monic(polynom_acc0[0], polynom_acc0[1], polynom_acc0[2], polynom_acc0[3]);
+    SCattiRootSet roots_acc1 = scatti_roots_solve_quart_monic(polynom_acc1[0], polynom_acc1[1], polynom_acc1[2], polynom_acc1[3]);
 
     scatti_root_set_sort(&roots_none);
     scatti_root_set_sort(&roots_acc0);
@@ -368,11 +368,11 @@ static void time_all_none_acc0_acc1(CRuckigPositionThirdOrderStep1 *s,
     }
 }
 
-static void time_acc1_vel_two_step(CRuckigPositionThirdOrderStep1 *s,
-                                   CRuckigProfile *valid_profiles, size_t *counter,
+static void time_acc1_vel_two_step(SCattiPositionThirdOrderStep1 *s,
+                                   SCattiProfile *valid_profiles, size_t *counter,
                                    double vMax, double vMin, double aMax, double aMin, double jMax)
 {
-    CRuckigProfile *profile = &valid_profiles[*counter];
+    SCattiProfile *profile = &valid_profiles[*counter];
     const double v0 = s->v0, a0 = s->a0, vf = s->vf, af = s->af;
     const double vf_vf = s->vf_vf;
     const double a0_a0 = s->a0_a0, af_af = s->af_af;
@@ -393,11 +393,11 @@ static void time_acc1_vel_two_step(CRuckigPositionThirdOrderStep1 *s,
     }
 }
 
-static void time_acc0_two_step(CRuckigPositionThirdOrderStep1 *s,
-                               CRuckigProfile *valid_profiles, size_t *counter,
+static void time_acc0_two_step(SCattiPositionThirdOrderStep1 *s,
+                               SCattiProfile *valid_profiles, size_t *counter,
                                double vMax, double vMin, double aMax, double aMin, double jMax)
 {
-    CRuckigProfile *profile = &valid_profiles[*counter];
+    SCattiProfile *profile = &valid_profiles[*counter];
     const double v0 = s->v0, a0 = s->a0, vf = s->vf, af = s->af;
     const double v0_v0 = s->v0_v0, vf_vf = s->vf_vf;
     const double a0_a0 = s->a0_a0, af_af = s->af_af;
@@ -480,11 +480,11 @@ static void time_acc0_two_step(CRuckigPositionThirdOrderStep1 *s,
     }
 }
 
-static void time_vel_two_step(CRuckigPositionThirdOrderStep1 *s,
-                              CRuckigProfile *valid_profiles, size_t *counter,
+static void time_vel_two_step(SCattiPositionThirdOrderStep1 *s,
+                              SCattiProfile *valid_profiles, size_t *counter,
                               double vMax, double vMin, double aMax, double aMin, double jMax)
 {
-    CRuckigProfile *profile;
+    SCattiProfile *profile;
     const double v0 = s->v0, a0 = s->a0, vf = s->vf, af = s->af;
     const double af_af = s->af_af;
     const double a0_p3 = s->a0_p3, af_p3 = s->af_p3;
@@ -528,11 +528,11 @@ static void time_vel_two_step(CRuckigPositionThirdOrderStep1 *s,
     }
 }
 
-static void time_none_two_step(CRuckigPositionThirdOrderStep1 *s,
-                               CRuckigProfile *valid_profiles, size_t *counter,
+static void time_none_two_step(SCattiPositionThirdOrderStep1 *s,
+                               SCattiProfile *valid_profiles, size_t *counter,
                                double vMax, double vMin, double aMax, double aMin, double jMax)
 {
-    CRuckigProfile *profile;
+    SCattiProfile *profile;
     const double v0 = s->v0, a0 = s->a0, vf = s->vf, af = s->af;
     const double a0_a0 = s->a0_a0, af_af = s->af_af;
 
@@ -572,8 +572,8 @@ static void time_none_two_step(CRuckigPositionThirdOrderStep1 *s,
     }
 }
 
-static bool time_all_single_step(CRuckigPositionThirdOrderStep1 *s,
-                                 CRuckigProfile *profile, double vMax, double vMin, double aMax, double aMin)
+static bool time_all_single_step(SCattiPositionThirdOrderStep1 *s,
+                                 SCattiProfile *profile, double vMax, double vMin, double aMax, double aMin)
 {
     const double v0 = s->v0, a0 = s->a0, af = s->af;
     const double v0_v0 = s->v0_v0;
@@ -622,12 +622,12 @@ static bool time_all_single_step(CRuckigPositionThirdOrderStep1 *s,
 }
 
 SCATTI_HOT
-bool scatti_pos3_step1_get_profile(CRuckigPositionThirdOrderStep1 *s,
-                            const CRuckigProfile *input, CRuckigBlock *block)
+bool scatti_pos3_step1_get_profile(SCattiPositionThirdOrderStep1 *s,
+                            const SCattiProfile *input, SCattiBlock *block)
 {
     /* Zero-limits special case */
     if (s->_jMax == 0.0 || s->_aMax == 0.0 || s->_aMin == 0.0) {
-        CRuckigProfile *p = &block->p_min;
+        SCattiProfile *p = &block->p_min;
         scatti_profile_set_boundary_from_profile(p, input);
 
         if (time_all_single_step(s, p, s->_vMax, s->_vMin, s->_aMax, s->_aMin)) {
