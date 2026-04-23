@@ -1,7 +1,16 @@
 # scatti
 
 <p align="center">
-  <a href="https://github.com/mika4128/scatti/blob/main/LICENSE">
+  <a href="https://github.com/mika4128/cruckig/actions/workflows/build-deb.yml">
+    <img src="https://github.com/mika4128/cruckig/actions/workflows/build-deb.yml/badge.svg" alt="Build DEB workflow">
+  </a>
+  <a href="https://github.com/mika4128/cruckig/issues">
+    <img src="https://img.shields.io/github/issues/mika4128/cruckig.svg" alt="Issues">
+  </a>
+  <a href="https://github.com/mika4128/cruckig/releases">
+    <img src="https://img.shields.io/github/v/release/mika4128/cruckig.svg?include_prereleases&sort=semver" alt="Releases">
+  </a>
+  <a href="https://github.com/mika4128/cruckig/blob/main/LICENSE">
     <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="MIT">
   </a>
 </p>
