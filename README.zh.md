@@ -1,4 +1,4 @@
-# scatti
+# scatti (中文名: 斯卡提)
 
 [English](README.md) | **简体中文**
 
@@ -16,6 +16,8 @@
     <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="MIT">
   </a>
 </p>
+
+> **发音**: 意大利语 /ˈskat.ti/ ≈ **斯卡提** (`scatti` 意为 "急动 / 突进", 正契合 jerk 受限轨迹生成的主题).
 
 **Ruckig 的纯 C99 移植 — 实时 jerk 限制轨迹生成.**
 

@@ -1,6 +1,6 @@
 # scatti
 
-**English** | [简体中文](README.zh-CN.md)
+**English** | [简体中文](README.zh.md)
 
 <p align="center">
   <a href="https://github.com/mika4128/cruckig/actions/workflows/build-deb.yml">
@@ -16,6 +16,8 @@
     <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="MIT">
   </a>
 </p>
+
+> **Pronunciation**: Italian /ˈskat.ti/ — `scatti` means "bursts / jolts" (rapid movements), fitting a jerk-limited motion generator.
 
 **Pure C99 port of Ruckig — real-time jerk-limited trajectory generation.**
 
