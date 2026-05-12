@@ -1,5 +1,7 @@
 # scatti
 
+**English** | [简体中文](README.zh-CN.md)
+
 <p align="center">
   <a href="https://github.com/mika4128/cruckig/actions/workflows/build-deb.yml">
     <img src="https://github.com/mika4128/cruckig/actions/workflows/build-deb.yml/badge.svg" alt="Build DEB workflow">
@@ -15,71 +17,71 @@
   </a>
 </p>
 
-**Ruckig 的纯 C99 移植 — 实时 jerk 限制轨迹生成.**
+**Pure C99 port of Ruckig — real-time jerk-limited trajectory generation.**
 
-## 特点
+## Features
 
-- 纯 C99, 零第三方依赖, 可移植到裸机 / RT 内核 (LinuxCNC RTAPI).
-- 任意 DOF, 位置 / 速度控制, 时间-相位-独立三种同步模式.
-- 三阶 / 二阶 / 一阶模型, 非对称速度与加速度限制.
-- Ruckig Pro 全集: **中间路点**, **逐段约束**, **位置上下限**, **计算中断** (微秒级预算).
-- 3 级 CMake 优化开关 (`-DSCATTI_OPT_LEVEL={0,1,2}`).
-- 可选 musl 立方根 + 可覆盖内存宏, 适配无 libm / RTAPI 等嵌入环境.
-- Python (cffi) + Rust (bindgen) 绑定开箱.
+- Pure C99, zero third-party dependencies, portable to bare-metal / RT kernels (LinuxCNC RTAPI).
+- Arbitrary DOF, position / velocity control, three synchronization modes (time / phase / independent).
+- 3rd / 2nd / 1st order models, asymmetric velocity and acceleration limits.
+- Full Ruckig Pro feature set: **intermediate waypoints**, **per-section constraints**, **position bounds**, **computation interrupts** (microsecond budgets).
+- 3-level CMake optimization switch (`-DSCATTI_OPT_LEVEL={0,1,2}`).
+- Optional musl cube root + overridable memory macros for libm-free / RTAPI embedded environments.
+- Out-of-the-box Python (cffi) + Rust (bindgen) bindings.
 
 <p align="center">
   <img src="assets/hero.png" alt="scatti smooth position with bounded jerk" width="720">
 </p>
 
-<p align="center"><sub>平滑位置 + 有界加速度 + 分段恒定 jerk — 3-DOF, 500 Hz 实时生成.</sub></p>
+<p align="center"><sub>Smooth position + bounded acceleration + piecewise-constant jerk — 3-DOF, 500 Hz real-time generation.</sub></p>
 
-## 性能
+## Performance
 
-7-DOF 平均 / 端到端 (µs):
+7-DOF mean / end-to-end (µs):
 
-| 版本 | 平均 | 端到端 |
-|------|:---:|:---:|
+| Version | Mean | End-to-end |
+|---------|:---:|:---:|
 | Ruckig C++ `-O3`                              | 6.65 | 7.55 |
-| Ruckig C++ `-O3 -march=native -flto` (公平)    | 6.46 | 7.34 |
+| Ruckig C++ `-O3 -march=native -flto` (fair)   | 6.46 | 7.34 |
 | **scatti L2 (libm cbrt)**                     | **6.19** | **7.08** |
-| **scatti L2 + fast cbrt** (musl 替换 libm)     | **6.03** | **6.93** |
+| **scatti L2 + fast cbrt** (musl replaces libm) | **6.03** | **6.93** |
 
-scatti L2 比公平编译的 Ruckig 平均快 **7%**, 比默认 Release 快 **~9%**. 用内置 musl cbrt
-再快 2-3%, 同时脱离 libm 依赖, 适合 RT 内核.
+scatti L2 is **7%** faster on average than fairly-compiled Ruckig, **~9%** faster than the default Release build.
+The built-in musl cbrt adds another 2-3% and removes the libm dependency — suitable for RT kernels.
 
-DOF 扩展 (fast cbrt 模式, 同机):
+DOF scaling (fast cbrt mode, same machine):
 
-| DOFs | 平均 (µs) | 端到端 (µs) |
+| DOFs | Mean (µs) | End-to-end (µs) |
 |:---:|:---:|:---:|
 |  3 | 2.24  | 2.69  |
 |  7 | 6.04  | 6.94  |
 | 14 | 12.76 | 14.15 |
 
-### 数值一致性
+### Numerical consistency
 
-与 C++ Ruckig 交叉对比 99,344 条随机轨迹, libm 与 fast cbrt 两种配置 **bit-identical**:
+Cross-checked against C++ Ruckig over 99,344 random trajectories; both libm and fast-cbrt configurations are **bit-identical**:
 
-| 指标 | 结果 |
-|------|------|
-| 匹配率 | **100.00%** |
-| 最大时长差 | 4.55e-13 s |
-| 最大位置差 | 5.90e-12 |
-| 最大速度差 | 9.24e-14 |
+| Metric | Result |
+|--------|--------|
+| Match rate | **100.00%** |
+| Max duration diff | 4.55e-13 s |
+| Max position diff | 5.90e-12 |
+| Max velocity diff | 9.24e-14 |
 
-## 快速上手
+## Quick start
 
 ```bash
 cmake -B build -DSCATTI_OPT_LEVEL=1
 cmake --build build -j
-sudo cmake --install build      # 或 cd build && cpack  生成 .deb
+sudo cmake --install build      # or: cd build && cpack   to build a .deb
 ```
 
-最小用法:
+Minimal usage:
 
 ```c
 #include <scatti/scatti.h>
 
-CRuckig *otg = scatti_create(3, 0.01);       /* 3 DOF, 10 ms 周期 */
+CRuckig *otg = scatti_create(3, 0.01);       /* 3 DOF, 10 ms cycle */
 CRuckigInputParameter *in  = scatti_input_create(3);
 CRuckigOutputParameter *out = scatti_output_create(3);
 
@@ -87,10 +89,10 @@ in->current_position[0] = 0.0;  in->target_position[0] = 5.0;
 in->max_velocity[0]     = 3.0;
 in->max_acceleration[0] = 3.0;
 in->max_jerk[0]         = 4.0;
-/* 其他 DOF 同样填 */
+/* fill the remaining DOFs the same way */
 
 while (scatti_update(otg, in, out) == CRuckigWorking) {
-    /* 驱动执行器: out->new_position / new_velocity / new_acceleration */
+    /* drive the actuator: out->new_position / new_velocity / new_acceleration */
     scatti_output_pass_to_input(out, in);
 }
 
@@ -99,21 +101,21 @@ scatti_input_destroy(in);
 scatti_destroy(otg);
 ```
 
-头文件在 `include/scatti/`, 完整 API 与 Pro 字段在对应头注释里.
+Headers live in `include/scatti/`; the full API and Pro fields are documented in the corresponding header comments.
 
-CMake 集成:
+CMake integration:
 
 ```cmake
 add_subdirectory(scatti)
 target_link_libraries(your_target PRIVATE scatti m)
 ```
 
-## 鸣谢
+## Acknowledgements
 
-基于 [Ruckig](https://github.com/pantor/ruckig) by Lars Berscheid (C++ 原版, Community Edition).
+Based on [Ruckig](https://github.com/pantor/ruckig) by Lars Berscheid (original C++ implementation, Community Edition).
 
-论文: Berscheid, L., & Kroeger, T. (2021). *Jerk-limited Real-time Trajectory Generation with Arbitrary Target States.* Robotics: Science and Systems (RSS). [arXiv:2105.04830](https://arxiv.org/abs/2105.04830)
+Paper: Berscheid, L., & Kroeger, T. (2021). *Jerk-limited Real-time Trajectory Generation with Arbitrary Target States.* Robotics: Science and Systems (RSS). [arXiv:2105.04830](https://arxiv.org/abs/2105.04830)
 
 ## License
 
-MIT (与 Ruckig Community Edition 同).
+MIT (same as Ruckig Community Edition).
